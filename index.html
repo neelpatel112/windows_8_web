@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Windows 8 Web OS</title>
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Desktop Background -->
+    <div class="desktop" id="desktop">
+        <!-- Desktop Icons -->
+        <div class="desktop-icons">
+            <div class="desktop-icon" ondblclick="openApp('computer')">
+                <i class="fas fa-desktop"></i>
+                <span>Computer</span>
+            </div>
+            <div class="desktop-icon" ondblclick="openApp('documents')">
+                <i class="fas fa-folder"></i>
+                <span>Documents</span>
+            </div>
+            <div class="desktop-icon" ondblclick="openApp('recycle')">
+                <i class="fas fa-trash"></i>
+                <span>Recycle Bin</span>
+            </div>
+            <div class="desktop-icon" ondblclick="openApp('ie')">
+                <i class="fas fa-internet-explorer"></i>
+                <span>Internet Explorer</span>
+            </div>
+        </div>
+
+        <!-- Start Screen (Tiles) - Hidden by default -->
+        <div class="start-screen" id="startScreen">
+            <div class="tiles-container">
+                <!-- Row 1 -->
+                <div class="tile tile-large tile-blue" onclick="openApp('store')">
+                    <i class="fas fa-store"></i>
+                    <span>Store</span>
+                </div>
+                <div class="tile tile-medium tile-green" onclick="openApp('mail')">
+                    <i class="fas fa-envelope"></i>
+                    <span>Mail</span>
+                </div>
+                <div class="tile tile-medium tile-orange" onclick="openApp('photos')">
+                    <i class="fas fa-camera"></i>
+                    <span>Photos</span>
+                </div>
+                
+                <!-- Row 2 -->
+                <div class="tile tile-medium tile-red" onclick="openApp('ie')">
+                    <i class="fas fa-internet-explorer"></i>
+                    <span>Internet</span>
+                </div>
+                <div class="tile tile-medium tile-purple" onclick="openApp('music')">
+                    <i class="fas fa-music"></i>
+                    <span>Music</span>
+                </div>
+                <div class="tile tile-small tile-teal" onclick="openApp('calendar')">
+                    <i class="fas fa-calendar"></i>
+                    <span>Cal</span>
+                </div>
+                <div class="tile tile-small tile-pink" onclick="openApp('people')">
+                    <i class="fas fa-users"></i>
+                    <span>People</span>
+                </div>
+                
+                <!-- Row 3 -->
+                <div class="tile tile-wide tile-blue" onclick="openApp('weather')">
+                    <i class="fas fa-cloud-sun"></i>
+                    <span>Weather</span>
+                    <span class="tile-detail">72° Sunny</span>
+                </div>
+                <div class="tile tile-medium tile-yellow" onclick="openApp('notes')">
+                    <i class="fas fa-pencil-alt"></i>
+                    <span>OneNote</span>
+                </div>
+                <div class="tile tile-small tile-grey" onclick="openApp('settings')">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </div>
+                
+                <!-- Row 4 -->
+                <div class="tile tile-large tile-darkblue" onclick="openApp('games')">
+                    <i class="fas fa-gamepad"></i>
+                    <span>Games</span>
+                </div>
+                <div class="tile tile-medium tile-brown" onclick="openApp('maps')">
+                    <i class="fas fa-map"></i>
+                    <span>Maps</span>
+                </div>
+                <div class="tile tile-small tile-lightblue" onclick="openApp('camera')">
+                    <i class="fas fa-camera-retro"></i>
+                    <span>Camera</span>
+                </div>
+                <div class="tile tile-small tile-lime" onclick="openApp('skype')">
+                    <i class="fab fa-skype"></i>
+                    <span>Skype</span>
+                </div>
+            </div>
+            
+            <!-- Start Screen Footer -->
+            <div class="start-footer">
+                <div class="user-info">
+                    <i class="fas fa-user-circle"></i>
+                    <span>User</span>
+                </div>
+                <div class="start-actions">
+                    <i class="fas fa-power-off" onclick="showShutdown()"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Taskbar -->
+        <div class="taskbar">
+            <div class="taskbar-left">
+                <button class="start-button" id="startButton" onclick="toggleStartScreen()">
+                    <i class="fas fa-windows"></i>
+                </button>
+                <div class="open-apps">
+                    <div class="taskbar-app" onclick="focusApp('ie')">
+                        <i class="fas fa-internet-explorer"></i>
+                    </div>
+                    <div class="taskbar-app" onclick="focusApp('explorer')">
+                        <i class="fas fa-folder-open"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="taskbar-right">
+                <div class="taskbar-time" id="currentTime"></div>
+                <div class="taskbar-icons">
+                    <i class="fas fa-volume-up"></i>
+                    <i class="fas fa-wifi"></i>
+                    <i class="fas fa-battery-full"></i>
+                </div>
+                <div class="taskbar-date" id="currentDate"></div>
+            </div>
+        </div>
+
+        <!-- Shutdown Dialog -->
+        <div class="shutdown-dialog" id="shutdownDialog">
+            <div class="shutdown-content">
+                <h3><i class="fas fa-power-off"></i> Shut Down Windows</h3>
+                <div class="shutdown-options">
+                    <div class="shutdown-option" onclick="shutdown('sleep')">
+                        <i class="fas fa-moon"></i>
+                        <span>Sleep</span>
+                    </div>
+                    <div class="shutdown-option" onclick="shutdown('restart')">
+                        <i class="fas fa-sync-alt"></i>
+                        <span>Restart</span>
+                    </div>
+                    <div class="shutdown-option" onclick="shutdown('shutdown')">
+                        <i class="fas fa-power-off"></i>
+                        <span>Shut down</span>
+                    </div>
+                </div>
+                <button onclick="hideShutdown()">Cancel</button>
+            </div>
+        </div>
+
+        <!-- Notification Area -->
+        <div class="notification" id="notification">
+            <span id="notificationMessage">Welcome to Windows 8</span>
+        </div>
+    </div>
+
+    <!-- Custom JS -->
+    <script src="js/main.js"></script>
+</body>
+</html> 

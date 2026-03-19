@@ -1,0 +1,465 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+    font-family: 'Segoe UI', 'Arial', sans-serif;
+}
+
+body {
+    overflow: hidden;
+    height: 100vh;
+    background: #0c7cd5; /* Windows 8 default background */
+}
+
+/* Desktop */
+.desktop {
+    height: 100vh;
+    position: relative;
+    background: linear-gradient(135deg, #0c7cd5 0%, #0a5e9e 100%);
+    overflow: hidden;
+}
+
+/* Desktop Icons */
+.desktop-icons {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.desktop-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 80px;
+    padding: 8px;
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    border-radius: 5px;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.desktop-icon:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+.desktop-icon i {
+    font-size: 40px;
+    margin-bottom: 5px;
+}
+
+.desktop-icon span {
+    font-size: 12px;
+    text-align: center;
+}
+
+/* Taskbar */
+.taskbar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 48px;
+    background: rgba(20, 20, 20, 0.95);
+    backdrop-filter: blur(5px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 10px;
+    color: white;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    z-index: 100;
+}
+
+.taskbar-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.start-button {
+    width: 40px;
+    height: 40px;
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    transition: all 0.2s;
+}
+
+.start-button:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.open-apps {
+    display: flex;
+    gap: 5px;
+}
+
+.taskbar-app {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.taskbar-app:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.taskbar-app::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 20%;
+    width: 60%;
+    height: 2px;
+    background: transparent;
+    transition: all 0.2s;
+}
+
+.taskbar-app.active::after {
+    background: #00b7ff;
+}
+
+.taskbar-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-size: 13px;
+}
+
+.taskbar-icons {
+    display: flex;
+    gap: 10px;
+}
+
+.taskbar-icons i {
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.taskbar-time, .taskbar-date {
+    cursor: default;
+}
+
+/* Start Screen */
+.start-screen {
+    position: absolute;
+    bottom: 48px;
+    left: 0;
+    right: 0;
+    height: calc(100% - 48px);
+    background: rgba(30, 30, 30, 0.98);
+    backdrop-filter: blur(10px);
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 90;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.start-screen.active {
+    transform: translateY(0);
+}
+
+.tiles-container {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Tile Styles */
+.tile {
+    background: #00a8ff;
+    border-radius: 4px;
+    padding: 12px;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+    animation: tileAppear 0.5s ease-out;
+}
+
+@keyframes tileAppear {
+    from {
+        opacity: 0;
+        transform: scale(0.8) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.tile:hover {
+    transform: scale(1.02);
+    filter: brightness(1.1);
+}
+
+.tile:active {
+    transform: scale(0.98);
+}
+
+.tile i {
+    font-size: 32px;
+    margin-bottom: 8px;
+}
+
+.tile span {
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.tile-detail {
+    font-size: 20px !important;
+    font-weight: 300 !important;
+    margin-top: 5px;
+}
+
+/* Tile Sizes */
+.tile-small {
+    grid-column: span 1;
+    grid-row: span 1;
+    aspect-ratio: 1;
+}
+
+.tile-medium {
+    grid-column: span 2;
+    grid-row: span 1;
+    aspect-ratio: 2;
+}
+
+.tile-large {
+    grid-column: span 2;
+    grid-row: span 2;
+    aspect-ratio: 1;
+}
+
+.tile-wide {
+    grid-column: span 4;
+    grid-row: span 1;
+    aspect-ratio: 4;
+}
+
+/* Tile Colors */
+.tile-blue { background: #0078d7; }
+.tile-green { background: #00b294; }
+.tile-orange { background: #f7630c; }
+.tile-red { background: #e81123; }
+.tile-purple { background: #881798; }
+.tile-teal { background: #008b8b; }
+.tile-pink { background: #e3008c; }
+.tile-yellow { background: #ffb900; }
+.tile-grey { background: #767676; }
+.tile-darkblue { background: #004e8c; }
+.tile-brown { background: #7e5c3e; }
+.tile-lightblue { background: #3a96dd; }
+.tile-lime { background: #8cbf00; }
+
+/* Start Footer */
+.start-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    background: rgba(0,0,0,0.3);
+    margin-top: 20px;
+    border-radius: 8px;
+    color: white;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 8px 15px;
+    border-radius: 5px;
+    transition: all 0.2s;
+}
+
+.user-info:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.user-info i {
+    font-size: 24px;
+}
+
+.start-actions i {
+    font-size: 24px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+.start-actions i:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+/* Shutdown Dialog */
+.shutdown-dialog {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+.shutdown-dialog.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.shutdown-content {
+    background: rgba(30, 30, 30, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 30px;
+    border-radius: 12px;
+    color: white;
+    min-width: 400px;
+    transform: scale(0.9);
+    transition: transform 0.3s;
+}
+
+.shutdown-dialog.active .shutdown-content {
+    transform: scale(1);
+}
+
+.shutdown-content h3 {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.shutdown-options {
+    display: flex;
+    justify-content: space-around;
+    margin: 30px 0;
+}
+
+.shutdown-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 15px;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.shutdown-option:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.shutdown-option i {
+    font-size: 32px;
+}
+
+.shutdown-content button {
+    background: #0078d7;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 16px;
+    transition: all 0.2s;
+}
+
+.shutdown-content button:hover {
+    background: #005a9e;
+}
+
+/* Notification */
+.notification {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 5px;
+    border-left: 4px solid #0078d7;
+    transform: translateX(120%);
+    transition: transform 0.3s;
+    z-index: 150;
+}
+
+.notification.show {
+    transform: translateX(0);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .tiles-container {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .tile-wide {
+        grid-column: span 4;
+    }
+    
+    .desktop-icons {
+        display: none;
+    }
+    
+    .taskbar-date {
+        display: none;
+    }
+}
+
+/* App Opening Animation */
+@keyframes appOpen {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0;
+        transform: scale(1.5);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(1.5);
+    }
+}
+
+.tile.opening {
+    animation: appOpen 0.3s ease-out;
+    pointer-events: none;
+} 
