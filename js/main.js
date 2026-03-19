@@ -100,7 +100,7 @@ function toggleStartScreen() {
     }
 }
 
-// Open app with Windows 8 style animation
+// Update the openApp function to handle photos
 function openApp(appName) {
     // Get the clicked element
     const tile = event.currentTarget;
@@ -113,11 +113,15 @@ function openApp(appName) {
     setTimeout(() => {
         tile.classList.remove('opening');
         
-        // Simulate app opening
+        // Handle different apps
         switch(appName) {
             case 'ie':
             case 'Internet Explorer':
                 window.open('https://www.bing.com', '_blank');
+                break;
+            case 'photos':
+                // Open photos app in new window
+                window.location.href = 'photos.html';
                 break;
             case 'store':
                 showNotification('📱 Windows Store - Coming soon to web!');
@@ -130,9 +134,6 @@ function openApp(appName) {
                 break;
             case 'music':
                 showNotification('🎵 Now Playing: Windows 8 Nostalgia Mix');
-                break;
-            case 'photos':
-                showNotification('📸 Opening your photo gallery');
                 break;
             case 'games':
                 showNotification('🎮 Loading games...');
