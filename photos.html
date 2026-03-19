@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Windows 8 Photos</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: #1a1a1a;
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* Photos App Container */
+        .photos-app {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(135deg, #2b2b2b 0%, #1a1a1a 100%);
+        }
+
+        /* App Header */
+        .app-header {
+            height: 60px;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            z-index: 10;
+        }
+
+        .back-button {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin-right: 15px;
+            transition: all 0.2s;
+        }
+
+        .back-button:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .app-header h1 {
+            font-size: 24px;
+            font-weight: 300;
+            flex-grow: 1;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .header-actions button {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+
+        .header-actions button:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        /* Main Content - Metro Grid */
+        .photos-grid {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 8px;
+            grid-auto-rows: minmax(100px, auto);
+        }
+
+        /* Photo Tile - Windows 8 Style */
+        .photo-tile {
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+            border-radius: 4px;
+            background: #333;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: tileAppear 0.5s ease-out forwards;
+            opacity: 0;
+        }
+
+        @keyframes tileAppear {
+            from {
+                opacity: 0;
+                transform: scale(0.8) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .photo-tile:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            z-index: 5;
+        }
+
+        .photo-tile img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .photo-tile:hover img {
+            transform: scale(1.1);
+        }
+
+        /* Tile Sizes */
+        .tile-small {
+            grid-column: span 1;
+            grid-row: span 1;
+            aspect-ratio: 1;
+        }
+
+        .tile-medium {
+            grid-column: span 2;
+            grid-row: span 1;
+            aspect-ratio: 2;
+        }
+
+        .tile-large {
+            grid-column: span 2;
+            grid-row: span 2;
+            aspect-ratio: 1;
+        }
+
+        .tile-wide {
+            grid-column: span 4;
+            grid-row: span 1;
+            aspect-ratio: 4;
+        }
+
+        /* Photo Info Overlay */
+        .photo-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 10px;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            color: white;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .photo-tile:hover .photo-info {
+            transform: translateY(0);
+        }
+
+        .photo-info span {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        /* Slideshow View */
+        .slideshow-view {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            backdrop-filter: blur(10px);
+        }
+
+        .slideshow-view.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .slideshow-header {
+            height: 60px;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            position: relative;
+            z-index: 101;
+        }
+
+        .slideshow-close {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+
+        .slideshow-close:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .slideshow-counter {
+            flex-grow: 1;
+            text-align: center;
+            font-size: 16px;
+            opacity: 0.8;
+        }
+
+        .slideshow-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .slideshow-image {
+            max-width: 90%;
+            max-height: 80vh;
+            object-fit: contain;
+            border-radius: 8px;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .slideshow-nav {
+            position: absolute;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            pointer-events: none;
+        }
+
+        .slideshow-nav button {
+            background: rgba(0,0,0,0.5);
+            border: none;
+            color: white;
+            font-size: 32px;
+            cursor: pointer;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
+            transition: all 0.2s;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .slideshow-nav button:hover {
+            background: rgba(0,0,0,0.8);
+            transform: scale(1.1);
+        }
+
+        .slideshow-nav button:active {
+            transform: scale(0.95);
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            display: none;
+        }
+
+        .loading-spinner.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #00b7ff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Empty State */
+        .empty-state {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .empty-state i {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="photos-app">
+        <!-- Header -->
+        <div class="app-header">
+            <button class="back-button" onclick="goBack()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h1>Photos</h1>
+            <div class="header-actions">
+                <button onclick="startSlideshow()" title="Start slideshow">
+                    <i class="fas fa-play"></i>
+                </button>
+                <button onclick="refreshPhotos()" title="Refresh">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Photos Grid -->
+        <div class="photos-grid" id="photosGrid">
+            <!-- Photos will be loaded here dynamically -->
+        </div>
+
+        <!-- Slideshow View -->
+        <div class="slideshow-view" id="slideshowView">
+            <div class="slideshow-header">
+                <button class="slideshow-close" onclick="closeSlideshow()">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="slideshow-counter" id="slideshowCounter">1 / 10</div>
+                <div style="width: 40px;"></div> <!-- Spacer -->
+            </div>
+            <div class="slideshow-container">
+                <img class="slideshow-image" id="slideshowImage" src="" alt="Slideshow">
+                <div class="slideshow-nav">
+                    <button onclick="prevImage()">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button onclick="nextImage()">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div class="loading-spinner" id="loadingSpinner">
+            <div class="spinner"></div>
+            <p style="margin-top: 10px;">Loading photos...</p>
+        </div>
+    </div>
+
+    <script>
+        // Photo data
+        let photos = [];
+        let currentPhotoIndex = 0;
+        let slideshowInterval = null;
+
+        // Load photos on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPhotos();
+        });
+
+        // Load photos from the photos folder
+        function loadPhotos() {
+            const grid = document.getElementById('photosGrid');
+            const spinner = document.getElementById('loadingSpinner');
+            
+            spinner.classList.add('active');
+            grid.innerHTML = '';
+
+            // Create array of photo objects
+            photos = [];
+            for (let i = 1; i <= 10; i++) {
+                photos.push({
+                    id: i,
+                    src: `photos/${i}.jpg`,
+                    title: `Photo ${i}`,
+                    size: getRandomTileSize()
+                });
+            }
+
+            // Render photos with staggered animation
+            setTimeout(() => {
+                renderPhotos();
+                spinner.classList.remove('active');
+            }, 500);
+        }
+
+        // Get random tile size for Metro layout
+        function getRandomTileSize() {
+            const sizes = ['tile-small', 'tile-medium', 'tile-large', 'tile-wide'];
+            const weights = [0.5, 0.3, 0.15, 0.05]; // Mostly small/medium tiles
+            
+            const random = Math.random();
+            let sum = 0;
+            
+            for (let i = 0; i < weights.length; i++) {
+                sum += weights[i];
+                if (random < sum) return sizes[i];
+            }
+            
+            return 'tile-small';
+        }
+
+        // Render photos grid
+        function renderPhotos() {
+            const grid = document.getElementById('photosGrid');
+            
+            photos.forEach((photo, index) => {
+                const tile = document.createElement('div');
+                tile.className = `photo-tile ${photo.size}`;
+                tile.style.animationDelay = `${index * 0.05}s`;
+                tile.onclick = () => openPhoto(index);
+                
+                const img = document.createElement('img');
+                img.src = photo.src;
+                img.alt = photo.title;
+                img.onerror = function() {
+                    this.src = 'https://via.placeholder.com/400x300?text=Photo+Not+Found';
+                };
+                
+                const info = document.createElement('div');
+                info.className = 'photo-info';
+                info.innerHTML = `<span>${photo.title}</span>`;
+                
+                tile.appendChild(img);
+                tile.appendChild(info);
+                grid.appendChild(tile);
+            });
+        }
+
+        // Open photo in slideshow
+        function openPhoto(index) {
+            currentPhotoIndex = index;
+            showSlideshow();
+        }
+
+        // Show slideshow
+        function showSlideshow() {
+            const slideshow = document.getElementById('slideshowView');
+            const image = document.getElementById('slideshowImage');
+            const counter = document.getElementById('slideshowCounter');
+            
+            image.src = photos[currentPhotoIndex].src;
+            counter.textContent = `${currentPhotoIndex + 1} / ${photos.length}`;
+            
+            slideshow.classList.add('active');
+            
+            // Start auto slideshow
+            startAutoSlideshow();
+        }
+
+        // Close slideshow
+        function closeSlideshow() {
+            document.getElementById('slideshowView').classList.remove('active');
+            stopAutoSlideshow();
+        }
+
+        // Next image
+        function nextImage() {
+            currentPhotoIndex = (currentPhotoIndex + 1) % photos.length;
+            updateSlideshowImage();
+        }
+
+        // Previous image
+        function prevImage() {
+            currentPhotoIndex = (currentPhotoIndex - 1 + photos.length) % photos.length;
+            updateSlideshowImage();
+        }
+
+        // Update slideshow image with animation
+        function updateSlideshowImage() {
+            const image = document.getElementById('slideshowImage');
+            const counter = document.getElementById('slideshowCounter');
+            
+            // Add exit animation
+            image.style.animation = 'none';
+            image.offsetHeight; // Trigger reflow
+            image.style.animation = 'slideIn 0.5s ease';
+            
+            image.src = photos[currentPhotoIndex].src;
+            counter.textContent = `${currentPhotoIndex + 1} / ${photos.length}`;
+        }
+
+        // Start auto slideshow
+        function startAutoSlideshow() {
+            if (slideshowInterval) clearInterval(slideshowInterval);
+            slideshowInterval = setInterval(nextImage, 3000);
+        }
+
+        // Stop auto slideshow
+        function stopAutoSlideshow() {
+            if (slideshowInterval) {
+                clearInterval(slideshowInterval);
+                slideshowInterval = null;
+            }
+        }
+
+        // Start full slideshow from beginning
+        function startSlideshow() {
+            currentPhotoIndex = 0;
+            showSlideshow();
+        }
+
+        // Refresh photos
+        function refreshPhotos() {
+            document.getElementById('photosGrid').innerHTML = '';
+            loadPhotos();
+        }
+
+        // Go back to main Windows 8 OS
+        function goBack() {
+            window.location.href = 'index.html';
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            const slideshow = document.getElementById('slideshowView');
+            if (!slideshow.classList.contains('active')) return;
+            
+            switch(e.key) {
+                case 'ArrowLeft':
+                    prevImage();
+                    break;
+                case 'ArrowRight':
+                    nextImage();
+                    break;
+                case 'Escape':
+                    closeSlideshow();
+                    break;
+                case ' ':
+                    e.preventDefault();
+                    if (slideshowInterval) {
+                        stopAutoSlideshow();
+                    } else {
+                        startAutoSlideshow();
+                    }
+                    break;
+            }
+        });
+    </script>
+</body>
+</html> 
