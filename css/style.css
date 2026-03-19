@@ -57,33 +57,28 @@ body {
     text-align: center;
 }
 
-/* Taskbar */
+/* Enhanced Taskbar Styles */
 .taskbar {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
     height: 48px;
-    background: rgba(20, 20, 20, 0.95);
-    backdrop-filter: blur(5px);
+    background: rgba(20, 20, 20, 0.98);
+    backdrop-filter: blur(10px);
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 0 10px;
     color: white;
-    border-top: 1px solid rgba(255,255,255,0.1);
-    z-index: 100;
-}
-
-.taskbar-left {
-    display: flex;
-    align-items: center;
-    gap: 15px;
+    border-top: 1px solid rgba(255,255,255,0.2);
+    z-index: 1000;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
 }
 
 .start-button {
-    width: 40px;
-    height: 40px;
+    width: 48px;
+    height: 48px;
     background: transparent;
     border: none;
     color: white;
@@ -92,70 +87,114 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 5px;
-    transition: all 0.2s;
+    border-radius: 0;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
 }
 
 .start-button:hover {
-    background: rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.15);
 }
 
+.start-button:active {
+    background: rgba(255,255,255,0.25);
+    transform: scale(0.95);
+}
+
+.start-button i {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Windows button glow effect when start screen is open */
+.start-screen.active ~ .taskbar .start-button {
+    background: rgba(0, 120, 215, 0.3);
+}
+
+.start-screen.active ~ .taskbar .start-button i {
+    color: #00b7ff;
+    text-shadow: 0 0 10px #00b7ff;
+}
+
+/* Open apps area */
 .open-apps {
     display: flex;
-    gap: 5px;
+    gap: 2px;
+    height: 100%;
+    align-items: center;
 }
 
 .taskbar-app {
-    width: 40px;
-    height: 40px;
+    width: 48px;
+    height: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 5px;
+    border-radius: 0;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
     position: relative;
+    color: rgba(255,255,255,0.8);
 }
 
 .taskbar-app:hover {
     background: rgba(255,255,255,0.1);
+    color: white;
 }
 
-.taskbar-app::after {
+.taskbar-app.active {
+    color: #00b7ff;
+}
+
+.taskbar-app.active::after {
     content: '';
     position: absolute;
     bottom: 0;
     left: 20%;
     width: 60%;
-    height: 2px;
-    background: transparent;
-    transition: all 0.2s;
-}
-
-.taskbar-app.active::after {
+    height: 3px;
     background: #00b7ff;
+    animation: taskbarGlow 1.5s infinite;
 }
 
+@keyframes taskbarGlow {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Taskbar right section */
 .taskbar-right {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 15px;
+    height: 100%;
+    padding: 0 10px;
+    background: rgba(0,0,0,0.2);
     font-size: 13px;
 }
 
 .taskbar-icons {
     display: flex;
-    gap: 10px;
+    gap: 12px;
 }
 
 .taskbar-icons i {
     font-size: 16px;
     cursor: pointer;
+    opacity: 0.9;
+    transition: all 0.2s;
+}
+
+.taskbar-icons i:hover {
+    opacity: 1;
+    transform: translateY(-1px);
 }
 
 .taskbar-time, .taskbar-date {
     cursor: default;
-}
+    font-weight: 400;
+    letter-spacing: 0.5px;
+} 
 
 /* Start Screen */
 .start-screen {
