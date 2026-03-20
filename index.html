@@ -1,189 +1,444 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windows 8 Web OS</title>
-    
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@300;400;600&display=swap" rel="stylesheet">
-    
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Windows 8 Web</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Desktop Background -->
-    <div class="desktop" id="desktop">
-        <!-- Desktop Icons -->
-        <div class="desktop-icons">
-            <div class="desktop-icon" ondblclick="openApp('computer')">
-                <i class="fas fa-desktop"></i>
-                <span>Computer</span>
-            </div>
-            <div class="desktop-icon" ondblclick="openApp('documents')">
-                <i class="fas fa-folder"></i>
-                <span>Documents</span>
-            </div>
-            <div class="desktop-icon" ondblclick="openApp('recycle')">
-                <i class="fas fa-trash"></i>
-                <span>Recycle Bin</span>
-            </div>
-            <div class="desktop-icon" ondblclick="openApp('ie')">
-                <i class="fas fa-internet-explorer"></i>
-                <span>Internet Explorer</span>
-            </div>
-        </div>
 
-        <!-- Start Screen (Tiles) - Hidden by default -->
-        <div class="start-screen" id="startScreen">
-            <div class="tiles-container">
-                <!-- Row 1 -->
-                <div class="tile tile-large tile-blue" onclick="openApp('store')">
-                    <i class="fas fa-store"></i>
-                    <span>Store</span>
-                </div>
-                <div class="tile tile-medium tile-green" onclick="openApp('mail')">
-                    <i class="fas fa-envelope"></i>
-                    <span>Mail</span>
-                </div>
-                <!-- Enhanced Photos Tile with Live Preview -->
-<div class="tile tile-medium tile-orange" onclick="openApp('photos')" id="photosTile">
-    <div class="live-photos-tile">
-        <div class="photo-strip" id="photoStrip">
-            <img src="photos/1.jpg" class="strip-photo" alt="" onerror="this.style.display='none'">
-            <img src="photos/2.jpg" class="strip-photo" alt="" onerror="this.style.display='none'">
-            <img src="photos/3.jpg" class="strip-photo" alt="" onerror="this.style.display='none'">
-        </div>
-        <div class="tile-overlay">
-            <i class="fas fa-camera"></i>
-            <span>Photos</span>
-        </div>
-    </div>
+<!-- ══════════════════════════════════════════════════════
+     BOOT SCREEN
+     ══════════════════════════════════════════════════════ -->
+<div id="bootScreen">
+  <div class="boot-logo">
+    <span class="wf1"></span><span class="wf2"></span>
+    <span class="wf3"></span><span class="wf4"></span>
+  </div>
+  <div class="boot-dots">
+    <span></span><span></span><span></span><span></span><span></span>
+  </div>
 </div>
-                
-                <!-- Row 2 -->
-                <div class="tile tile-medium tile-red" onclick="openApp('ie')">
-                    <i class="fas fa-internet-explorer"></i>
-                    <span>Internet</span>
-                </div>
-                <div class="tile tile-medium tile-purple" onclick="openApp('music')">
-                    <i class="fas fa-music"></i>
-                    <span>Music</span>
-                </div>
-                <div class="tile tile-small tile-teal" onclick="openApp('calendar')">
-                    <i class="fas fa-calendar"></i>
-                    <span>Cal</span>
-                </div>
-                <div class="tile tile-small tile-pink" onclick="openApp('people')">
-                    <i class="fas fa-users"></i>
-                    <span>People</span>
-                </div>
-                
-                <!-- Row 3 -->
-                <div class="tile tile-wide tile-blue" onclick="openApp('weather')">
-                    <i class="fas fa-cloud-sun"></i>
-                    <span>Weather</span>
-                    <span class="tile-detail">72° Sunny</span>
-                </div>
-                <div class="tile tile-medium tile-yellow" onclick="openApp('notes')">
-                    <i class="fas fa-pencil-alt"></i>
-                    <span>OneNote</span>
-                </div>
-                <div class="tile tile-small tile-grey" onclick="openApp('settings')">
-                    <i class="fas fa-cog"></i>
-                    <span>Settings</span>
-                </div>
-                
-                <!-- Row 4 -->
-                <div class="tile tile-large tile-darkblue" onclick="openApp('games')">
-                    <i class="fas fa-gamepad"></i>
-                    <span>Games</span>
-                </div>
-                <div class="tile tile-medium tile-brown" onclick="openApp('maps')">
-                    <i class="fas fa-map"></i>
-                    <span>Maps</span>
-                </div>
-                <div class="tile tile-small tile-lightblue" onclick="openApp('camera')">
-                    <i class="fas fa-camera-retro"></i>
-                    <span>Camera</span>
-                </div>
-                <div class="tile tile-small tile-lime" onclick="openApp('skype')">
-                    <i class="fab fa-skype"></i>
-                    <span>Skype</span>
-                </div>
-            </div>
-            
-            <!-- Start Screen Footer -->
-            <div class="start-footer">
-                <div class="user-info">
-                    <i class="fas fa-user-circle"></i>
-                    <span>User</span>
-                </div>
-                <div class="start-actions">
-                    <i class="fas fa-power-off" onclick="showShutdown()"></i>
-                </div>
-            </div>
-        </div>
 
-        <!-- Taskbar -->
-        <div class="taskbar">
-            <div class="taskbar-left">
-                <button class="start-button" id="startButton" onclick="toggleStartScreen()">
-                    <i class="fas fa-windows"></i>
-                </button>
-                <div class="open-apps">
-                    <div class="taskbar-app" onclick="focusApp('ie')">
-                        <i class="fas fa-internet-explorer"></i>
-                    </div>
-                    <div class="taskbar-app" onclick="focusApp('explorer')">
-                        <i class="fas fa-folder-open"></i>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="taskbar-right">
-                <div class="taskbar-time" id="currentTime"></div>
-                <div class="taskbar-icons">
-                    <i class="fas fa-volume-up"></i>
-                    <i class="fas fa-wifi"></i>
-                    <i class="fas fa-battery-full"></i>
-                </div>
-                <div class="taskbar-date" id="currentDate"></div>
-            </div>
-        </div>
 
-        <!-- Shutdown Dialog -->
-        <div class="shutdown-dialog" id="shutdownDialog">
-            <div class="shutdown-content">
-                <h3><i class="fas fa-power-off"></i> Shut Down Windows</h3>
-                <div class="shutdown-options">
-                    <div class="shutdown-option" onclick="shutdown('sleep')">
-                        <i class="fas fa-moon"></i>
-                        <span>Sleep</span>
-                    </div>
-                    <div class="shutdown-option" onclick="shutdown('restart')">
-                        <i class="fas fa-sync-alt"></i>
-                        <span>Restart</span>
-                    </div>
-                    <div class="shutdown-option" onclick="shutdown('shutdown')">
-                        <i class="fas fa-power-off"></i>
-                        <span>Shut down</span>
-                    </div>
-                </div>
-                <button onclick="hideShutdown()">Cancel</button>
-            </div>
-        </div>
+<!-- ══════════════════════════════════════════════════════
+     LOCK SCREEN
+     Wallpaper  →  67.jpg  (root of repo)
+     ══════════════════════════════════════════════════════ -->
+<div id="lockScreen">
+  <div class="lock-time" id="lockTime">12:00</div>
+  <div class="lock-date" id="lockDate">Friday, March 20</div>
 
-        <!-- Notification Area -->
-        <div class="notification" id="notification">
-            <span id="notificationMessage">Welcome to Windows 8</span>
-        </div>
+  <div class="lock-arrow">
+    <i class="fas fa-chevron-up"></i>
+    <span>Click to unlock</span>
+  </div>
+
+  <div class="lock-status">
+    <i class="fas fa-wifi"></i>
+    <i class="fas fa-battery-full"></i>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     DESKTOP
+     Wallpaper  →  69.jpg  (set in style.css on #desktop)
+     ══════════════════════════════════════════════════════ -->
+<div id="desktop">
+
+  <!--
+    ── DESKTOP ICON LIST ──────────────────────────────────
+    Upload these PNGs to your  icons/  folder:
+
+      icons/computer.png      → This PC
+      icons/folder.png        → Documents
+      icons/recycle.png       → Recycle Bin
+      icons/ie.png            → Internet Explorer
+      icons/notepad.png       → Notepad
+    ──────────────────────────────────────────────────────
+  -->
+  <div class="desktop-icons">
+
+    <div class="d-icon" ondblclick="notify('Opening This PC…','This PC')">
+      <img src="icons/computer.png" alt="This PC">
+      <span>This PC</span>
     </div>
 
-    <!-- Custom JS -->
-    <script src="js/main.js"></script>
+    <div class="d-icon" ondblclick="notify('Opening Documents…','File Explorer')">
+      <img src="icons/folder.png" alt="Documents">
+      <span>Documents</span>
+    </div>
+
+    <div class="d-icon" ondblclick="notify('Recycle Bin is empty.','Recycle Bin')">
+      <img src="icons/recycle.png" alt="Recycle Bin">
+      <span>Recycle Bin</span>
+    </div>
+
+    <div class="d-icon" ondblclick="notify('Opening Internet Explorer…','Internet Explorer')">
+      <img src="icons/ie.png" alt="Internet Explorer">
+      <span>Internet Explorer</span>
+    </div>
+
+    <div class="d-icon" ondblclick="notify('Opening Notepad…','Notepad')">
+      <img src="icons/notepad.png" alt="Notepad">
+      <span>Notepad</span>
+    </div>
+
+  </div>
+</div><!-- /desktop -->
+
+
+<!-- ══════════════════════════════════════════════════════
+     START SCREEN
+     ══════════════════════════════════════════════════════ -->
+<div id="startScreen">
+
+  <div class="start-header">
+    <div class="start-user">
+      <div class="start-avatar"><i class="fas fa-user"></i></div>
+      <span class="start-username">User</span>
+    </div>
+    <i class="fas fa-power-off start-power" onclick="showShutdown()"></i>
+  </div>
+
+  <div class="start-search">
+    <i class="fas fa-search"></i>
+    <input type="text" id="searchInput" placeholder="Search">
+  </div>
+
+  <div class="tiles-scroll">
+
+    <!-- ────────────────────────────────────────────────
+         GROUP 1 · Start
+         Icons needed in  icons/ :
+           mail.png · people.png · calendar.png
+           store.png · ie.png · skype.png · weather.png
+         ──────────────────────────────────────────────── -->
+    <div class="tile-group">
+      <div class="tile-group-label">Start</div>
+      <div class="tiles-grid">
+
+        <!-- Mail — large, live flip -->
+        <div class="tile lg c-blue" onclick="tileOpen(this,'Mail')" style="animation-delay:.04s">
+          <div class="tile-flip-inner" id="mailFlip">
+            <div class="tile-face">
+              <div class="tile-icon"><img src="icons/mail.png" alt="Mail"></div>
+              <span class="tile-label">Mail</span>
+            </div>
+            <div class="tile-back c-blue">
+              <span class="live-info">
+                <strong>3</strong>
+                Unread messages<br>
+                <small style="opacity:.6">inbox · outlook</small>
+              </span>
+              <span class="tile-label">Mail</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- People — medium -->
+        <div class="tile md c-pink" onclick="tileOpen(this,'People')" style="animation-delay:.07s">
+          <div class="tile-icon"><img src="icons/people.png" alt="People"></div>
+          <span class="tile-label">People</span>
+        </div>
+
+        <!-- Calendar — medium, live flip -->
+        <div class="tile md c-orange" onclick="tileOpen(this,'Calendar')" style="animation-delay:.10s">
+          <div class="tile-flip-inner" id="calFlip">
+            <div class="tile-face">
+              <div class="tile-icon"><img src="icons/calendar.png" alt="Calendar"></div>
+              <span class="tile-label">Calendar</span>
+            </div>
+            <div class="tile-back c-orange">
+              <span class="live-info">
+                <strong id="calDay">20</strong>
+                <span id="calMonth">March</span>
+              </span>
+              <span class="tile-label">Calendar</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Store — medium -->
+        <div class="tile md c-lgreen" onclick="tileOpen(this,'Store')" style="animation-delay:.13s">
+          <div class="tile-icon"><img src="icons/store.png" alt="Store"></div>
+          <span class="tile-label">Store</span>
+        </div>
+
+        <!-- Internet Explorer — small -->
+        <div class="tile sm c-sky" onclick="tileOpen(this,'Internet Explorer')" style="animation-delay:.16s">
+          <div class="tile-icon"><img src="icons/ie.png" alt="Internet Explorer"></div>
+          <span class="tile-label">IE</span>
+        </div>
+
+        <!-- Skype — small -->
+        <div class="tile sm c-dblue" onclick="tileOpen(this,'Skype')" style="animation-delay:.19s">
+          <div class="tile-icon"><img src="icons/skype.png" alt="Skype"></div>
+          <span class="tile-label">Skype</span>
+        </div>
+
+        <!-- Weather — wide, live flip -->
+        <div class="tile wd c-lblue" onclick="tileOpen(this,'Weather')" style="animation-delay:.22s">
+          <div class="tile-flip-inner" id="wxFlip">
+            <div class="tile-face">
+              <div class="tile-icon" style="bottom:14px;right:18px">
+                <img src="icons/weather.png" alt="Weather" style="width:52px;height:52px">
+              </div>
+              <div>
+                <div class="tile-sub">72°</div>
+                <span class="tile-label">Weather · Sunny</span>
+              </div>
+            </div>
+            <div class="tile-back c-lblue">
+              <span class="live-info">
+                <strong>72° F</strong>
+                Clear skies · Wind 8 mph · Humidity 42%
+              </span>
+              <span class="tile-label">Weather</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /Group 1 -->
+
+
+    <!-- ────────────────────────────────────────────────
+         GROUP 2 · Media
+         Icons needed in  icons/ :
+           music.png · photos.png · video.png
+           camera.png · maps.png
+         ──────────────────────────────────────────────── -->
+    <div class="tile-group">
+      <div class="tile-group-label">Media</div>
+      <div class="tiles-grid">
+
+        <!-- Music — large, live flip -->
+        <div class="tile lg c-purple" onclick="tileOpen(this,'Music')" style="animation-delay:.25s">
+          <div class="tile-flip-inner" id="musicFlip">
+            <div class="tile-face">
+              <div class="tile-icon"><img src="icons/music.png" alt="Music"></div>
+              <span class="tile-label">Music</span>
+            </div>
+            <div class="tile-back c-purple">
+              <span class="live-info">
+                <strong style="font-size:15px">♫ Now Playing</strong>
+                Windows 8 Nostalgia Mix<br>
+                <small style="opacity:.6">Xbox Music</small>
+              </span>
+              <span class="tile-label">Music</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Photos — medium -->
+        <div class="tile md c-orange" onclick="tileOpen(this,'Photos')" style="animation-delay:.28s">
+          <div class="tile-icon"><img src="icons/photos.png" alt="Photos"></div>
+          <span class="tile-label">Photos</span>
+        </div>
+
+        <!-- Video — medium -->
+        <div class="tile md c-red" onclick="tileOpen(this,'Video')" style="animation-delay:.31s">
+          <div class="tile-icon"><img src="icons/video.png" alt="Video"></div>
+          <span class="tile-label">Video</span>
+        </div>
+
+        <!-- Camera — small -->
+        <div class="tile sm c-dark" onclick="tileOpen(this,'Camera')" style="animation-delay:.34s">
+          <div class="tile-icon"><img src="icons/camera.png" alt="Camera"></div>
+          <span class="tile-label">Camera</span>
+        </div>
+
+        <!-- Maps — small -->
+        <div class="tile sm c-green" onclick="tileOpen(this,'Maps')" style="animation-delay:.37s">
+          <div class="tile-icon"><img src="icons/maps.png" alt="Maps"></div>
+          <span class="tile-label">Maps</span>
+        </div>
+
+      </div>
+    </div><!-- /Group 2 -->
+
+
+    <!-- ────────────────────────────────────────────────
+         GROUP 3 · Productivity
+         Icons needed in  icons/ :
+           onenote.png · games.png · settings.png
+           explorer.png · news.png · messaging.png · finance.png
+         ──────────────────────────────────────────────── -->
+    <div class="tile-group">
+      <div class="tile-group-label">Productivity</div>
+      <div class="tiles-grid">
+
+        <!-- OneNote — medium -->
+        <div class="tile md c-purple" onclick="tileOpen(this,'OneNote')" style="animation-delay:.40s">
+          <div class="tile-icon"><img src="icons/onenote.png" alt="OneNote"></div>
+          <span class="tile-label">OneNote</span>
+        </div>
+
+        <!-- Games — large -->
+        <div class="tile lg c-dblue" onclick="tileOpen(this,'Games')" style="animation-delay:.43s">
+          <div class="tile-icon"><img src="icons/games.png" alt="Games"></div>
+          <span class="tile-label">Games</span>
+        </div>
+
+        <!-- Settings — small -->
+        <div class="tile sm c-grey" onclick="tileOpen(this,'Settings')" style="animation-delay:.46s">
+          <div class="tile-icon"><img src="icons/settings.png" alt="Settings"></div>
+          <span class="tile-label">Settings</span>
+        </div>
+
+        <!-- File Explorer — small -->
+        <div class="tile sm c-yellow" onclick="tileOpen(this,'File Explorer')" style="animation-delay:.49s">
+          <div class="tile-icon"><img src="icons/explorer.png" alt="File Explorer"></div>
+          <span class="tile-label">Files</span>
+        </div>
+
+        <!-- News — medium, live flip -->
+        <div class="tile md c-teal" onclick="tileOpen(this,'News')" style="animation-delay:.52s">
+          <div class="tile-flip-inner" id="newsFlip">
+            <div class="tile-face">
+              <div class="tile-icon"><img src="icons/news.png" alt="News"></div>
+              <span class="tile-label">News</span>
+            </div>
+            <div class="tile-back c-teal">
+              <span class="live-info">
+                <strong style="font-size:14px">Breaking</strong>
+                Latest headlines from around the world
+              </span>
+              <span class="tile-label">News</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Messaging — small -->
+        <div class="tile sm c-lgreen" onclick="tileOpen(this,'Messaging')" style="animation-delay:.55s">
+          <div class="tile-icon"><img src="icons/messaging.png" alt="Messaging"></div>
+          <span class="tile-label">Messaging</span>
+        </div>
+
+        <!-- Finance — small -->
+        <div class="tile sm c-dgreen" onclick="tileOpen(this,'Finance')" style="animation-delay:.58s">
+          <div class="tile-icon"><img src="icons/finance.png" alt="Finance"></div>
+          <span class="tile-label">Finance</span>
+        </div>
+
+      </div>
+    </div><!-- /Group 3 -->
+
+  </div><!-- /tiles-scroll -->
+</div><!-- /startScreen -->
+
+
+<!-- ══════════════════════════════════════════════════════
+     TASKBAR
+     Pinned app icons needed in  icons/ :
+       ie.png · explorer.png · mediaplayer.png
+     ══════════════════════════════════════════════════════ -->
+<div id="taskbar">
+
+  <div id="startBtn" onclick="toggleStart()" title="Start">
+    <div class="win-flag">
+      <span class="wf1"></span><span class="wf2"></span>
+      <span class="wf3"></span><span class="wf4"></span>
+    </div>
+  </div>
+
+  <div class="tb-left">
+    <div class="tb-app running" title="Internet Explorer"
+         onclick="notify('Internet Explorer','Internet Explorer')">
+      <img src="icons/ie.png" alt="IE">
+    </div>
+    <div class="tb-app running" title="File Explorer"
+         onclick="notify('File Explorer','File Explorer')">
+      <img src="icons/explorer.png" alt="File Explorer">
+    </div>
+    <div class="tb-app" title="Windows Media Player"
+         onclick="notify('Windows Media Player','Media Player')">
+      <img src="icons/mediaplayer.png" alt="Media Player">
+    </div>
+  </div>
+
+  <div class="tb-right">
+    <div class="tb-icons">
+      <i class="fas fa-comment-alt" title="Messages"
+         onclick="notify('No new messages')"></i>
+      <i class="fas fa-volume-up"   title="Volume"
+         onclick="notify('Volume: 80%')"></i>
+      <i class="fas fa-wifi"        title="Network"
+         onclick="notify('Connected · Wi-Fi')"></i>
+      <i class="fas fa-battery-three-quarters" title="Battery"
+         onclick="notify('Battery: 84%')"></i>
+    </div>
+    <div class="tb-clock">
+      <div class="time" id="tbTime">12:00 PM</div>
+      <div class="date" id="tbDate">3/20/2026</div>
+    </div>
+  </div>
+
+</div><!-- /taskbar -->
+
+
+<!-- ══════════════════════════════════════════════════════
+     CHARMS BAR  (hover right screen edge to open)
+     ══════════════════════════════════════════════════════ -->
+<div id="charms">
+  <div class="charm" onclick="notify('Search','Search')">
+    <i class="fas fa-search"></i>Search
+  </div>
+  <div class="charm" onclick="notify('Share','Share')">
+    <i class="fas fa-share"></i>Share
+  </div>
+  <div class="charm" onclick="toggleStart()">
+    <i class="fas fa-th"></i>Start
+  </div>
+  <div class="charm" onclick="notify('Devices','Devices')">
+    <i class="fas fa-tv"></i>Devices
+  </div>
+  <div class="charm" onclick="notify('Settings','Settings')">
+    <i class="fas fa-cog"></i>Settings
+  </div>
+  <div id="charmTime"></div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     TOAST NOTIFICATION
+     ══════════════════════════════════════════════════════ -->
+<div id="toast">
+  <div class="toast-title">Windows 8</div>
+  <div id="toastMsg">Welcome</div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     SHUTDOWN OVERLAY
+     ══════════════════════════════════════════════════════ -->
+<div id="shutdownOverlay">
+  <div class="shutdown-box">
+    <h3>
+      <i class="fas fa-power-off" style="margin-right:10px;opacity:.6"></i>
+      What do you want your PC to do?
+    </h3>
+    <div class="sd-options">
+      <div class="sd-opt" onclick="doShutdown('sleep')">
+        <i class="fas fa-moon"></i>Sleep
+      </div>
+      <div class="sd-opt" onclick="doShutdown('shutdown')">
+        <i class="fas fa-power-off"></i>Shut down
+      </div>
+      <div class="sd-opt" onclick="doShutdown('restart')">
+        <i class="fas fa-redo"></i>Restart
+      </div>
+    </div>
+    <button class="sd-cancel" onclick="hideShutdown()">Cancel</button>
+  </div>
+</div>
+
+
+<script src="main.js"></script>
 </body>
-</html> 
+</html>
+ 
