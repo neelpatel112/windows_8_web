@@ -172,11 +172,7 @@ function doShutdown(action) {
       document.body.innerHTML =
         '<div style="background:#000;color:#fff;height:100vh;display:flex;flex-direction:column;' +
         'align-items:center;justify-content:center;font-family:Segoe UI,sans-serif;gap:28px">' +
-        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;width:60px;height:60px">' +
-        '<span style="background:#f34f1c;border-radius:1px"></span>' +
-        '<span style="background:#7fba00;border-radius:1px"></span>' +
-        '<span style="background:#01a6f0;border-radius:1px"></span>' +
-        '<span style="background:#ffba01;border-radius:1px"></span></div>' +
+        '<img src="logo.png" style="width:56px;height:56px;object-fit:contain;opacity:.9" alt="Windows">' +
         '<p style="font-weight:200;font-size:18px;letter-spacing:1px">Shutting down\u2026</p></div>';
     }, 900);
   } else if (action === 'restart') {
