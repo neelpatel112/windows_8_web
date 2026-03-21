@@ -6,6 +6,7 @@
 <title>Windows 8 Web</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="thispc.css">
 </head>
 <body>
 
@@ -29,7 +30,7 @@
 <!-- DESKTOP — only icons here, NO start tiles -->
 <div id="desktop">
   <div class="desktop-icons">
-    <div class="d-icon" ondblclick="notify('Opening This PC…','This PC')">
+    <div class="d-icon" ondblclick="openThisPC()">
       <img src="icons/computer.png" alt="This PC"><span>This PC</span>
     </div>
     <div class="d-icon" ondblclick="notify('Opening Documents…','File Explorer')">
@@ -465,6 +466,7 @@
 </div>
 
 <script src="main.js"></script>
+<script src="thispc.js"></script>
 </body>
 </html>
  
