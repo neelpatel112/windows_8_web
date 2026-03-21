@@ -268,170 +268,301 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
 .tb-clock .date { font-size:11px; opacity:.65; }
 
 
+
+
+
 /* ═══════════════════════════════════════════════════════════
-   START SCREEN  —  exact Win8 screenshot layout
+   START SCREEN
+   Ported from friend's _start-menu.scss concepts:
+     · wallpaper bg behind tiles (start-menu-bg → 67.jpg)
+     · info bar = 20vh, metro-ui area = 80vh
+     · column groups slide-in from right + scale up on open
+     · tile border transparent → #999 on hover, compress on :active
+     · user dropdown animates translateY(-20px)→0 + opacity
    ═══════════════════════════════════════════════════════════ */
+
+/* ── SCREEN SHELL ─────────────────────────────────────────── */
 #startScreen {
   position: fixed;
   inset: 0 0 var(--tb) 0;
   z-index: 200;
-  background: var(--start-bg);
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 
-  /* slide in from bottom */
+  /* wallpaper (same 67.jpg) with a dark tint overlay */
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(20, 26, 30, 0.91) 0%,
+      rgba(18, 22, 26, 0.88) 100%
+    ),
+    url('67.jpg') center / cover no-repeat;
+  background-color: #1a1e22;
+
+  /* slide up from bottom — matches .activate-metro-ui-grid timing */
   transform: translateY(100%);
   opacity: 0;
   transition:
-    transform .42s cubic-bezier(.32,0,.18,1),
-    opacity   .32s ease;
+    transform .42s cubic-bezier(.32, 0, .18, 1),
+    opacity   .30s ease;
 }
 #startScreen.active {
   transform: translateY(0);
   opacity: 1;
 }
 
-/* ── top bar: "Start" label  +  user info ── */
-.ss-topbar {
+/* ── INFO BAR (top 20vh) ──────────────────────────────────── */
+/* Mirrors: .info { height: 20vh; padding: 5vh 4vw 5vh 8vw } */
+.ss-info {
+  position: relative;
+  height: 20vh;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 32px 10px;
+  padding: 0 4vw 0 8vw;
+  z-index: 11;
 }
+
+/* "Start" heading — mirrors h1 { font-size: 56/768*100vh } */
 .ss-title {
-  font-size: 28px; font-weight: 100;
-  color: #fff; letter-spacing: .5px;
+  font-size: clamp(24px, 7.3vh, 56px);
+  font-weight: 100;
+  color: #fff;
+  letter-spacing: .5px;
+  float: left;
 }
-/* user block — top-right (name + avatar) */
+
+/* user block top-right — mirrors .user { float:right } */
 .ss-user {
-  display: flex; align-items: center; gap: 12px;
-  color: #fff; cursor: pointer;
-  padding: 6px 10px;
-  transition: background .15s;
   position: relative;
+  display: flex;
+  align-items: center;
+  gap: clamp(8px, 1.3vh, 12px);
+  color: #fff;
+  cursor: pointer;
+  padding: clamp(4px, .65vh, 6px) clamp(16px, 3.25vh, 25px) clamp(6px, 1.3vh, 10px);
+  transition: background .2s;
 }
 .ss-user:hover { background: rgba(255,255,255,.09); }
-.ss-user-text  { text-align: right; }
-.ss-user-name  { font-size: 13px; font-weight: 400; }
-.ss-user-sub   { font-size: 11px; opacity: .55; }
+
+/* username + sub line — mirrors h2 + h2 span */
+.ss-user-text { text-align: right; }
+.ss-user-name {
+  font-size: clamp(12px, 3.1vh, 24px);
+  font-weight: 400;
+  line-height: 1.15;
+}
+.ss-user-sub {
+  font-size: clamp(10px, 2.1vh, 16px);
+  opacity: .55;
+  position: relative;
+  top: clamp(-6px, -1.3vh, -3px);
+}
+
+/* avatar image — mirrors img { width:50/768*100vh } */
 .ss-avatar {
-  width: 38px; height: 38px; border-radius: 2px;
+  width:  clamp(32px, 6.5vh, 50px);
+  height: clamp(32px, 6.5vh, 50px);
+  border-radius: 2px;
   background: var(--blue);
   display: flex; align-items: center; justify-content: center;
-  font-size: 17px; color: #fff; overflow: hidden; flex-shrink:0;
+  font-size: clamp(14px, 2.6vh, 20px);
+  color: #fff; overflow: hidden; flex-shrink: 0;
 }
 .ss-avatar img { width:100%; height:100%; object-fit:cover; }
 
-/* power dropdown attached to user block */
+/* ── USER POWER DROPDOWN ──────────────────────────────────── */
+/* Mirrors: .user-menu-dropdown with opacity + translateY anim  */
 .ss-power-menu {
-  position: absolute; top: 100%; right: 0;
-  background: #1a1a1a;
-  border: 1px solid rgba(255,255,255,.08);
-  min-width: 180px;
-  z-index: 10;
-  display: none;
-  flex-direction: column;
-  box-shadow: 0 8px 32px rgba(0,0,0,.6);
-}
-.ss-power-menu.open { display:flex; }
-.pm-item {
-  display: flex; align-items: center; gap: 14px;
-  padding: 13px 18px; color: rgba(255,255,255,.85);
-  font-size: 14px; cursor: pointer;
-  transition: background .12s;
-}
-.pm-item i { font-size: 17px; opacity: .7; width:20px; text-align:center; }
-.pm-item:hover { background: rgba(255,255,255,.09); color: #fff; }
-.pm-item:hover i { opacity: 1; }
+  position: absolute;
+  top: 105%;          /* just below the user block */
+  right: 4vw;
+  margin: 0; padding: clamp(4px, 1vh, 8px) 0;
+  background: #fff;   /* friend uses $font-color = white bg */
+  color: #111;
+  min-width: 200px;
+  z-index: 20;
+  box-shadow: 0 8px 32px rgba(0,0,0,.55);
+  list-style: none;
 
-/* ── tile canvas: scrolls horizontally like real Win8 ── */
-.ss-canvas {
-  flex: 1;
+  /* hidden state — matches translateY(-20px) opacity 0 */
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-12px);
+  transition:
+    opacity   .4s ease,
+    transform .6s cubic-bezier(.16,1,.3,1);
+}
+.ss-power-menu.open {
+  opacity: 1;
+  pointer-events: all;
+  transform: translateY(0);
+}
+
+/* dropdown items — mirrors li { font-weight:bold; padding… } */
+.pm-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: clamp(8px, 1.3vh, 10px) clamp(28px, 6.5vh, 50px)
+           clamp(8px, 1.3vh, 10px) clamp(12px, 2.6vh, 20px);
+  font-size: clamp(12px, 1.8vh, 14px);
+  font-weight: 600;
+  color: #111;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .25s;
+}
+.pm-item i {
+  font-size: clamp(13px, 2.1vh, 16px);
+  opacity: .65; width: 18px; text-align: center;
+  color: #333;
+}
+.pm-item:hover { background: rgba(0,0,0,.08); }
+.pm-item:hover i { opacity: 1; }
+.pm-item.disabled { color: #999; cursor: default; }
+.pm-item.disabled:hover { background: transparent; }
+
+/* ── METRO UI AREA (bottom 80vh) ─────────────────────────── */
+/* Mirrors: .metro-ui { height:80vh; overflow-x:auto; padding:2vh 8vw } */
+.ss-metro {
+  position: relative;
+  height: 80vh;
   overflow-x: auto;
   overflow-y: hidden;
-  display: flex;
-  align-items: flex-start;
-  padding: 14px 32px 20px;
-  gap: 40px;              /* gap between column groups */
+  white-space: nowrap;    /* groups sit inline-block side-by-side */
+  padding: 2vh 8vw;
+  box-sizing: border-box;
+  z-index: 10;
   scrollbar-width: thin;
   scrollbar-color: rgba(255,255,255,.15) transparent;
 }
-.ss-canvas::-webkit-scrollbar { height: 4px; }
-.ss-canvas::-webkit-scrollbar-thumb {
+.ss-metro::-webkit-scrollbar { height: 4px; }
+.ss-metro::-webkit-scrollbar-thumb {
   background: rgba(255,255,255,.15); border-radius: 2px;
 }
 
-/* each named group of tiles */
-.tg { display:flex; flex-direction:column; flex-shrink:0; }
-.tg-label {
-  font-size: 11px; font-weight: 300;
-  color: rgba(255,255,255,.35);
-  letter-spacing: 2.5px; text-transform: uppercase;
-  margin-bottom: 8px;
+/* ── TILE GROUP (column) ──────────────────────────────────── */
+/* Mirrors: .metro-ui-grid { display:inline-block; opacity:0; transform:translateX(100px) scale(.75) } */
+.tg {
+  display: inline-block;
+  vertical-align: top;
+  white-space: normal;       /* tiles inside wrap normally */
+  margin-right: clamp(30px, 6.5vh, 50px);
+  margin-bottom: 0;
+  padding: 0;
+
+  /* hidden/shrunken until start screen activates */
+  opacity: 0;
+  transform: translateX(clamp(60px, 13vh, 100px)) scale(.75);
+  transition:
+    opacity   .6s ease,
+    transform .6s cubic-bezier(.16, 1, .3, 1);
 }
-/* the actual grid of tiles inside a group */
+/* activated — mirrors .activate-metro-ui-grid */
+.tg.tg-in {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+}
+
+/* group label */
+.tg-label {
+  display: block;
+  font-size: 11px; font-weight: 300;
+  color: rgba(255,255,255,.32);
+  text-transform: uppercase; letter-spacing: 2.5px;
+  margin-bottom: clamp(6px, 1vh, 10px);
+}
+
+/* grid inside each group */
 .tg-grid {
   display: grid;
   gap: var(--gap);
-  /* each group defines its own grid-template via inline style */
   align-content: start;
 }
 
 /* ═══════════════════════════════════════════════════════════
    TILES
+   Mirrors: li { width:250/768*100vh; height:120/768*100vh; border: transparent }
+            li:hover { border: #999 }
+            li:active { border:2px #999; width/height shrink; margin grow }
    ═══════════════════════════════════════════════════════════ */
 .tile {
-  position: relative; overflow: hidden;
-  cursor: pointer; color: #fff;
-  display: flex; flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
   justify-content: flex-end;
   padding: 7px 9px;
-  /* NO border-radius — pure Metro */
-}
-/* sizes  (unit = 108px) */
-.t1x1 { width: var(--unit);                              height: var(--unit); }
-.t2x1 { width: calc(var(--unit)*2 + var(--gap));         height: var(--unit); }
-.t2x2 { width: calc(var(--unit)*2 + var(--gap));         height: calc(var(--unit)*2 + var(--gap)); }
-.t4x2 { width: calc(var(--unit)*4 + var(--gap)*3);       height: calc(var(--unit)*2 + var(--gap)); }
 
-/* hover / press */
-.tile:hover  { filter: brightness(1.12); }
-.tile::after {
-  content:''; position:absolute; inset:0; pointer-events:none;
-  background:rgba(255,255,255,0); transition:background .08s;
+  /* transparent border default — real Win8 feel */
+  border: 1px solid transparent;
+  box-sizing: border-box;
+  transition:
+    border-color .12s ease,
+    filter       .12s ease,
+    transform    .1s  ease,
+    box-shadow   .12s ease;
 }
-.tile:active::after { background:rgba(255,255,255,.15); }
 
-/* icon sits bottom-right */
+/* sizes (unit = 108px) */
+.t1x1 { width: var(--unit);                           height: var(--unit); }
+.t2x1 { width: calc(var(--unit)*2 + var(--gap));      height: var(--unit); }
+.t2x2 { width: calc(var(--unit)*2 + var(--gap));      height: calc(var(--unit)*2 + var(--gap)); }
+.t4x2 { width: calc(var(--unit)*4 + var(--gap)*3);    height: calc(var(--unit)*2 + var(--gap)); }
+
+/* hover — mirrors li:hover { border: solid 1px #999 } */
+.tile:hover {
+  border-color: rgba(200, 200, 200, .6);
+  filter: brightness(1.1);
+}
+
+/* active/press — mirrors li:active { border 2px, shrink size, grow margin } */
+.tile:active {
+  border-color: rgba(220, 220, 220, .8);
+  border-width: 2px;
+  transform: scale(.96);
+  filter: brightness(.88);
+}
+
+/* icon — bottom-right, mirrors .ionicons positioned via .text */
 .tile-icon {
-  position: absolute; bottom: 9px; right: 11px;
+  position: absolute;
+  bottom: 9px; right: 11px;
   display: flex; align-items: center; justify-content: center;
 }
 .tile-icon img {
   object-fit: contain;
-  filter: brightness(0) invert(1); opacity: .92;
+  filter: brightness(0) invert(1);
+  opacity: .92;
 }
-.t1x1 .tile-icon img { width:28px; height:28px; }
-.t2x1 .tile-icon img { width:34px; height:34px; }
-.t2x2 .tile-icon img { width:50px; height:50px; }
+.t1x1 .tile-icon img { width: 28px; height: 28px; }
+.t2x1 .tile-icon img { width: 34px; height: 34px; }
+.t2x2 .tile-icon img { width: 50px; height: 50px; }
 
-/* label bottom-left */
+/* label — mirrors .text { position:absolute; left:10px } */
 .tile-label {
-  font-size: 11px; font-weight: 400; line-height: 1.2;
-  position: relative; z-index: 2;
-  text-shadow: 0 1px 3px rgba(0,0,0,.2);
+  position: relative;
+  z-index: 2;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.2;
+  text-shadow: 0 1px 3px rgba(0,0,0,.25);
 }
 .t2x2 .tile-label { font-size: 13px; }
+.t1x1 .tile-label { font-size: 10px; }
 
-/* large live-data number */
+/* live big number */
 .tile-big {
   font-size: 32px; font-weight: 100; line-height: 1;
   margin-bottom: 2px; position: relative; z-index: 2;
 }
 
-/* tile colors — exact Win8 palette */
+/* tile colours */
 .tc-teal    { background: var(--teal);    }
 .tc-dkteal  { background: var(--dkteal);  }
 .tc-blue    { background: var(--blue);    }
@@ -450,15 +581,11 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
 .tc-charcoal{ background: var(--charcoal);}
 .tc-brown   { background: var(--brown);   }
 
-/* ── TILE ENTRANCE ANIMATION ─────────────────────────────── */
-@keyframes tileIn {
-  from { opacity:0; transform:translateY(46px) scale(.91); }
-  to   { opacity:1; transform:translateY(0)    scale(1); }
-}
-.tile { opacity: 0; }
-#startScreen.active .tile {
-  animation: tileIn .44s cubic-bezier(.16,1,.3,1) both;
-}
+/* ── TILE ENTRANCE — groups stagger in from right ─────────── */
+/* Individual tile opacity still starts at 0 for the tg.tg-in
+   transition to reveal them. No separate per-tile keyframe needed
+   because the group transform already carries them all. */
+.tile { opacity: 1; }  /* tiles visible once group slides in */
 
 /* ── LIVE TILE FLIP (rotateX) ─────────────────────────────── */
 .tile-flip-wrap {
@@ -482,7 +609,6 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
 .live-txt strong {
   font-size: 24px; font-weight: 100; display: block; margin-bottom: 2px;
 }
-
 
 /* ═══════════════════════════════════════════════════════════
    CHARMS BAR
