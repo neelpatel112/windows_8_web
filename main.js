@@ -77,13 +77,35 @@ function toggleStart() {
   startOpen = !startOpen;
   const ss  = q('#startScreen');
   const btn = q('#startBtn');
+
   if (startOpen) {
     ss.classList.add('active');
     btn && btn.classList.add('active');
+
+    // Stagger each column group sliding in from right + scaling up
+    // Mirrors .activate-metro-ui-grid { opacity:1; transform:translateX(0) scale(1) }
+    const cols = ss.querySelectorAll('.tg');
+    cols.forEach((col, i) => {
+      col.classList.remove('tg-in');
+      col.style.transitionDelay = '0ms';
+      // double rAF so browser registers reset before animating in
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        col.style.transitionDelay = `${i * 90}ms`;
+        col.classList.add('tg-in');
+      }));
+    });
+
   } else {
     ss.classList.remove('active');
     btn && btn.classList.remove('active');
     closePowerMenu();
+
+    // Reset columns instantly for next open
+    const cols = ss.querySelectorAll('.tg');
+    cols.forEach(col => {
+      col.classList.remove('tg-in');
+      col.style.transitionDelay = '0ms';
+    });
   }
 }
 
@@ -198,4 +220,3 @@ document.addEventListener('touchend',   e => {
 
 /* ── WELCOME ─────────────────────────────────────────────── */
 setTimeout(() => notify('Welcome to Windows 8 Web', 'Windows 8'), 2900);
- 
