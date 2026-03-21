@@ -220,3 +220,4 @@ document.addEventListener('touchend',   e => {
 
 /* ── WELCOME ─────────────────────────────────────────────── */
 setTimeout(() => notify('Welcome to Windows 8 Web', 'Windows 8'), 2900);
+ 
