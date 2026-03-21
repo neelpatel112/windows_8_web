@@ -286,23 +286,153 @@
   <div id="startBtn" onclick="toggleStart()" title="Start">
     <img class="start-logo-img" src="logo.png" alt="Start">
   </div>
+
+  <!-- Pinned apps -->
   <div class="tb-left">
-    <div class="tb-app running" onclick="notify('Internet Explorer','Internet Explorer')"><img src="icons/ie.png" alt="IE"></div>
-    <div class="tb-app running" onclick="notify('File Explorer','File Explorer')"><img src="icons/explorer.png" alt="Explorer"></div>
-    <div class="tb-app" onclick="notify('Windows Media Player','Media Player')"><img src="icons/mediaplayer.png" alt="Media Player"></div>
-  </div>
-  <div class="tb-right">
-    <div class="tb-icons">
-      <i class="fas fa-comment-alt" onclick="notify('No new messages')"></i>
-      <i class="fas fa-volume-up"   onclick="notify('Volume: 80%')"></i>
-      <i class="fas fa-wifi"        onclick="notify('Connected · Wi-Fi')"></i>
-      <i class="fas fa-battery-three-quarters" onclick="notify('Battery: 84%')"></i>
+    <div class="tb-app running" title="Internet Explorer" onclick="notify('Internet Explorer','Internet Explorer')">
+      <img src="icons/ie.png" alt="IE">
     </div>
-    <div class="tb-clock">
+    <div class="tb-app running" title="File Explorer" onclick="notify('File Explorer','File Explorer')">
+      <img src="icons/explorer.png" alt="Explorer">
+    </div>
+    <div class="tb-app" title="Windows Media Player" onclick="notify('Windows Media Player','Media Player')">
+      <img src="icons/mediaplayer.png" alt="Media Player">
+    </div>
+  </div>
+
+  <!-- System tray — right side -->
+  <div class="tb-right">
+
+    <!-- Language / IME -->
+    <div class="tray-btn" id="trayLang" title="Input Method" onclick="togglePanel('langPanel')">
+      <img src="icons/tray-language.png" alt="ENG" class="tray-icon">
+    </div>
+
+    <!-- Network / Wi-Fi -->
+    <div class="tray-btn" id="trayNet" title="Network" onclick="togglePanel('netPanel')">
+      <img src="icons/tray-wifi.png" alt="WiFi" class="tray-icon">
+    </div>
+
+    <!-- Volume -->
+    <div class="tray-btn" id="trayVol" title="Volume" onclick="togglePanel('volPanel')">
+      <img src="icons/tray-volume.png" alt="Volume" class="tray-icon">
+    </div>
+
+    <!-- Battery — hover only, no click panel -->
+    <div class="tray-btn" id="trayBat" title="Battery: 84%">
+      <img src="icons/tray-battery.png" alt="Battery" class="tray-icon">
+      <div class="bat-tooltip" id="batTooltip">Battery: 84%</div>
+    </div>
+
+    <!-- Action Center -->
+    <div class="tray-btn" id="trayAction" title="Action Center" onclick="togglePanel('actionPanel')">
+      <img src="icons/tray-action.png" alt="Action Center" class="tray-icon">
+    </div>
+
+    <!-- Clock + Date — click opens calendar -->
+    <div class="tray-clock" id="trayClockBtn" onclick="togglePanel('calPanel')" title="Clock">
       <div class="time" id="tbTime">12:00 PM</div>
       <div class="date" id="tbDate">3/21/2026</div>
     </div>
+
+    <!-- Show Desktop button -->
+    <div class="tray-btn tray-desktop-btn" id="trayDesktop" title="Show Desktop" onclick="showDesktopBtn()"></div>
   </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     TRAY PANELS  (pop up above taskbar)
+     ════════════════════════════════════════════════ -->
+
+<!-- CALENDAR PANEL -->
+<div class="tray-panel" id="calPanel">
+  <div class="cal-header">
+    <button class="cal-nav" onclick="calMove(-1)">&#8249;</button>
+    <span class="cal-month-label" id="calPanelTitle"></span>
+    <button class="cal-nav" onclick="calMove(1)">&#8250;</button>
+  </div>
+  <div class="cal-dow">
+    <span>Su</span><span>Mo</span><span>Tu</span><span>We</span>
+    <span>Th</span><span>Fr</span><span>Sa</span>
+  </div>
+  <div class="cal-days" id="calDays"></div>
+  <div class="cal-time-display" id="calTimeDisplay"></div>
+</div>
+
+<!-- VOLUME PANEL -->
+<div class="tray-panel" id="volPanel">
+  <div class="vol-wrap">
+    <img src="icons/tray-volume.png" alt="Vol" class="vol-icon" id="volIcon">
+    <input type="range" min="0" max="100" value="80" class="vol-slider" id="volSlider"
+           oninput="updateVolume(this.value)">
+    <span class="vol-pct" id="volPct">80%</span>
+  </div>
+  <div class="vol-label">Speakers</div>
+</div>
+
+<!-- NETWORK PANEL -->
+<div class="tray-panel" id="netPanel">
+  <div class="net-title">Networks</div>
+  <div class="net-item net-connected">
+    <img src="icons/tray-wifi.png" alt="WiFi" class="net-icon">
+    <div class="net-info">
+      <div class="net-name">Home_Network</div>
+      <div class="net-status">Connected · Secured</div>
+    </div>
+  </div>
+  <div class="net-item">
+    <img src="icons/tray-wifi.png" alt="WiFi" class="net-icon" style="opacity:.45">
+    <div class="net-info">
+      <div class="net-name">Office_WiFi</div>
+      <div class="net-status">Secured</div>
+    </div>
+  </div>
+  <div class="net-item">
+    <img src="icons/tray-wifi.png" alt="WiFi" class="net-icon" style="opacity:.3">
+    <div class="net-info">
+      <div class="net-name">Neighbor_Net</div>
+      <div class="net-status">Secured</div>
+    </div>
+  </div>
+  <div class="net-footer">
+    <span onclick="notify('Opening Network Settings…','Network')">Network settings</span>
+  </div>
+</div>
+
+<!-- ACTION CENTER PANEL -->
+<div class="tray-panel" id="actionPanel">
+  <div class="action-title">Action Center</div>
+  <div class="action-list">
+    <div class="action-item">
+      <i class="fas fa-shield-alt"></i>
+      <div>
+        <div class="action-name">Windows Defender</div>
+        <div class="action-sub">PC is protected</div>
+      </div>
+    </div>
+    <div class="action-item">
+      <i class="fas fa-sync-alt"></i>
+      <div>
+        <div class="action-name">Windows Update</div>
+        <div class="action-sub">Up to date</div>
+      </div>
+    </div>
+    <div class="action-item">
+      <i class="fas fa-envelope"></i>
+      <div>
+        <div class="action-name">Mail</div>
+        <div class="action-sub">3 unread messages</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LANGUAGE PANEL -->
+<div class="tray-panel" id="langPanel">
+  <div class="lang-title">Input Language</div>
+  <div class="lang-item lang-active"><span>ENG</span><span>English (US)</span></div>
+  <div class="lang-item" onclick="notify('Switched to Hindi','Language')"><span>HIN</span><span>Hindi</span></div>
+  <div class="lang-item" onclick="notify('Switched to Spanish','Language')"><span>ESP</span><span>Spanish</span></div>
 </div>
 
 <!-- CHARMS BAR -->
