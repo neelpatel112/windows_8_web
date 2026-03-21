@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="thispc.css">
+<link rel="stylesheet" href="settings.css">
 </head>
 <body>
 
@@ -64,7 +65,9 @@
         <div class="ss-user-name">User</div>
         <div class="ss-user-sub">Local Account</div>
       </div>
-      <div class="ss-avatar"><i class="fas fa-user"></i></div>
+      <div class="ss-avatar">
+        <img src="user.png" alt="User" onerror="this.outerHTML='<i class=\'fas fa-user\'></i>'">
+      </div>
       <ul class="ss-power-menu" id="powerMenu">
         <li class="pm-item" onclick="notify('Locking…','Windows');toggleStart()"><i class="fas fa-lock"></i>Lock</li>
         <li class="pm-item" onclick="notify('Signing out…','Windows');toggleStart()"><i class="fas fa-sign-out-alt"></i>Sign out</li>
@@ -514,13 +517,13 @@
     <div class="ctx-item" onclick="notify('Opening Display Settings…','Display Settings')">
       <span class="ctx-icon">&#x1F5A5;</span>Display settings
     </div>
-    <div class="ctx-item" onclick="notify('Opening Personalisation…','Personalisation')">
+    <div class="ctx-item" onclick="openSettings('personalise'); hideAllCtx()">
       <span class="ctx-icon">&#x1F3A8;</span>Personalise
     </div>
   </div>
   <div class="ctx-sep"></div>
   <div class="ctx-group">
-    <div class="ctx-item" onclick="openSystemProperties()">
+    <div class="ctx-item" onclick="openSettings('personalise'); hideAllCtx()">
       <img src="icons/computer.png" class="ctx-img" alt="">Properties
     </div>
   </div>
@@ -615,6 +618,7 @@
 
 <script src="main.js"></script>
 <script src="thispc.js"></script>
+<script src="settings.js"></script>
 </body>
 </html>
  
