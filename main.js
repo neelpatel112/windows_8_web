@@ -78,8 +78,8 @@ function sizeTiles() {
   // available height = metro's own clientHeight
   const avail = metro.clientHeight;
 
-  // 4 rows + 3 gaps of 5px each must fit
-  const sz = Math.floor((avail - 3 * 5 - 20) / 4); // 20px bottom breathing room
+  // 4 rows + 3 gaps of 5px each — divide by 5.2 to get medium sized tiles
+  const sz = Math.floor((avail - 3 * 5 - 20) / 5.2);
   const g  = 5;
 
   // stamp sizes on every .tg-grid and its tiles
