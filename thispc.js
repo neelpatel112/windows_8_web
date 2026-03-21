@@ -113,9 +113,9 @@ function injectWindow() {
   <img class="win-titlebar-icon" src="icons/computer.png" alt="">
   <span class="win-titlebar-text" id="pcTitleText">This PC</span>
   <div class="win-controls">
-    <button class="win-btn" onclick="minimisePC()" title="Minimise"><i class="fas fa-minus"></i></button>
-    <button class="win-btn" id="maxBtn" onclick="maximisePC()" title="Maximise"><i class="fas fa-square" style="font-size:9px"></i></button>
-    <button class="win-btn close" onclick="closePC()" title="Close"><i class="fas fa-times"></i></button>
+    <button class="win-btn" onclick="minimisePC()" title="Minimise">&#x2014;</button>
+    <button class="win-btn" id="maxBtn" onclick="maximisePC()" title="Maximise">&#x2610;</button>
+    <button class="win-btn close" onclick="closePC()" title="Close">&#x2715;</button>
   </div>
 </div>
 
@@ -132,15 +132,15 @@ function injectWindow() {
 
 <!-- Address bar -->
 <div class="win-addressbar">
-  <div class="addr-nav" id="btnBack"    onclick="navBack()"    title="Back"><i class="fas fa-chevron-left"></i></div>
-  <div class="addr-nav" id="btnForward" onclick="navForward()" title="Forward"><i class="fas fa-chevron-right"></i></div>
-  <div class="addr-nav" onclick="navUp()" title="Up"><i class="fas fa-level-up-alt"></i></div>
+  <div class="addr-nav" id="btnBack"    onclick="navBack()"    title="Back">&#x276E;</div>
+  <div class="addr-nav" id="btnForward" onclick="navForward()" title="Forward">&#x276F;</div>
+  <div class="addr-nav" onclick="navUp()" title="Up">&#x2191;</div>
   <div class="addr-path" id="addrPath" onclick="focusSearch()">
     <img class="addr-path-icon" src="icons/computer.png" alt="" id="addrIcon">
     <span class="addr-path-text" id="addrText">This PC</span>
   </div>
   <div class="addr-search">
-    <i class="fas fa-search"></i>
+    <span style="color:#aaa;font-size:13px">&#x1F50D;</span>
     <input type="text" id="pcSearch" placeholder="Search This PC" oninput="doSearch(this.value)">
   </div>
 </div>
@@ -151,10 +151,10 @@ function injectWindow() {
   <div class="win-nav" id="pcNav">
     <div class="nav-section-label">Favourites</div>
     <div class="nav-item" onclick="navTo(['Desktop'])"   id="nav-Desktop">
-      <i class="fas fa-desktop"></i>Desktop
+      <img src="icons/computer.png" alt="">Desktop
     </div>
     <div class="nav-item" onclick="navTo(['Downloads'])" id="nav-Downloads">
-      <i class="fas fa-download"></i>Downloads
+      <img src="icons/folder.png" alt="">Downloads
     </div>
     <div class="nav-item active" onclick="navTo(['This PC'])" id="nav-ThisPC">
       <img src="icons/computer.png" alt="">This PC
@@ -162,27 +162,27 @@ function injectWindow() {
 
     <div class="nav-section-label" style="margin-top:8px">This PC</div>
     <div class="nav-item" onclick="navTo(['Documents'])" id="nav-Documents">
-      <i class="fas fa-folder" style="color:#ffb900"></i>Documents
+      <img src="icons/folder.png" alt="">Documents
     </div>
     <div class="nav-item" onclick="navTo(['Pictures'])"  id="nav-Pictures">
-      <i class="fas fa-folder" style="color:#ffb900"></i>Pictures
+      <img src="icons/folder.png" alt="">Pictures
     </div>
     <div class="nav-item" onclick="navTo(['Music'])"     id="nav-Music">
-      <i class="fas fa-folder" style="color:#ffb900"></i>Music
+      <img src="icons/folder.png" alt="">Music
     </div>
     <div class="nav-item" onclick="navTo(['Videos'])"    id="nav-Videos">
-      <i class="fas fa-folder" style="color:#ffb900"></i>Videos
+      <img src="icons/folder.png" alt="">Videos
     </div>
 
     <div class="nav-section-label" style="margin-top:8px">Devices</div>
     <div class="nav-item" onclick="navTo(['C:'])" id="nav-C">
-      <i class="fas fa-hdd" style="color:#0078d7"></i>Windows (C:)
+      <img src="icons/drive-system.png" alt="">Windows (C:)
     </div>
     <div class="nav-item" onclick="navTo(['D:'])" id="nav-D">
-      <i class="fas fa-hdd" style="color:#0078d7"></i>Data (D:)
+      <img src="icons/drive-hdd.png" alt="">Data (D:)
     </div>
     <div class="nav-item" onclick="navTo(['E:'])" id="nav-E">
-      <i class="fas fa-usb" style="color:#555"></i>USB Drive (E:)
+      <img src="icons/drive-usb.png" alt="">USB Drive (E:)
     </div>
   </div>
 
@@ -197,8 +197,8 @@ function injectWindow() {
 <div class="win-statusbar">
   <span id="pcStatus">0 items</span>
   <div class="statusbar-right">
-    <div class="view-btn active" id="vbGrid" onclick="setView('grid')" title="Icon view"><i class="fas fa-th"></i></div>
-    <div class="view-btn" id="vbList" onclick="setView('list')" title="List view"><i class="fas fa-list"></i></div>
+    <div class="view-btn active" id="vbGrid" onclick="setView('grid')" title="Icon view">&#x22A6;&#x22A6;</div>
+    <div class="view-btn" id="vbList" onclick="setView('list')" title="List view">&#x2261;</div>
   </div>
 </div>
 
@@ -257,12 +257,10 @@ function maximisePC() {
   isMaximised  = !isMaximised;
   if (isMaximised) {
     win.classList.add('maximised');
-    icon.className = 'fas fa-clone';
-    icon.style.fontSize = '9px';
+    icon.textContent = '\u29C9';
   } else {
     win.classList.remove('maximised');
-    icon.className = 'fas fa-square';
-    icon.style.fontSize = '9px';
+    icon.textContent = '\u2610';
   }
 }
 
@@ -366,37 +364,37 @@ function setTab(tab) {
   if (tab === 'computer') {
     bar.innerHTML = `
       <div class="rib-btn" onclick="newFolder()" title="New Folder">
-        <i class="fas fa-folder-plus"></i><span>New folder</span>
+        <img src="icons/folder.png" alt=""><span>New folder</span>
       </div>
       <div class="rib-sep"></div>
       <div class="rib-btn" onclick="ribbonOpen()" title="Open">
-        <i class="fas fa-folder-open"></i><span>Open</span>
+        <img src="icons/folder.png" alt=""><span>Open</span>
       </div>
       <div class="rib-btn" onclick="ribbonRename()" title="Rename">
-        <i class="fas fa-i-cursor"></i><span>Rename</span>
+        <span style="font-size:18px;color:#0078d7;line-height:1">T</span><span>Rename</span>
       </div>
       <div class="rib-btn" onclick="ribbonDelete()" title="Delete">
-        <i class="fas fa-trash-alt" style="color:#e81123"></i><span>Delete</span>
+        <span style="font-size:18px;color:#e81123;line-height:1">&#x2715;</span><span>Delete</span>
       </div>
       <div class="rib-sep"></div>
       <div class="rib-btn" onclick="ribbonProperties()" title="Properties">
-        <i class="fas fa-info-circle"></i><span>Properties</span>
+        <span style="font-size:18px;color:#0078d7;line-height:1">&#x2139;</span><span>Properties</span>
       </div>
     `;
   } else {
     bar.innerHTML = `
       <div class="rib-btn ${viewMode==='grid'?'active':''}" onclick="setView('grid')" title="Large icons">
-        <i class="fas fa-th"></i><span>Large icons</span>
+        <span style="font-size:18px;color:#0078d7;line-height:1">&#x22A6;&#x22A6;</span><span>Large icons</span>
       </div>
       <div class="rib-btn ${viewMode==='list'?'active':''}" onclick="setView('list')" title="List">
-        <i class="fas fa-list"></i><span>List</span>
+        <span style="font-size:18px;color:#0078d7;line-height:1">&#x2261;</span><span>List</span>
       </div>
       <div class="rib-sep"></div>
       <div class="rib-btn" onclick="sortItems('name')" title="Sort by name">
-        <i class="fas fa-sort-alpha-down"></i><span>Sort by name</span>
+        <span style="font-size:18px;color:#0078d7;line-height:1">A&#x2193;</span><span>Sort by name</span>
       </div>
       <div class="rib-btn" onclick="sortItems('type')" title="Sort by type">
-        <i class="fas fa-sort"></i><span>Sort by type</span>
+        <span style="font-size:18px;color:#0078d7;line-height:1">&#x21C5;</span><span>Sort by type</span>
       </div>
     `;
   }
@@ -599,7 +597,7 @@ function renderItems(items, isSearch) {
 
     if (item.type === 'folder') {
       el.innerHTML = `
-        <i class="fas fa-folder folder-icon"></i>
+        <img src="icons/folder.png" alt="${item.name}" style="width:40px;height:40px;object-fit:contain">
         <span class="file-name">${item.name}</span>`;
       el.ondblclick = () => navTo([...currentPath, item.name]);
     } else {
@@ -785,13 +783,13 @@ function setupContextMenu() {
   const menu = document.createElement('div');
   menu.id = 'pcContextMenu';
   menu.innerHTML = `
-    <div class="ctx-item" onclick="newFolder()"><i class="fas fa-folder-plus"></i>New folder</div>
+    <div class="ctx-item" onclick="newFolder()"><img src="icons/folder.png" style="width:16px;height:16px;object-fit:contain" alt="">New folder</div>
     <div class="ctx-sep"></div>
-    <div class="ctx-item" onclick="ribbonOpen()" id="ctxOpen"><i class="fas fa-folder-open"></i>Open</div>
-    <div class="ctx-item" onclick="ribbonRename()" id="ctxRename"><i class="fas fa-i-cursor"></i>Rename</div>
-    <div class="ctx-item" onclick="ribbonDelete()" id="ctxDelete"><i class="fas fa-trash-alt" style="color:#e81123"></i>Delete</div>
+    <div class="ctx-item" onclick="ribbonOpen()" id="ctxOpen"><img src="icons/folder.png" style="width:16px;height:16px;object-fit:contain" alt="">Open</div>
+    <div class="ctx-item" onclick="ribbonRename()" id="ctxRename"><span style="width:16px;text-align:center;font-size:13px;color:#0078d7">T</span>Rename</div>
+    <div class="ctx-item" onclick="ribbonDelete()" id="ctxDelete"><span style="width:16px;text-align:center;font-size:13px;color:#e81123">&#x2715;</span>Delete</div>
     <div class="ctx-sep"></div>
-    <div class="ctx-item" onclick="ribbonProperties()" id="ctxProps"><i class="fas fa-info-circle"></i>Properties</div>`;
+    <div class="ctx-item" onclick="ribbonProperties()" id="ctxProps"><span style="width:16px;text-align:center;font-size:13px;color:#0078d7">&#x2139;</span>Properties</div>`;
   document.body.appendChild(menu);
 }
 
