@@ -1,0 +1,302 @@
+/* ═══════════════════════════════════════════════════════════
+   PC Settings  ·  settings.css
+   Exact Windows 8 PC Settings look
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── WINDOW SHELL ── */
+#settingsWindow {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 44px; /* full screen above taskbar */
+  z-index: 500;
+  display: none;
+  flex-direction: row;
+  background: #fff;
+  animation: settingsOpen .3s cubic-bezier(.16,1,.3,1) both;
+}
+#settingsWindow.open {
+  display: flex;
+}
+@keyframes settingsOpen {
+  from { opacity:0; transform:translateX(60px); }
+  to   { opacity:1; transform:translateX(0); }
+}
+
+/* ── LEFT SIDEBAR ── */
+.pcs-sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  background: #1a1a1a;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.pcs-sidebar::-webkit-scrollbar { width: 0; }
+
+.pcs-title {
+  font-size: 28px;
+  font-weight: 100;
+  color: #fff;
+  padding: 32px 28px 24px;
+  letter-spacing: .3px;
+  flex-shrink: 0;
+}
+
+.pcs-nav-item {
+  padding: 13px 28px;
+  font-size: 14px;
+  color: rgba(255,255,255,.65);
+  cursor: pointer;
+  transition: background .15s, color .15s;
+  white-space: nowrap;
+}
+.pcs-nav-item:hover  { background: rgba(255,255,255,.08); color: #fff; }
+.pcs-nav-item.active { background: #008299; color: #fff; }
+
+/* ── RIGHT CONTENT PANEL ── */
+.pcs-content {
+  flex: 1;
+  background: #f2f2f2;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.pcs-content::-webkit-scrollbar { width: 8px; }
+.pcs-content::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+
+/* each page inside content */
+.pcs-page {
+  display: none;
+  flex-direction: column;
+  padding: 32px 48px;
+  min-height: 100%;
+}
+.pcs-page.active { display: flex; }
+
+/* close button — top right */
+.pcs-close {
+  position: absolute;
+  top: 0; right: 0;
+  width: 44px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; color: rgba(255,255,255,.6);
+  cursor: pointer; z-index: 10;
+  transition: background .15s, color .15s;
+}
+.pcs-close:hover { background: #e81123; color: #fff; }
+
+/* ═══════════════════════════════════════════════════════════
+   PERSONALISE PAGE
+   ═══════════════════════════════════════════════════════════ */
+
+/* sub-tabs: Lock screen / Start screen / Account picture */
+.pers-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 28px;
+  border-bottom: 1px solid #d0d0d0;
+}
+.pers-tab {
+  padding: 8px 0;
+  margin-right: 28px;
+  font-size: 14px;
+  color: #555;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color .15s, border-color .15s;
+}
+.pers-tab:hover  { color: #008299; }
+.pers-tab.active { color: #008299; border-bottom-color: #008299; font-weight: 600; }
+
+/* ── LOCK / START SCREEN PREVIEW ── */
+.pers-preview-wrap {
+  position: relative;
+  width: 320px;
+  height: 200px;
+  overflow: hidden;
+  border: 2px solid #d0d0d0;
+  flex-shrink: 0;
+  margin-bottom: 20px;
+  background: #000;
+  transition: border-color .2s;
+}
+.pers-preview-wrap:hover { border-color: #008299; }
+.pers-preview-img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: opacity .4s ease;
+}
+/* lock screen overlay on preview */
+.pers-preview-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,.3) 0%, rgba(0,0,0,.15) 50%, rgba(0,0,0,.5) 100%);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  pointer-events: none;
+}
+.pers-preview-time { font-size: 36px; font-weight: 100; color: #fff; letter-spacing: -1px; }
+.pers-preview-date { font-size: 13px; font-weight: 300; color: rgba(255,255,255,.85); margin-top: 4px; }
+
+/* ── WALLPAPER PICKER STRIP ── */
+.pers-wp-label {
+  font-size: 12px; color: #555; margin-bottom: 10px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .8px;
+}
+.pers-wp-strip {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.pers-wp-thumb {
+  width: 96px; height: 60px;
+  object-fit: cover;
+  cursor: pointer;
+  border: 3px solid transparent;
+  transition: border-color .15s, transform .15s;
+  flex-shrink: 0;
+}
+.pers-wp-thumb:hover  { transform: scale(1.04); border-color: #aaa; }
+.pers-wp-thumb.active { border-color: #008299; }
+
+.pers-browse-btn {
+  display: inline-block;
+  padding: 6px 18px;
+  font-size: 13px;
+  border: 1px solid #aaa;
+  background: #fff;
+  cursor: pointer;
+  color: #333;
+  margin-top: 4px;
+  transition: background .15s, border-color .15s;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+}
+.pers-browse-btn:hover { background: #e3f2fd; border-color: #0078d7; color: #0078d7; }
+
+/* ── LOCK SCREEN APPS SECTION ── */
+.pers-section-title {
+  font-size: 18px; font-weight: 300; color: #008299;
+  margin: 20px 0 6px;
+}
+.pers-section-sub {
+  font-size: 12px; color: #777; margin-bottom: 14px; line-height: 1.5;
+}
+.pers-lock-apps {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;
+}
+.pers-lock-app {
+  width: 48px; height: 48px;
+  background: #d0d0d0;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 22px; color: #666;
+  transition: background .15s;
+}
+.pers-lock-app:hover { background: #bbb; }
+.pers-lock-app img { width: 28px; height: 28px; object-fit: contain; }
+
+/* ═══════════════════════════════════════════════════════════
+   ACCOUNT PICTURE TAB
+   ═══════════════════════════════════════════════════════════ */
+.pers-account-wrap {
+  display: flex; gap: 32px; align-items: flex-start; flex-wrap: wrap;
+}
+.pers-account-current {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+}
+.pers-account-pic {
+  width: 120px; height: 120px;
+  border-radius: 2px;
+  object-fit: cover;
+  border: 3px solid #d0d0d0;
+  display: block;
+}
+.pers-account-name { font-size: 16px; font-weight: 300; color: #333; }
+.pers-account-sub  { font-size: 12px; color: #888; }
+
+.pers-account-options { display: flex; flex-direction: column; gap: 12px; padding-top: 8px; }
+.pers-account-opt-btn {
+  padding: 8px 20px; font-size: 13px;
+  background: #008299; color: #fff; border: none;
+  cursor: pointer; font-family: 'Segoe UI', Tahoma, sans-serif;
+  transition: background .15s; text-align: left;
+}
+.pers-account-opt-btn:hover { background: #006672; }
+
+/* ═══════════════════════════════════════════════════════════
+   START SCREEN COLOUR TAB
+   ═══════════════════════════════════════════════════════════ */
+.pers-colour-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 36px);
+  gap: 6px;
+  margin-bottom: 20px;
+}
+.pers-colour-swatch {
+  width: 36px; height: 36px;
+  cursor: pointer;
+  border: 3px solid transparent;
+  transition: transform .15s, border-color .15s;
+}
+.pers-colour-swatch:hover  { transform: scale(1.15); }
+.pers-colour-swatch.active { border-color: #fff; box-shadow: 0 0 0 2px #333; }
+
+.pers-start-preview {
+  width: 280px; height: 160px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 12px; position: relative; overflow: hidden;
+  transition: background .3s;
+}
+.pers-start-tiles-demo {
+  display: grid; grid-template-columns: repeat(4,36px); gap: 4px;
+  opacity: .85;
+}
+.pers-demo-tile { width: 36px; height: 36px; }
+.pers-demo-tile.w2 { width: 76px; grid-column: span 2; }
+
+/* ═══════════════════════════════════════════════════════════
+   OTHER PAGES (Notifications, General, etc.)
+   ═══════════════════════════════════════════════════════════ */
+.pcs-page-title {
+  font-size: 28px; font-weight: 100; color: #333;
+  margin-bottom: 24px;
+}
+.pcs-setting-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 0; border-bottom: 1px solid #e0e0e0;
+  gap: 20px;
+}
+.pcs-setting-label { font-size: 14px; color: #333; }
+.pcs-setting-sub   { font-size: 12px; color: #888; margin-top: 2px; }
+
+/* toggle switch */
+.pcs-toggle {
+  position: relative; width: 60px; height: 28px; flex-shrink: 0;
+  cursor: pointer;
+}
+.pcs-toggle input { opacity:0; width:0; height:0; }
+.pcs-toggle-track {
+  position: absolute; inset: 0;
+  background: #ccc; transition: background .2s;
+}
+.pcs-toggle input:checked + .pcs-toggle-track { background: #008299; }
+.pcs-toggle-thumb {
+  position: absolute; top: 4px; left: 4px;
+  width: 20px; height: 20px; background: #fff;
+  transition: left .2s;
+  pointer-events: none;
+}
+.pcs-toggle input:checked ~ .pcs-toggle-thumb { left: 36px; }
+
+/* slider */
+.pcs-slider {
+  -webkit-appearance: none; appearance: none;
+  width: 200px; height: 4px; background: #d0d0d0;
+  outline: none; border-radius: 2px; cursor: pointer;
+}
+.pcs-slider::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 18px; height: 18px;
+  border-radius: 50%; background: #008299; cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,.3);
+}
+ 
