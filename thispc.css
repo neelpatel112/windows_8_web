@@ -1,0 +1,346 @@
+/* ═══════════════════════════════════════════════════════════
+   This PC  ·  thispc.css
+   Windows 8 File Explorer style
+   ═══════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Segoe+UI:wght@300;400;600&display=swap');
+
+* { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',Tahoma,sans-serif; user-select:none; }
+
+/* ── WINDOW SHELL ── */
+#thispcWindow {
+  position: fixed;
+  top: 40px; left: 60px;
+  width: 860px; height: 560px;
+  min-width: 480px; min-height: 320px;
+  z-index: 400;
+  display: flex; flex-direction: column;
+  background: #f2f2f2;
+  box-shadow: 0 8px 40px rgba(0,0,0,.45), 0 2px 8px rgba(0,0,0,.3);
+  border: 1px solid rgba(0,0,0,.25);
+
+  /* open animation */
+  transform-origin: center bottom;
+  animation: winOpen .22s cubic-bezier(.16,1,.3,1) both;
+}
+@keyframes winOpen {
+  from { opacity:0; transform:scale(.94) translateY(20px); }
+  to   { opacity:1; transform:scale(1)   translateY(0); }
+}
+
+/* minimise — shrinks to taskbar */
+#thispcWindow.minimising {
+  animation: winMin .22s cubic-bezier(.4,0,1,1) both;
+  pointer-events: none;
+}
+@keyframes winMin {
+  from { opacity:1; transform:scale(1) translateY(0); }
+  to   { opacity:0; transform:scale(.4) translateY(100vh); }
+}
+/* restore from taskbar */
+#thispcWindow.restoring {
+  animation: winOpen .22s cubic-bezier(.16,1,.3,1) both;
+}
+
+/* maximised */
+#thispcWindow.maximised {
+  top: 0 !important; left: 0 !important;
+  width: 100vw !important; height: calc(100vh - 44px) !important;
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+/* ── TITLE BAR ── */
+.win-titlebar {
+  height: 32px;
+  background: linear-gradient(to bottom, #3c3c3c, #2d2d2d);
+  display: flex; align-items: center;
+  padding: 0 0 0 8px;
+  flex-shrink: 0;
+  cursor: default;
+  -webkit-app-region: drag;
+}
+.win-titlebar-icon {
+  width: 16px; height: 16px; object-fit: contain;
+  margin-right: 7px; flex-shrink: 0;
+}
+.win-titlebar-text {
+  font-size: 12px; color: rgba(255,255,255,.85);
+  font-weight: 400; flex: 1; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
+
+/* ── WINDOW CONTROL BUTTONS ── */
+.win-controls {
+  display: flex; flex-shrink: 0; height: 100%;
+  -webkit-app-region: no-drag;
+}
+.win-btn {
+  width: 44px; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 14px; color: rgba(255,255,255,.75);
+  transition: background .12s, color .12s;
+  border: none; background: transparent;
+}
+.win-btn:hover { background: rgba(255,255,255,.12); color: #fff; }
+.win-btn.close:hover { background: #e81123; color: #fff; }
+.win-btn i { font-size: 11px; }
+
+/* ── RIBBON / TOOLBAR ── */
+.win-ribbon {
+  flex-shrink: 0;
+  background: #fff;
+  border-bottom: 1px solid #d0d0d0;
+}
+.ribbon-tabs {
+  display: flex; padding: 0 8px;
+  border-bottom: 1px solid #d5d5d5;
+}
+.ribbon-tab {
+  padding: 5px 14px; font-size: 12px;
+  color: #333; cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all .12s;
+}
+.ribbon-tab:hover  { background: #e8e8e8; }
+.ribbon-tab.active { border-bottom-color: #0078d7; color: #0078d7; font-weight: 600; }
+
+.ribbon-bar {
+  display: flex; align-items: center; gap: 2px;
+  padding: 4px 8px; flex-wrap: wrap;
+}
+.rib-btn {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 2px; padding: 4px 8px; font-size: 10px; color: #333;
+  cursor: pointer; border: 1px solid transparent; border-radius: 2px;
+  transition: all .12s; min-width: 44px; white-space: nowrap;
+}
+.rib-btn:hover  { background: #e3f2fd; border-color: #90caf9; }
+.rib-btn:active { background: #bbdefb; }
+.rib-btn i { font-size: 16px; color: #0078d7; }
+.rib-btn img { width: 20px; height: 20px; object-fit: contain; }
+.rib-sep { width: 1px; height: 40px; background: #ddd; margin: 0 4px; flex-shrink: 0; }
+
+/* ── ADDRESS BAR ── */
+.win-addressbar {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 10px;
+  background: #fff;
+  border-bottom: 1px solid #d0d0d0;
+  flex-shrink: 0;
+}
+.addr-nav {
+  width: 26px; height: 26px; border: 1px solid #ccc;
+  background: linear-gradient(#fff,#e8e8e8);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; border-radius: 2px; font-size: 12px; color: #555;
+  transition: all .12s; flex-shrink: 0;
+}
+.addr-nav:hover { background: linear-gradient(#e3f2fd,#bbdefb); border-color: #90caf9; }
+.addr-nav.disabled { opacity: .35; cursor: default; pointer-events: none; }
+.addr-path {
+  flex: 1; display: flex; align-items: center;
+  border: 1px solid #ccc; padding: 3px 8px;
+  background: #fff; font-size: 12px; color: #333;
+  cursor: text; min-width: 0;
+}
+.addr-path-icon { width: 14px; height: 14px; object-fit: contain; margin-right: 6px; flex-shrink: 0; }
+.addr-path-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.addr-sep { color: #aaa; font-size: 11px; margin: 0 3px; }
+.addr-search {
+  display: flex; align-items: center; gap: 5px;
+  border: 1px solid #ccc; padding: 3px 8px;
+  background: #fff; width: 160px; flex-shrink: 0;
+}
+.addr-search input {
+  border: none; outline: none; font-size: 12px;
+  color: #333; width: 100%; background: transparent;
+  font-family: inherit; cursor: text;
+}
+.addr-search i { font-size: 11px; color: #aaa; flex-shrink: 0; }
+
+/* ── MAIN BODY ── */
+.win-body {
+  display: flex; flex: 1; overflow: hidden;
+}
+
+/* ── NAV SIDEBAR ── */
+.win-nav {
+  width: 180px; flex-shrink: 0;
+  background: #f8f8f8;
+  border-right: 1px solid #d5d5d5;
+  overflow-y: auto; overflow-x: hidden;
+  padding: 6px 0;
+}
+.win-nav::-webkit-scrollbar { width: 6px; }
+.win-nav::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+
+.nav-section-label {
+  font-size: 11px; font-weight: 600; color: #666;
+  padding: 8px 12px 3px; text-transform: uppercase;
+  letter-spacing: .5px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 14px; font-size: 12px; color: #222;
+  cursor: pointer; transition: background .12s;
+  white-space: nowrap;
+}
+.nav-item:hover { background: #e5e5e5; }
+.nav-item.active { background: #cce4f7; color: #0078d7; }
+.nav-item img { width: 16px; height: 16px; object-fit: contain; flex-shrink: 0; }
+.nav-item i    { font-size: 14px; color: #0078d7; flex-shrink: 0; width:16px; text-align:center; }
+
+/* ── CONTENT AREA ── */
+.win-content {
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+  padding: 14px 16px;
+  background: #fff;
+}
+.win-content::-webkit-scrollbar { width: 8px; }
+.win-content::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+.win-content::-webkit-scrollbar-track { background: #f5f5f5; }
+
+/* section headings inside content */
+.section-heading {
+  font-size: 11px; font-weight: 600; color: #0078d7;
+  text-transform: uppercase; letter-spacing: .8px;
+  padding: 2px 0 8px; border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 10px;
+}
+
+/* ── DRIVES GRID ── */
+.drives-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 6px;
+  margin-bottom: 20px;
+}
+.drive-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border: 1px solid #e0e0e0;
+  cursor: pointer; transition: all .15s;
+  background: #fafafa;
+}
+.drive-item:hover  { background: #e3f2fd; border-color: #90caf9; }
+.drive-item.active { background: #cce4f7; border-color: #0078d7; }
+.drive-icon { width: 32px; height: 32px; object-fit: contain; flex-shrink: 0; }
+.drive-info { flex: 1; min-width: 0; }
+.drive-name { font-size: 13px; color: #222; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.drive-free { font-size: 11px; color: #666; margin-top: 2px; }
+.drive-bar-wrap { height: 6px; background: #e0e0e0; border-radius: 1px; margin-top: 4px; overflow: hidden; }
+.drive-bar-fill {
+  height: 100%; border-radius: 1px;
+  transition: width .6s ease;
+}
+.drive-bar-fill.low    { background: #e81123; }
+.drive-bar-fill.medium { background: #ffb900; }
+.drive-bar-fill.ok     { background: #0078d7; }
+
+/* ── FILES / FOLDERS GRID ── */
+.files-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 4px;
+}
+.file-item {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 5px; padding: 8px 6px; cursor: pointer;
+  border: 1px solid transparent; transition: all .12s;
+  border-radius: 2px; text-align: center;
+}
+.file-item:hover  { background: #e3f2fd; border-color: #90caf9; }
+.file-item.active { background: #cce4f7; border-color: #0078d7; }
+.file-item img { width: 40px; height: 40px; object-fit: contain; }
+.file-item i   { font-size: 36px; color: #0078d7; }
+.file-item i.folder-icon { color: #ffb900; }
+.file-name {
+  font-size: 11px; color: #222; line-height: 1.3;
+  word-break: break-word; max-width: 90px;
+  display: -webkit-box; -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical; overflow: hidden;
+}
+
+/* renaming input inside file item */
+.file-item .rename-input {
+  width: 88px; font-size: 11px; text-align: center;
+  border: 1px solid #0078d7; outline: none;
+  padding: 1px 3px; border-radius: 1px;
+  font-family: inherit; background: #fff; color: #222;
+  user-select: text;
+}
+
+/* ── STATUS BAR ── */
+.win-statusbar {
+  flex-shrink: 0; height: 24px;
+  background: #f2f2f2; border-top: 1px solid #d0d0d0;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 10px; font-size: 11px; color: #555;
+}
+.statusbar-right { display: flex; align-items: center; gap: 8px; }
+.view-btn {
+  width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; border-radius: 2px; color: #666; font-size: 12px;
+  transition: all .12s;
+}
+.view-btn:hover  { background: #e0e0e0; color: #333; }
+.view-btn.active { background: #0078d7; color: #fff; }
+
+/* ── CONTEXT MENU ── */
+#pcContextMenu {
+  position: fixed; z-index: 900;
+  background: #fff; border: 1px solid #ccc;
+  box-shadow: 2px 4px 16px rgba(0,0,0,.18);
+  min-width: 180px; padding: 4px 0;
+  display: none;
+}
+#pcContextMenu.open { display: block; }
+.ctx-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 14px; font-size: 13px; color: #222;
+  cursor: pointer; transition: background .1s;
+}
+.ctx-item:hover { background: #e3f2fd; }
+.ctx-item i { font-size: 14px; color: #0078d7; width: 16px; text-align: center; }
+.ctx-sep { height: 1px; background: #e0e0e0; margin: 4px 0; }
+.ctx-item.disabled { color: #aaa; pointer-events: none; }
+
+/* ── TASKBAR ENTRY (minimised indicator) ── */
+.tb-win-entry {
+  height: 100%; display: flex; align-items: center;
+  gap: 6px; padding: 0 10px; cursor: pointer;
+  transition: background .15s; position: relative;
+  min-width: 120px; max-width: 160px;
+}
+.tb-win-entry:hover { background: rgba(255,255,255,.1); }
+.tb-win-entry img  { width: 16px; height: 16px; object-fit: contain; flex-shrink: 0; }
+.tb-win-entry span { font-size: 12px; color: rgba(255,255,255,.85); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tb-win-entry::after {
+  content: ''; position: absolute; bottom: 0; left: 10%;
+  width: 80%; height: 2px; background: #0078d7;
+}
+.tb-win-entry.minimised::after { background: rgba(255,255,255,.3); }
+
+/* ── DRAG RESIZE HANDLE ── */
+.win-resize {
+  position: absolute; bottom: 0; right: 0;
+  width: 16px; height: 16px; cursor: se-resize;
+  z-index: 10;
+}
+.win-resize::after {
+  content: '';
+  position: absolute; bottom: 3px; right: 3px;
+  width: 8px; height: 8px;
+  border-right: 2px solid #aaa;
+  border-bottom: 2px solid #aaa;
+}
+
+/* ── NEW FOLDER FLASH ── */
+@keyframes newFolderPop {
+  0%   { transform: scale(0.5); opacity: 0; }
+  70%  { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1);   opacity: 1; }
+}
+.file-item.new-item { animation: newFolderPop .3s cubic-bezier(.16,1,.3,1) both; }
+ 
