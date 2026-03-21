@@ -28,21 +28,26 @@
 </div>
 
 <!-- DESKTOP — only icons here, NO start tiles -->
-<div id="desktop">
+<div id="desktop" oncontextmenu="showDesktopCtx(event)">
   <div class="desktop-icons">
-    <div class="d-icon" ondblclick="openThisPC()">
+    <div class="d-icon" ondblclick="openThisPC()"
+         oncontextmenu="showIconCtx(event,'thispc')">
       <img src="icons/computer.png" alt="This PC"><span>This PC</span>
     </div>
-    <div class="d-icon" ondblclick="notify('Opening Documents…','File Explorer')">
+    <div class="d-icon" ondblclick="notify('Opening Documents…','File Explorer')"
+         oncontextmenu="showIconCtx(event,'generic')">
       <img src="icons/folder.png" alt="Documents"><span>Documents</span>
     </div>
-    <div class="d-icon" ondblclick="notify('Recycle Bin is empty.','Recycle Bin')">
+    <div class="d-icon" ondblclick="notify('Recycle Bin is empty.','Recycle Bin')"
+         oncontextmenu="showIconCtx(event,'generic')">
       <img src="icons/recycle.png" alt="Recycle Bin"><span>Recycle Bin</span>
     </div>
-    <div class="d-icon" ondblclick="notify('Opening Internet Explorer…','Internet Explorer')">
+    <div class="d-icon" ondblclick="notify('Opening Internet Explorer…','Internet Explorer')"
+         oncontextmenu="showIconCtx(event,'generic')">
       <img src="icons/ie.png" alt="Internet Explorer"><span>Internet Explorer</span>
     </div>
-    <div class="d-icon" ondblclick="notify('Opening Notepad…','Notepad')">
+    <div class="d-icon" ondblclick="notify('Opening Notepad…','Notepad')"
+         oncontextmenu="showIconCtx(event,'generic')">
       <img src="icons/notepad.png" alt="Notepad"><span>Notepad</span>
     </div>
   </div>
@@ -290,13 +295,19 @@
 
   <!-- Pinned apps -->
   <div class="tb-left">
-    <div class="tb-app running" title="Internet Explorer" onclick="notify('Internet Explorer','Internet Explorer')">
+    <div class="tb-app running" title="Internet Explorer"
+         onclick="notify('Internet Explorer','Internet Explorer')"
+         oncontextmenu="showTaskbarAppCtx(event,'Internet Explorer',false)">
       <img src="icons/ie.png" alt="IE">
     </div>
-    <div class="tb-app running" title="File Explorer" onclick="notify('File Explorer','File Explorer')">
+    <div class="tb-app running" title="File Explorer"
+         onclick="notify('File Explorer','File Explorer')"
+         oncontextmenu="showTaskbarAppCtx(event,'File Explorer',false)">
       <img src="icons/explorer.png" alt="Explorer">
     </div>
-    <div class="tb-app" title="Windows Media Player" onclick="notify('Windows Media Player','Media Player')">
+    <div class="tb-app" title="Windows Media Player"
+         onclick="notify('Windows Media Player','Media Player')"
+         oncontextmenu="showTaskbarAppCtx(event,'Windows Media Player',true)">
       <img src="icons/mediaplayer.png" alt="Media Player">
     </div>
   </div>
@@ -462,6 +473,143 @@
       <div class="sd-opt" onclick="doShutdown('restart')"><i class="fas fa-redo"></i>Restart</div>
     </div>
     <button class="sd-cancel" onclick="hideShutdown()">Cancel</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     DESKTOP RIGHT-CLICK CONTEXT MENU
+     ══════════════════════════════════════════════════════ -->
+<div id="desktopCtx" class="ctx-menu">
+  <div class="ctx-group">
+    <div class="ctx-item" onclick="desktopCtxView()">
+      <span class="ctx-icon">&#x22A6;&#x22A6;</span>View
+      <span class="ctx-arrow">&#x276F;</span>
+    </div>
+    <div class="ctx-item" onclick="desktopRefresh()">
+      <span class="ctx-icon">&#x21BA;</span>Refresh
+    </div>
+  </div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-group">
+    <div class="ctx-item ctx-has-sub" id="desktopNewBtn">
+      <span class="ctx-icon">&#x2795;</span>New
+      <span class="ctx-arrow">&#x276F;</span>
+      <!-- New submenu -->
+      <div class="ctx-submenu" id="desktopNewSub">
+        <div class="ctx-item" onclick="desktopNewFolder()">
+          <img src="icons/folder.png" class="ctx-img" alt="">Folder
+        </div>
+        <div class="ctx-sep"></div>
+        <div class="ctx-item" onclick="notify('New shortcut…','Desktop')">
+          <span class="ctx-icon">&#x25A1;</span>Shortcut
+        </div>
+        <div class="ctx-item" onclick="notify('New text document created','Desktop')">
+          <span class="ctx-icon">&#x1F4C4;</span>Text Document
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-group">
+    <div class="ctx-item" onclick="notify('Opening Display Settings…','Display Settings')">
+      <span class="ctx-icon">&#x1F5A5;</span>Display settings
+    </div>
+    <div class="ctx-item" onclick="notify('Opening Personalisation…','Personalisation')">
+      <span class="ctx-icon">&#x1F3A8;</span>Personalise
+    </div>
+  </div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-group">
+    <div class="ctx-item" onclick="openSystemProperties()">
+      <img src="icons/computer.png" class="ctx-img" alt="">Properties
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     THIS PC ICON RIGHT-CLICK CONTEXT MENU
+     ══════════════════════════════════════════════════════ -->
+<div id="thisPcIconCtx" class="ctx-menu">
+  <div class="ctx-item" onclick="openThisPC(); hideAllCtx()">
+    <span class="ctx-icon" style="font-weight:700">&#x25B7;</span><b>Open</b>
+  </div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item ctx-disabled">
+    <span class="ctx-icon">&#x2702;</span>Delete
+  </div>
+  <div class="ctx-item ctx-disabled">
+    <span class="ctx-icon">&#x270F;</span>Rename
+  </div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="openSystemProperties(); hideAllCtx()">
+    <span class="ctx-icon">&#x2139;</span>Properties
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     TASKBAR APP RIGHT-CLICK CONTEXT MENU
+     ══════════════════════════════════════════════════════ -->
+<div id="taskbarAppCtx" class="ctx-menu ctx-menu-up">
+  <div class="ctx-item" id="tbarCtxPin" onclick="taskbarCtxPin()">
+    <span class="ctx-icon">&#x1F4CC;</span>Pin to taskbar
+  </div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="taskbarCtxClose()">
+    <span class="ctx-icon">&#x2715;</span>Close window
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     SYSTEM PROPERTIES WINDOW
+     ══════════════════════════════════════════════════════ -->
+<div id="sysPropWindow" style="display:none">
+  <div class="win-titlebar" id="sysPropTitleBar">
+    <img class="win-titlebar-icon" src="icons/computer.png" alt="">
+    <span class="win-titlebar-text">System Properties</span>
+    <div class="win-controls">
+      <button class="win-btn" onclick="closeSysProp()" title="Minimise">&#x2014;</button>
+      <button class="win-btn" title="Maximise">&#x2610;</button>
+      <button class="win-btn close" onclick="closeSysProp()" title="Close">&#x2715;</button>
+    </div>
+  </div>
+  <div class="sysprop-body">
+    <!-- Left: Windows logo banner -->
+    <div class="sysprop-banner">
+      <img src="logo.png" alt="Windows" class="sysprop-winlogo">
+      <div class="sysprop-edition">Windows 8</div>
+      <div class="sysprop-edition-sub">Web Edition</div>
+    </div>
+    <!-- Right: system info -->
+    <div class="sysprop-info">
+
+      <div class="sysprop-section-label">Windows edition</div>
+      <div class="sysprop-row"><span>Edition</span><span>Windows 8 Web</span></div>
+      <div class="sysprop-row"><span>Version</span><span>6.2.9200</span></div>
+      <div class="sysprop-row"><span>Build</span><span>9200.web.2026</span></div>
+
+      <div class="sysprop-section-label" style="margin-top:18px">System</div>
+      <div class="sysprop-row"><span>Processor</span><span>Intel Core i7 @ 2.40GHz</span></div>
+      <div class="sysprop-row"><span>Installed RAM</span><span>8.00 GB</span></div>
+      <div class="sysprop-row"><span>System type</span><span>64-bit Operating System</span></div>
+      <div class="sysprop-row"><span>Pen &amp; touch</span><span>Touch support with 10 touch points</span></div>
+
+      <div class="sysprop-section-label" style="margin-top:18px">Computer name &amp; user</div>
+      <div class="sysprop-row"><span>Computer name</span><span>NX4REAL-PC</span></div>
+      <div class="sysprop-row"><span>Full name</span><span>Neel Patel</span></div>
+      <div class="sysprop-row"><span>Username</span><span>nx4real</span></div>
+      <div class="sysprop-row"><span>Domain</span><span>WORKGROUP</span></div>
+
+      <div class="sysprop-section-label" style="margin-top:18px">Activation</div>
+      <div class="sysprop-row sysprop-activated">
+        <span>&#x2705; Windows is activated</span>
+        <span>Product ID: 00179-OEM-0000007-00000</span>
+      </div>
+    </div>
+  </div>
+  <div class="sysprop-footer">
+    <button class="sysprop-btn" onclick="closeSysProp()">OK</button>
+    <button class="sysprop-btn" onclick="closeSysProp()">Cancel</button>
+    <button class="sysprop-btn sysprop-btn-primary" onclick="closeSysProp()">Apply</button>
   </div>
 </div>
 
