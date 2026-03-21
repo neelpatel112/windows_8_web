@@ -102,11 +102,11 @@
      ════════════════════════════════════════════════════════ -->
 <div id="startScreen">
 
-  <!-- ── Top bar ── -->
-  <div class="ss-topbar">
+  <!-- ── Info bar (20vh) ── -->
+  <div class="ss-info">
     <div class="ss-title">Start</div>
 
-    <!-- User block — click to open power menu -->
+    <!-- User block — click to open power dropdown -->
     <div class="ss-user" onclick="togglePowerMenu(event)">
       <div class="ss-user-text">
         <div class="ss-user-name">User</div>
@@ -117,36 +117,39 @@
         <i class="fas fa-user"></i>
       </div>
 
-      <!-- power dropdown -->
-      <div class="ss-power-menu" id="powerMenu">
-        <div class="pm-item" onclick="notify('Locking screen…','Windows');toggleStart()">
+      <!-- power dropdown — slides DOWN via CSS opacity + translateY -->
+      <ul class="ss-power-menu" id="powerMenu">
+        <li class="pm-item" onclick="notify('Locking screen…','Windows');toggleStart()">
           <i class="fas fa-lock"></i> Lock
-        </div>
-        <div class="pm-item" onclick="notify('Signing out…','Windows');toggleStart()">
+        </li>
+        <li class="pm-item" onclick="notify('Signing out…','Windows');toggleStart()">
           <i class="fas fa-sign-out-alt"></i> Sign out
-        </div>
-        <div class="pm-item" onclick="doShutdown('sleep')">
+        </li>
+        <li class="pm-item disabled">
+          <i class="fas fa-user-plus"></i> Other user
+        </li>
+        <li class="pm-item" onclick="doShutdown('sleep')">
           <i class="fas fa-moon"></i> Sleep
-        </div>
-        <div class="pm-item" onclick="doShutdown('shutdown')">
+        </li>
+        <li class="pm-item" onclick="doShutdown('shutdown')">
           <i class="fas fa-power-off"></i> Shut down
-        </div>
-        <div class="pm-item" onclick="doShutdown('restart')">
+        </li>
+        <li class="pm-item" onclick="doShutdown('restart')">
           <i class="fas fa-redo"></i> Restart
-        </div>
-      </div>
+        </li>
+      </ul>
     </div>
   </div>
 
-  <!-- ── Tile canvas (horizontal scroll) ── -->
-  <div class="ss-canvas">
+  <!-- ── Metro UI area (80vh, horizontal scroll) ── -->
+  <div class="ss-metro">
 
     <!-- ════════════════════════════════════════════════════
          COLUMN A
          Mail  2×2 teal
          ════════════════════════════════════════════════════ -->
-    <div class="tg">
-      <div class="tg-label">&nbsp;</div><!-- spacer label -->
+    <div class="tg" data-col="0">
+      <span class="tg-label">&nbsp;</div><!-- spacer label -->
       <div class="tg-grid" style="grid-template-columns: repeat(2,var(--unit))">
 
         <!-- Mail — 2×2, teal, live flip -->
@@ -178,8 +181,8 @@
          Messaging (2×1 dark-purple)
          Weather  (2×2 sky)   | Store (2×1 green)  — placed via grid
          ════════════════════════════════════════════════════ -->
-    <div class="tg">
-      <div class="tg-label">&nbsp;</div>
+    <div class="tg" data-col="1">
+      <span class="tg-label">&nbsp;</div>
       <div class="tg-grid"
            style="grid-template-columns:repeat(4,var(--unit)); grid-template-rows:repeat(4,var(--unit))">
 
@@ -258,8 +261,8 @@
          SkyDrive (2×1, sky)
          Bing     (2×2, photo-live)
          ════════════════════════════════════════════════════ -->
-    <div class="tg">
-      <div class="tg-label">&nbsp;</div>
+    <div class="tg" data-col="2">
+      <span class="tg-label">&nbsp;</div>
       <div class="tg-grid"
            style="grid-template-columns:repeat(4,var(--unit)); grid-template-rows:repeat(4,var(--unit))">
 
@@ -329,8 +332,8 @@
          Games   (2×1 charcoal)
          Camera  (1×1 purple) + Music (1×1 red)
          ════════════════════════════════════════════════════ -->
-    <div class="tg">
-      <div class="tg-label">&nbsp;</div>
+    <div class="tg" data-col="3">
+      <span class="tg-label">&nbsp;</div>
       <div class="tg-grid"
            style="grid-template-columns:repeat(2,var(--unit)); grid-template-rows:repeat(4,var(--unit))">
 
@@ -375,8 +378,8 @@
          Music  (2×1 red/orange — live)
          Video  (1×1 red)    | Settings (1×1 grey)
          ════════════════════════════════════════════════════ -->
-    <div class="tg">
-      <div class="tg-label">&nbsp;</div>
+    <div class="tg" data-col="4">
+      <span class="tg-label">&nbsp;</div>
       <div class="tg-grid"
            style="grid-template-columns:repeat(2,var(--unit)); grid-template-rows:repeat(4,var(--unit))">
 
@@ -437,7 +440,7 @@
     </div>
 
   </div>
-  <!-- /ss-canvas -->
+  <!-- /ss-metro -->
 
 </div>
 <!-- /startScreen -->
