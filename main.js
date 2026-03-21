@@ -389,5 +389,169 @@ function showDesktopBtn() {
 }
 
 /* ── WELCOME ── */
+/* ════════════════════════════════════════════════════════
+   CONTEXT MENU SYSTEM
+   ════════════════════════════════════════════════════════ */
+
+let _activeCtx = null;        // currently open menu id
+let _taskbarCtxTarget = null; // which app was right-clicked
+
+/* close every context menu */
+function hideAllCtx() {
+  document.querySelectorAll('.ctx-menu').forEach(m => m.classList.remove('open'));
+  _activeCtx = null;
+}
+
+/* position + open a menu, clamped to viewport */
+function openCtx(menuId, x, y, openUpward) {
+  hideAllCtx();
+  const menu = document.getElementById(menuId);
+  if (!menu) return;
+  menu.style.left = x + 'px';
+  menu.style.top  = y + 'px';
+  menu.classList.add('open');
+  _activeCtx = menuId;
+
+  // clamp so it doesn't go off-screen
+  const r = menu.getBoundingClientRect();
+  if (r.right  > window.innerWidth)  menu.style.left = (x - r.width)  + 'px';
+  if (r.bottom > window.innerHeight) menu.style.top  = (y - r.height) + 'px';
+}
+
+/* close on any left-click outside */
+document.addEventListener('click', () => hideAllCtx());
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideAllCtx(); });
+
+/* ── DESKTOP RIGHT-CLICK ── */
+function showDesktopCtx(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  openCtx('desktopCtx', e.clientX, e.clientY);
+}
+
+function desktopCtxView() {
+  hideAllCtx();
+  notify('Large icons selected', 'View');
+}
+
+function desktopRefresh() {
+  hideAllCtx();
+  /* quick flash to simulate refresh */
+  const d = document.getElementById('desktop');
+  d.style.transition = 'opacity .15s';
+  d.style.opacity = '0.6';
+  setTimeout(() => { d.style.opacity = '1'; }, 200);
+  notify('Refreshed', 'Desktop');
+}
+
+function desktopNewFolder() {
+  hideAllCtx();
+  notify('New folder created on Desktop', 'Desktop');
+}
+
+/* ── DESKTOP ICON RIGHT-CLICK ── */
+function showIconCtx(e, type) {
+  e.preventDefault();
+  e.stopPropagation();
+  if (type === 'thispc') {
+    openCtx('thisPcIconCtx', e.clientX, e.clientY);
+  }
+  /* other icons — could add more menus later, for now just suppress default */
+}
+
+/* ── TASKBAR APP RIGHT-CLICK ── */
+function showTaskbarAppCtx(e, appName, pinned) {
+  e.preventDefault();
+  e.stopPropagation();
+  _taskbarCtxTarget = appName;
+
+  const pinBtn = document.getElementById('tbarCtxPin');
+  if (pinBtn) pinBtn.textContent = pinned
+    ? '📌 Unpin from taskbar'
+    : '📌 Pin to taskbar';
+
+  /* open ABOVE the taskbar */
+  const menu = document.getElementById('taskbarAppCtx');
+  if (!menu) return;
+  hideAllCtx();
+  menu.style.left   = e.clientX + 'px';
+  menu.style.top    = 'auto';
+  menu.style.bottom = '50px';
+  menu.classList.add('open');
+  _activeCtx = 'taskbarAppCtx';
+
+  /* clamp horizontally */
+  requestAnimationFrame(() => {
+    const r = menu.getBoundingClientRect();
+    if (r.right > window.innerWidth) {
+      menu.style.left = (e.clientX - r.width) + 'px';
+    }
+  });
+}
+
+function taskbarCtxPin() {
+  hideAllCtx();
+  notify(_taskbarCtxTarget + ' pinned to taskbar', 'Taskbar');
+}
+
+function taskbarCtxClose() {
+  hideAllCtx();
+  /* if it's the This PC window, actually close it */
+  if (_taskbarCtxTarget === 'This PC' && typeof closePC === 'function') {
+    closePC();
+  } else {
+    notify(_taskbarCtxTarget + ' closed', _taskbarCtxTarget);
+  }
+}
+
+/* ════════════════════════════════════════════════════════
+   SYSTEM PROPERTIES WINDOW
+   ════════════════════════════════════════════════════════ */
+function openSystemProperties() {
+  hideAllCtx();
+  const win = document.getElementById('sysPropWindow');
+  if (!win) return;
+  win.style.display = 'flex';
+  win.style.animation = 'none';
+  void win.offsetWidth; // reflow
+  win.style.animation = '';
+
+  /* make it draggable by titlebar */
+  const tb = document.getElementById('sysPropTitleBar');
+  if (tb && !tb._dragSetup) {
+    tb._dragSetup = true;
+    let dx = 0, dy = 0, dragging = false;
+    tb.addEventListener('mousedown', e => {
+      if (e.target.closest('.win-controls')) return;
+      dragging = true;
+      const r = win.getBoundingClientRect();
+      dx = e.clientX - r.left;
+      dy = e.clientY - r.top;
+      win.style.transition = 'none';
+      e.preventDefault();
+    });
+    document.addEventListener('mousemove', e => {
+      if (!dragging) return;
+      win.style.left      = (e.clientX - dx) + 'px';
+      win.style.top       = (e.clientY - dy) + 'px';
+      win.style.transform = 'none';
+    });
+    document.addEventListener('mouseup', () => { dragging = false; });
+  }
+}
+
+function closeSysProp() {
+  const win = document.getElementById('sysPropWindow');
+  if (!win) return;
+  win.style.transition = 'opacity .18s';
+  win.style.opacity    = '0';
+  setTimeout(() => {
+    win.style.display  = 'none';
+    win.style.opacity  = '1';
+    win.style.transition = '';
+  }, 180);
+}
+
+/* ── WELCOME ── (keep original below) */
 setTimeout(() => notify('Welcome to Windows 8 Web', 'Windows 8'), 2900);
  
