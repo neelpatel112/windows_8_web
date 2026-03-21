@@ -129,6 +129,7 @@ function toggleStart() {
   if (startOpen) {
     ss.classList.add('active');
     btn && btn.classList.add('active');
+    closeAllPanels();
     // size tiles after the screen is visible
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
@@ -262,6 +263,130 @@ document.addEventListener('touchstart', e => { ty0 = e.touches[0].clientY; }, { 
 document.addEventListener('touchend',   e => {
   if (ty0 - e.changedTouches[0].clientY > 80 && !startOpen) toggleStart();
 }, { passive: true });
+
+/* ════════════════════════════════════════════════════════
+   TRAY PANELS
+   ════════════════════════════════════════════════════════ */
+const PANELS = ['calPanel','volPanel','netPanel','actionPanel','langPanel'];
+let activePanel = null;
+
+function togglePanel(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+
+  if (el.classList.contains('open')) {
+    closeAllPanels();
+    return;
+  }
+  closeAllPanels();
+  el.classList.add('open');
+  activePanel = id;
+
+  if (id === 'calPanel') renderCalendar();
+  if (id === 'volPanel') updateVolumeTrack(document.getElementById('volSlider').value);
+}
+
+function closeAllPanels() {
+  PANELS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('open');
+  });
+  activePanel = null;
+}
+
+// close panels on click outside
+document.addEventListener('click', e => {
+  if (!activePanel) return;
+  const panel = document.getElementById(activePanel);
+  // check if click is on a tray button or inside panel
+  const inPanel   = panel && panel.contains(e.target);
+  const inTrayBtn = e.target.closest('.tray-btn, .tray-clock');
+  if (!inPanel && !inTrayBtn) closeAllPanels();
+});
+
+// close panels on start screen open
+const _origToggleStart = toggleStart;
+
+/* ── CALENDAR ── */
+let calViewDate = new Date();
+
+function renderCalendar() {
+  const now    = new Date();
+  const y      = calViewDate.getFullYear();
+  const m      = calViewDate.getMonth();
+
+  const titleEl = document.getElementById('calPanelTitle');
+  const daysEl  = document.getElementById('calDays');
+  const timeEl  = document.getElementById('calTimeDisplay');
+  if (!titleEl || !daysEl) return;
+
+  titleEl.textContent = calViewDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+  // first day of month, total days
+  const firstDay = new Date(y, m, 1).getDay(); // 0=Sun
+  const totalDays= new Date(y, m + 1, 0).getDate();
+  const prevTotal= new Date(y, m, 0).getDate();
+
+  let html = '';
+  let cellCount = 0;
+
+  // leading days from prev month
+  for (let i = firstDay - 1; i >= 0; i--) {
+    html += `<div class="cal-day other-month">${prevTotal - i}</div>`;
+    cellCount++;
+  }
+  // days of this month
+  for (let d = 1; d <= totalDays; d++) {
+    const isToday   = (d === now.getDate() && m === now.getMonth() && y === now.getFullYear());
+    const dow       = new Date(y, m, d).getDay();
+    const classes   = ['cal-day'];
+    if (isToday)       classes.push('today');
+    if (dow === 0)     classes.push('sunday');
+    html += `<div class="${classes.join(' ')}">${d}</div>`;
+    cellCount++;
+  }
+  // trailing days from next month
+  const remaining = 42 - cellCount;
+  for (let d = 1; d <= remaining; d++) {
+    html += `<div class="cal-day other-month">${d}</div>`;
+  }
+  daysEl.innerHTML = html;
+
+  // live clock in calendar
+  updateCalTime();
+}
+
+function updateCalTime() {
+  const el = document.getElementById('calTimeDisplay');
+  if (!el) return;
+  const now = new Date();
+  el.textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+setInterval(() => { if (activePanel === 'calPanel') updateCalTime(); }, 1000);
+
+function calMove(dir) {
+  calViewDate.setMonth(calViewDate.getMonth() + dir);
+  renderCalendar();
+}
+
+/* ── VOLUME ── */
+function updateVolume(val) {
+  document.getElementById('volPct').textContent = val + '%';
+  updateVolumeTrack(val);
+}
+
+function updateVolumeTrack(val) {
+  const slider = document.getElementById('volSlider');
+  if (!slider) return;
+  slider.value = val;
+  slider.style.background = `linear-gradient(to right, #0078d7 ${val}%, rgba(255,255,255,.2) ${val}%)`;
+}
+
+/* ── SHOW DESKTOP ── */
+function showDesktopBtn() {
+  if (startOpen) toggleStart();
+  notify('Showing Desktop', 'Windows 8');
+}
 
 /* ── WELCOME ── */
 setTimeout(() => notify('Welcome to Windows 8 Web', 'Windows 8'), 2900);
