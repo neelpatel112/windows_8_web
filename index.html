@@ -49,7 +49,7 @@
       <img src="icons/ie.png" alt="Internet Explorer"><span>Internet Explorer</span>
     </div>
     <div class="d-icon" ondblclick="openNotepad()"
-         oncontextmenu="showIconCtx(event,'generic')">
+         oncontextmenu="showIconCtx(event,'notepad')">
       <img src="icons/notepad.png" alt="Notepad"><span>Notepad</span>
     </div>
   </div>
@@ -546,6 +546,33 @@
   </div>
   <div class="ctx-sep"></div>
   <div class="ctx-item" onclick="openSystemProperties(); hideAllCtx()">
+    <span class="ctx-icon">&#x2139;</span>Properties
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     NOTEPAD ICON RIGHT-CLICK CONTEXT MENU
+     ══════════════════════════════════════════════════════ -->
+<div id="notepadIconCtx" class="ctx-menu">
+  <div class="ctx-item" onclick="openNotepad(); hideAllCtx()">
+    <span class="ctx-icon" style="font-weight:700">&#x25B7;</span><b>Open</b>
+  </div>
+  <div class="ctx-item" onclick="openNotepad(); hideAllCtx(); setTimeout(npOpenDialog,300)">
+    <span class="ctx-icon">&#x1F4C2;</span>Open a file…
+  </div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="openNotepad(); hideAllCtx(); setTimeout(npNewTab,300)">
+    <span class="ctx-icon">&#x2795;</span>New note
+  </div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item ctx-disabled">
+    <span class="ctx-icon">&#x2702;</span>Delete
+  </div>
+  <div class="ctx-item ctx-disabled">
+    <span class="ctx-icon">&#x270F;</span>Rename
+  </div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="notify('Notepad — plain text editor','Properties'); hideAllCtx()">
     <span class="ctx-icon">&#x2139;</span>Properties
   </div>
 </div>
