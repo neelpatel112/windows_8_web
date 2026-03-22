@@ -234,9 +234,12 @@ function npRefreshSidebar() {
   /* show all notes saved in Documents + any open unsaved tabs */
   const shown = new Set();
 
-  /* saved files from virtual FS Documents */
+  /* saved files from virtual FS Documents — show ALL text-editable types including .java */
   const docs = (typeof FS !== 'undefined' && FS['Documents']) ? FS['Documents'] : [];
-  const txtFiles = docs.filter(f => f.type === 'file' && f.name.endsWith('.txt'));
+  const txtFiles = docs.filter(f =>
+    f.type === 'file' &&
+    /\.(txt|java|js|py|html|css|xml|json|md|log|ini|cfg|sh|bat|ts|c|cpp|h|cs|php|rb|go|rs|kt|swift)$/i.test(f.name)
+  );
 
   txtFiles.forEach(f => {
     shown.add(f.name);
@@ -318,13 +321,29 @@ function npSave() {
 
   /* if new/untitled ask for name */
   if (tab.name === 'Untitled' || !tab.name) {
-    const name = prompt('Save as:', 'note.txt');
-    if (!name) return;
-    tab.name = name.endsWith('.txt') ? name : name + '.txt';
+    const name = prompt(
+      'Save as:\n(Type the full filename WITH extension, e.g.  hello.java  or  notes.txt)',
+      'notes.txt'
+    );
+    if (!name || !name.trim()) return;
+    const trimmed = name.trim();
+    /* ONLY add .txt if the user gave absolutely no extension at all */
+    tab.name = trimmed.includes('.') ? trimmed : trimmed + '.txt';
   }
 
   tab.saved   = true;
   tab.content = document.getElementById('npEditor').value;
+
+  /* pick icon based on extension */
+  const ext = tab.name.split('.').pop().toLowerCase();
+  const iconMap = {
+    java:'icons/file-text.png', txt:'icons/file-text.png',
+    js:'icons/file-text.png',   py:'icons/file-text.png',
+    html:'icons/file-text.png', css:'icons/file-text.png',
+    json:'icons/file-text.png', xml:'icons/file-text.png',
+    md:'icons/file-text.png',
+  };
+  const icon = iconMap[ext] || 'icons/file-text.png';
 
   /* write to virtual FS */
   if (typeof FS !== 'undefined') {
@@ -333,12 +352,7 @@ function npSave() {
     if (existing) {
       existing.content = tab.content;
     } else {
-      FS['Documents'].push({
-        type   : 'file',
-        name   : tab.name,
-        content: tab.content,
-        icon   : 'icons/file-text.png',
-      });
+      FS['Documents'].push({ type:'file', name:tab.name, content:tab.content, icon });
     }
   }
 
@@ -347,13 +361,18 @@ function npSave() {
   if (typeof notify === 'function') notify(`"${tab.name}" saved to Documents`, 'Notepad');
 }
 
-/* Save As — always prompts */
+/* Save As — always prompts for a new name */
 function npSaveAs() {
   const tab = NP.tabs.find(t => t.id === NP.activeId);
   if (!tab) return;
-  const name = prompt('Save as:', tab.name || 'note.txt');
-  if (!name) return;
-  tab.name  = name.endsWith('.txt') ? name : name + '.txt';
+  const name = prompt(
+    'Save as:\n(Type the full filename WITH extension, e.g.  hello.java  or  notes.txt)',
+    tab.name || 'notes.txt'
+  );
+  if (!name || !name.trim()) return;
+  const trimmed = name.trim();
+  /* preserve whatever extension user typed — only default to .txt if truly no extension */
+  tab.name  = trimmed.includes('.') ? trimmed : trimmed + '.txt';
   tab.saved = false;
   npSave();
 }
@@ -363,11 +382,12 @@ function npDownload() {
   const tab = NP.tabs.find(t => t.id === NP.activeId);
   const ed  = document.getElementById('npEditor');
   if (!tab || !ed) return;
-  const blob = new Blob([ed.value], { type: 'text/plain' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href     = url;
-  a.download = tab.name.endsWith('.txt') ? tab.name : tab.name + '.txt';
+  const blob     = new Blob([ed.value], { type: 'text/plain' });
+  const url      = URL.createObjectURL(blob);
+  const a        = document.createElement('a');
+  a.href         = url;
+  /* use the exact filename — do NOT force .txt */
+  a.download     = tab.name.includes('.') ? tab.name : tab.name + '.txt';
   a.click();
   URL.revokeObjectURL(url);
   if (typeof notify === 'function') notify('File downloaded', 'Notepad');
@@ -383,7 +403,7 @@ function npOpenDialog() {
     'position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:950;display:flex;align-items:center;justify-content:center';
 
   const docs = (typeof FS !== 'undefined' && FS['Documents'])
-    ? FS['Documents'].filter(f => f.type === 'file' && f.name.endsWith('.txt'))
+    ? FS['Documents'].filter(f => f.type === 'file' && /\.(txt|java|js|py|html|css|xml|json|md|csv|log|ini|cfg|sh|bat)$/i.test(f.name))
     : [];
 
   const listHTML = docs.length
@@ -431,7 +451,7 @@ function npOpenFile(name, content) {
 function npBrowseFile() {
   const input  = document.createElement('input');
   input.type   = 'file';
-  input.accept = '.txt,text/plain';
+  input.accept = '.txt,.java,.js,.py,.html,.css,.xml,.json,.md,.ts,.c,.cpp,.h,.cs,.rb,.go,.kt,.swift,text/plain';
   input.onchange = e => {
     const file = e.target.files[0];
     if (!file) return;
@@ -1126,7 +1146,8 @@ function npSbCtxRename() {
 
   const newName = prompt('Rename to:', _npSidebarTarget);
   if (!newName || newName === _npSidebarTarget) return;
-  const finalName = newName.endsWith('.txt') ? newName : newName + '.txt';
+  const trimmedNew = newName.trim();
+  const finalName  = trimmedNew.includes('.') ? trimmedNew : trimmedNew + '.txt';
 
   /* rename in tabs */
   const tab = NP.tabs.find(t => t.name === _npSidebarTarget);
