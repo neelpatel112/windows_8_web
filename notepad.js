@@ -898,4 +898,307 @@ function npSetupResize() {
   });
   document.addEventListener('mouseup', () => { NP.resize.on = false; });
 }
+
+/* ═══════════════════════════════════════════════════════════
+   NOTEPAD CONTEXT MENUS
+   Three menus:
+     npEditorCtx   — right-click on the textarea
+     npSidebarCtx  — right-click on a sidebar file entry
+     npTitleCtx    — right-click on the title bar
+   ═══════════════════════════════════════════════════════════ */
+
+let _npActiveCtx = null;   /* id of currently open np context menu */
+let _npSidebarTarget = null; /* file name right-clicked in sidebar */
+
+/* ── close all np context menus ── */
+function npHideAllCtx() {
+  document.querySelectorAll('.np-ctx').forEach(m => m.classList.remove('open'));
+  _npActiveCtx = null;
+}
+
+/* ── open a specific np context menu at cursor position ── */
+function npOpenCtx(menuId, x, y) {
+  npHideAllCtx();
+  const menu = document.getElementById(menuId);
+  if (!menu) return;
+  menu.classList.add('open');
+  menu.style.left = x + 'px';
+  menu.style.top  = y + 'px';
+  _npActiveCtx = menuId;
+
+  /* clamp to viewport */
+  requestAnimationFrame(() => {
+    const r = menu.getBoundingClientRect();
+    if (r.right  > window.innerWidth)  menu.style.left = (x - r.width)  + 'px';
+    if (r.bottom > window.innerHeight) menu.style.top  = (y - r.height) + 'px';
+  });
+}
+
+/* close on outside click */
+document.addEventListener('click', e => {
+  if (_npActiveCtx) {
+    const m = document.getElementById(_npActiveCtx);
+    if (m && !m.contains(e.target)) npHideAllCtx();
+  }
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') npHideAllCtx();
+});
+
+/* ════════════════════════════════════════════════════════════
+   BUILD & INJECT all three context menus (called once on open)
+   ════════════════════════════════════════════════════════════ */
+function npBuildContextMenus() {
+  if (document.getElementById('npEditorCtx')) return; /* already built */
+
+  /* ── 1. EDITOR context menu ── */
+  const edCtx = document.createElement('div');
+  edCtx.id = 'npEditorCtx';
+  edCtx.className = 'np-ctx';
+  edCtx.innerHTML = `
+    <div class="np-ctx-item" id="npCtxUndo"   onclick="npCtxUndo()">
+      Undo <span class="np-ctx-shortcut">Ctrl+Z</span>
+    </div>
+    <div class="np-ctx-sep"></div>
+    <div class="np-ctx-item" id="npCtxCut"    onclick="npCtxCut()">
+      Cut <span class="np-ctx-shortcut">Ctrl+X</span>
+    </div>
+    <div class="np-ctx-item" id="npCtxCopy"   onclick="npCtxCopy()">
+      Copy <span class="np-ctx-shortcut">Ctrl+C</span>
+    </div>
+    <div class="np-ctx-item" id="npCtxPaste"  onclick="npCtxPaste()">
+      Paste <span class="np-ctx-shortcut">Ctrl+V</span>
+    </div>
+    <div class="np-ctx-item" id="npCtxDelete" onclick="npCtxDelete()">
+      Delete <span class="np-ctx-shortcut">Del</span>
+    </div>
+    <div class="np-ctx-sep"></div>
+    <div class="np-ctx-item" onclick="npCtxSelectAll()">
+      Select All <span class="np-ctx-shortcut">Ctrl+A</span>
+    </div>
+    <div class="np-ctx-sep"></div>
+    <div class="np-ctx-item" onclick="npHideAllCtx();npFind()">
+      Find… <span class="np-ctx-shortcut">Ctrl+F</span>
+    </div>
+    <div class="np-ctx-item" onclick="npHideAllCtx();npReplace()">
+      Replace… <span class="np-ctx-shortcut">Ctrl+H</span>
+    </div>
+    <div class="np-ctx-sep"></div>
+    <div class="np-ctx-item" onclick="npHideAllCtx();npOpenFontDialog()">
+      Font…
+    </div>`;
+  document.body.appendChild(edCtx);
+
+  /* ── 2. SIDEBAR FILE context menu ── */
+  const sbCtx = document.createElement('div');
+  sbCtx.id = 'npSidebarCtx';
+  sbCtx.className = 'np-ctx';
+  sbCtx.innerHTML = `
+    <div class="np-ctx-item" onclick="npSbCtxOpen()">
+      Open
+    </div>
+    <div class="np-ctx-sep"></div>
+    <div class="np-ctx-item" onclick="npSbCtxRename()">
+      Rename <span class="np-ctx-shortcut">F2</span>
+    </div>
+    <div class="np-ctx-item" onclick="npSbCtxDelete()">
+      Delete <span class="np-ctx-shortcut">Del</span>
+    </div>
+    <div class="np-ctx-sep"></div>
+    <div class="np-ctx-item" onclick="npSbCtxSave()">
+      Save <span class="np-ctx-shortcut">Ctrl+S</span>
+    </div>`;
+  document.body.appendChild(sbCtx);
+
+  /* ── 3. TITLEBAR context menu ── */
+  const tbCtx = document.createElement('div');
+  tbCtx.id = 'npTitleCtx';
+  tbCtx.className = 'np-ctx';
+  tbCtx.innerHTML = `
+    <div class="np-ctx-item" id="npTcRestore"  onclick="npTcRestore()">
+      Restore
+    </div>
+    <div class="np-ctx-item" onclick="npMinimise(); npHideAllCtx()">
+      Minimise
+    </div>
+    <div class="np-ctx-item" id="npTcMaximise" onclick="npTcMaximise()">
+      Maximise
+    </div>
+    <div class="np-ctx-sep"></div>
+    <div class="np-ctx-item" onclick="npHideAllCtx(); npClose()">
+      Close <span class="np-ctx-shortcut">Alt+F4</span>
+    </div>`;
+  document.body.appendChild(tbCtx);
+}
+
+/* ════════════════════════════════════════════════════════════
+   ATTACH right-click handlers to the live DOM elements
+   Called after buildNotepadWindow() finishes
+   ════════════════════════════════════════════════════════════ */
+function npAttachContextMenus() {
+  npBuildContextMenus();
+
+  /* editor textarea */
+  const ed = document.getElementById('npEditor');
+  if (ed) {
+    ed.addEventListener('contextmenu', e => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      /* decide which items to grey out based on selection */
+      const hasSel = ed.selectionStart !== ed.selectionEnd;
+      const setDis = (id, dis) => {
+        const el = document.getElementById(id);
+        if (el) el.classList.toggle('disabled', dis);
+      };
+      setDis('npCtxCut',    !hasSel);
+      setDis('npCtxCopy',   !hasSel);
+      setDis('npCtxDelete', !hasSel);
+
+      npOpenCtx('npEditorCtx', e.clientX, e.clientY);
+    });
+  }
+
+  /* title bar */
+  const tb = document.getElementById('npTitleBar');
+  if (tb) {
+    tb.addEventListener('contextmenu', e => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      /* update Restore / Maximise labels */
+      const restoreEl  = document.getElementById('npTcRestore');
+      const maxEl      = document.getElementById('npTcMaximise');
+      if (restoreEl) restoreEl.classList.toggle('disabled', !NP.isMax);
+      if (maxEl)     maxEl.classList.toggle('disabled', NP.isMax);
+
+      npOpenCtx('npTitleCtx', e.clientX, e.clientY);
+    });
+  }
+}
+
+/* refresh sidebar right-click each time sidebar rebuilds */
+const _origNpRefreshSidebar = npRefreshSidebar;
+npRefreshSidebar = function() {
+  _origNpRefreshSidebar();
+
+  /* re-attach context menu to every sidebar entry */
+  document.querySelectorAll('#npFilesList .np-file-entry').forEach(el => {
+    el.addEventListener('contextmenu', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      _npSidebarTarget = el.querySelector('.np-file-name-text')?.textContent?.trim() || null;
+      npOpenCtx('npSidebarCtx', e.clientX, e.clientY);
+    });
+  });
+};
+
+/* ════════════════════════════════════════════════════════════
+   EDITOR CTX ACTIONS
+   ════════════════════════════════════════════════════════════ */
+function npCtxUndo()       { npHideAllCtx(); npUndo(); }
+function npCtxCut()        { npHideAllCtx(); npCut(); }
+function npCtxCopy()       { npHideAllCtx(); npCopy(); }
+function npCtxPaste()      { npHideAllCtx(); npPaste(); }
+function npCtxDelete()     { npHideAllCtx(); npDelete(); }
+function npCtxSelectAll()  { npHideAllCtx(); npSelectAll(); }
+
+/* ════════════════════════════════════════════════════════════
+   SIDEBAR CTX ACTIONS
+   ════════════════════════════════════════════════════════════ */
+function npSbCtxOpen() {
+  npHideAllCtx();
+  if (!_npSidebarTarget) return;
+  const tab = NP.tabs.find(t => t.name === _npSidebarTarget);
+  if (tab) {
+    npActivateTab(tab.id);
+  } else {
+    /* load from FS */
+    const docs = (typeof FS !== 'undefined' && FS['Documents']) ? FS['Documents'] : [];
+    const file = docs.find(f => f.name === _npSidebarTarget);
+    if (file) npOpenFile(file.name, file.content || '');
+  }
+}
+
+function npSbCtxRename() {
+  npHideAllCtx();
+  if (!_npSidebarTarget) return;
+
+  const newName = prompt('Rename to:', _npSidebarTarget);
+  if (!newName || newName === _npSidebarTarget) return;
+  const finalName = newName.endsWith('.txt') ? newName : newName + '.txt';
+
+  /* rename in tabs */
+  const tab = NP.tabs.find(t => t.name === _npSidebarTarget);
+  if (tab) tab.name = finalName;
+
+  /* rename in FS */
+  if (typeof FS !== 'undefined' && FS['Documents']) {
+    const entry = FS['Documents'].find(f => f.name === _npSidebarTarget);
+    if (entry) entry.name = finalName;
+  }
+
+  npUpdateTitle();
+  npRefreshSidebar();
+  if (typeof notify === 'function') notify(`Renamed to "${finalName}"`, 'Notepad');
+}
+
+function npSbCtxDelete() {
+  npHideAllCtx();
+  if (!_npSidebarTarget) return;
+
+  const ok = confirm(`Delete "${_npSidebarTarget}"?`);
+  if (!ok) return;
+
+  /* remove from tabs */
+  const tabIdx = NP.tabs.findIndex(t => t.name === _npSidebarTarget);
+  if (tabIdx > -1) {
+    const wasActive = NP.tabs[tabIdx].id === NP.activeId;
+    NP.tabs.splice(tabIdx, 1);
+    if (wasActive) {
+      /* activate another tab or create blank */
+      if (NP.tabs.length > 0) npActivateTab(NP.tabs[0].id);
+      else npNewTab();
+    }
+  }
+
+  /* remove from FS */
+  if (typeof FS !== 'undefined' && FS['Documents']) {
+    const idx = FS['Documents'].findIndex(f => f.name === _npSidebarTarget);
+    if (idx > -1) FS['Documents'].splice(idx, 1);
+  }
+
+  npRefreshSidebar();
+  if (typeof notify === 'function') notify(`"${_npSidebarTarget}" deleted`, 'Notepad');
+}
+
+function npSbCtxSave() {
+  npHideAllCtx();
+  /* switch to that tab then save */
+  const tab = NP.tabs.find(t => t.name === _npSidebarTarget);
+  if (tab) npActivateTab(tab.id);
+  npSave();
+}
+
+/* ════════════════════════════════════════════════════════════
+   TITLEBAR CTX ACTIONS
+   ════════════════════════════════════════════════════════════ */
+function npTcRestore() {
+  npHideAllCtx();
+  if (NP.isMax) npMaximise(); /* toggles back to normal */
+}
+function npTcMaximise() {
+  npHideAllCtx();
+  if (!NP.isMax) npMaximise();
+}
+
+/* ════════════════════════════════════════════════════════════
+   PATCH openNotepad to call npAttachContextMenus after build
+   ════════════════════════════════════════════════════════════ */
+const _origOpenNotepad = openNotepad;
+openNotepad = function(fileName, fileContent) {
+  _origOpenNotepad(fileName, fileContent);
+  /* attach after DOM is built — tiny delay for safety */
+  setTimeout(npAttachContextMenus, 50);
+};
  
