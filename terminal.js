@@ -636,21 +636,50 @@ function termAbout() {
 function cmdJavac(filename) {
   filename = filename.trim();
   if (!filename) {
-    termPrint("Usage: javac <filename.java>", 'term-red'); return;
+    termPrint("Usage: javac <filename.java>", 'term-red');
+    termPrint("Example: javac hello.java", 'term-yellow');
+    return;
   }
   if (!filename.endsWith('.java')) {
-    termPrint(`error: '${filename}' is not a .java file`, 'term-red'); return;
+    termPrint(`error: '${filename}' is not a .java file`, 'term-red');
+    termPrint(`Tip: Make sure you saved the file with a .java extension in Notepad`, 'term-yellow');
+    return;
   }
 
-  /* find the file in FS */
-  const file = fsFindFile(filename);
+  /* find the file — first in current dir, then in Documents as fallback */
+  let file = fsFindFile(filename);
+
+  if (!file && typeof FS !== 'undefined') {
+    /* fallback: search Documents */
+    const docs = FS['Documents'] || [];
+    const found = docs.find(f => f.name.toLowerCase() === filename.toLowerCase() && f.type === 'file');
+    if (found) {
+      file = found;
+      termPrint(`Note: Found '${filename}' in Documents folder`, 'term-yellow');
+      termPrint(`Tip: Use 'cd documents' to navigate there directly\n`, 'term-grey');
+    }
+  }
+
   if (!file) {
     termPrint(`error: file not found: ${filename}`, 'term-red');
-    termPrint(`Make sure you saved the file in the current directory (${termCwdStr()})`, 'term-yellow');
+    termPrint(``, 'term-grey');
+    termPrint(`Current directory: ${termCwdStr()}`, 'term-yellow');
+    termPrint(`Files here: ${fsCurrentDir().map(f=>f.name).join(', ') || '(empty)'}`, 'term-yellow');
+    termPrint(``, 'term-grey');
+    termPrint(`Did you save it in Notepad? Files are saved to Documents.`, 'term-yellow');
+    termPrint(`Try: cd documents`, 'term-cyan');
+    termPrint(`Then: javac ${filename}`, 'term-cyan');
     return;
   }
 
   const source = file.content || '';
+
+  /* quick check: make sure it's actually Java code */
+  if (!source.includes('class') && !source.includes('interface')) {
+    termPrint(`error: ${filename}: no class or interface found`, 'term-red');
+    return;
+  }
+
   termPrint('', '');
   termPrint(`Compiling ${filename}...`, 'term-orange');
 
@@ -665,9 +694,9 @@ function cmdJavac(filename) {
     } else {
       TERM.compiledClasses = result.classes;
       termPrint(`✔ Compilation successful — ${Object.keys(result.classes).length} class(es) compiled`, 'term-green');
-      termPrint(`  ${Object.keys(result.classes).join(', ')}.class`, 'term-grey');
+      termPrint(`  ${Object.keys(result.classes).map(c => c + '.class').join(', ')}`, 'term-grey');
 
-      /* also add .class files to FS */
+      /* add .class files to current FS dir */
       const fsKey2 = fsKey(TERM.cwdPath);
       if (typeof FS !== 'undefined') {
         if (!FS[fsKey2]) FS[fsKey2] = [];
@@ -677,6 +706,21 @@ function cmdJavac(filename) {
             FS[fsKey2].push({ type:'file', name:classFile, icon:'icons/file-exe.png', content:'[compiled bytecode]' });
           }
         });
+        /* also write to Documents if file was found there */
+        if (FS[fsKey2] !== FS['Documents'] && FS['Documents']) {
+          Object.keys(result.classes).forEach(cls => {
+            const classFile = cls + '.class';
+            if (!FS['Documents'].find(f => f.name === classFile)) {
+              FS['Documents'].push({ type:'file', name:classFile, icon:'icons/file-exe.png', content:'[compiled bytecode]' });
+            }
+          });
+        }
+      }
+      /* print next step hint */
+      const mainClass = Object.values(result.classes).find(c => c.mainMethod);
+      if (mainClass) {
+        termPrint('', '');
+        termPrint(`Run it with: java ${mainClass.name}`, 'term-cyan');
       }
     }
   } catch(err) {
