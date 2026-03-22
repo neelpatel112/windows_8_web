@@ -683,6 +683,13 @@ function newFolder() {
 }
 
 function openFile(item) {
+  /* open .txt files in Notepad */
+  if (item.name && item.name.endsWith('.txt')) {
+    if (typeof openNotepad === 'function') {
+      openNotepad(item.name, item.content || '');
+      return;
+    }
+  }
   if (typeof notify === 'function') notify('Opening ' + item.name + '…', item.name);
 }
 
