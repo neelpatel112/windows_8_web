@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="thispc.css">
 <link rel="stylesheet" href="settings.css">
+<link rel="stylesheet" href="notepad.css">
 </head>
 <body>
 
@@ -47,7 +48,7 @@
          oncontextmenu="showIconCtx(event,'generic')">
       <img src="icons/ie.png" alt="Internet Explorer"><span>Internet Explorer</span>
     </div>
-    <div class="d-icon" ondblclick="notify('Opening Notepad…','Notepad')"
+    <div class="d-icon" ondblclick="openNotepad()"
          oncontextmenu="showIconCtx(event,'generic')">
       <img src="icons/notepad.png" alt="Notepad"><span>Notepad</span>
     </div>
@@ -274,7 +275,7 @@
           <span class="tile-label">Video</span>
         </div>
 
-        <div class="tile tc-grey" onclick="tileOpen(this,'Settings')" style="grid-column:2;grid-row:3">
+        <div class="tile tc-grey" onclick="openSettings('personalise');if(startOpen)toggleStart();" style="grid-column:2;grid-row:3">
           <div class="tile-icon"><img src="icons/settings.png" alt="Settings"></div>
           <span class="tile-label">Settings</span>
         </div>
@@ -619,6 +620,7 @@
 <script src="main.js"></script>
 <script src="thispc.js"></script>
 <script src="settings.js"></script>
+<script src="notepad.js"></script>
 </body>
 </html>
  
