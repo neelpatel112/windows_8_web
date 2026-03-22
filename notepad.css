@@ -1,0 +1,306 @@
+/* ═══════════════════════════════════════════════════════════
+   Notepad  ·  notepad.css
+   Windows 8 / classic Notepad style
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── WINDOW SHELL ── */
+#notepadWindow {
+  position: fixed;
+  top: 48px; left: 120px;
+  width: 720px; height: 500px;
+  min-width: 360px; min-height: 240px;
+  z-index: 410;
+  display: flex; flex-direction: column;
+  background: #fff;
+  box-shadow: 0 8px 40px rgba(0,0,0,.45), 0 2px 8px rgba(0,0,0,.3);
+  border: 1px solid rgba(0,0,0,.25);
+  transform-origin: center bottom;
+  animation: npOpen .22s cubic-bezier(.16,1,.3,1) both;
+}
+@keyframes npOpen {
+  from { opacity:0; transform:scale(.94) translateY(16px); }
+  to   { opacity:1; transform:scale(1)   translateY(0); }
+}
+#notepadWindow.minimising {
+  animation: npMin .2s cubic-bezier(.4,0,1,1) both;
+  pointer-events: none;
+}
+@keyframes npMin {
+  from { opacity:1; transform:scale(1) translateY(0); }
+  to   { opacity:0; transform:scale(.4) translateY(100vh); }
+}
+#notepadWindow.restoring {
+  animation: npOpen .22s cubic-bezier(.16,1,.3,1) both;
+}
+#notepadWindow.maximised {
+  top:0 !important; left:0 !important;
+  width:100vw !important; height:calc(100vh - 44px) !important;
+  border:none; box-shadow:none;
+}
+
+/* ── TITLE BAR ── */
+.np-titlebar {
+  height: 32px;
+  background: linear-gradient(to bottom, #3c3c3c, #2d2d2d);
+  display: flex; align-items: center;
+  padding: 0 0 0 8px;
+  flex-shrink: 0; cursor: default;
+}
+.np-titlebar-icon {
+  width: 16px; height: 16px; object-fit: contain;
+  margin-right: 7px; flex-shrink: 0;
+}
+.np-titlebar-text {
+  font-size: 12px; color: rgba(255,255,255,.85);
+  font-weight: 400; flex: 1;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.np-controls {
+  display: flex; height: 100%;
+}
+.np-btn {
+  width: 44px; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 16px; color: rgba(255,255,255,.75);
+  border: none; background: transparent;
+  font-family: 'Segoe UI', Arial, sans-serif; line-height: 1;
+  transition: background .12s, color .12s;
+}
+.np-btn:hover       { background: rgba(255,255,255,.12); color: #fff; }
+.np-btn.close:hover { background: #e81123; color: #fff; }
+
+/* ── MENU BAR ── */
+.np-menubar {
+  height: 24px;
+  background: #f0f0f0;
+  border-bottom: 1px solid #d0d0d0;
+  display: flex; align-items: stretch;
+  flex-shrink: 0;
+  position: relative;
+}
+.np-menu {
+  position: relative;
+}
+.np-menu-label {
+  height: 100%; padding: 0 10px;
+  display: flex; align-items: center;
+  font-size: 12px; color: #222;
+  cursor: pointer; transition: background .1s;
+  white-space: nowrap;
+}
+.np-menu-label:hover,
+.np-menu.active .np-menu-label { background: #0078d7; color: #fff; }
+
+/* dropdown */
+.np-dropdown {
+  display: none;
+  position: absolute; top: 100%; left: 0;
+  background: #fff;
+  border: 1px solid #c0c0c0;
+  box-shadow: 2px 4px 16px rgba(0,0,0,.18);
+  min-width: 200px; padding: 3px 0;
+  z-index: 900;
+}
+.np-menu.active .np-dropdown { display: block; }
+
+.np-dd-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 5px 20px 5px 28px;
+  font-size: 13px; color: #222;
+  cursor: pointer; gap: 24px;
+  transition: background .08s;
+}
+.np-dd-item:hover    { background: #0078d7; color: #fff; }
+.np-dd-item.disabled { color: #aaa; pointer-events: none; }
+.np-dd-shortcut      { font-size: 11px; color: #888; }
+.np-dd-item:hover .np-dd-shortcut { color: rgba(255,255,255,.75); }
+.np-dd-sep           { height: 1px; background: #e0e0e0; margin: 3px 0; }
+
+/* ── TOOLBAR (Find bar, shown when Ctrl+F) ── */
+.np-findbar {
+  display: none;
+  align-items: center; gap: 8px;
+  padding: 5px 10px;
+  background: #f9f9f9;
+  border-bottom: 1px solid #d0d0d0;
+  flex-shrink: 0;
+}
+.np-findbar.open { display: flex; }
+.np-find-input {
+  flex: 1; max-width: 220px;
+  padding: 3px 8px; font-size: 13px;
+  border: 1px solid #aaa; outline: none;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+}
+.np-find-input:focus { border-color: #0078d7; }
+.np-find-btn {
+  padding: 3px 12px; font-size: 12px;
+  border: 1px solid #aaa; background: #f0f0f0;
+  cursor: pointer; font-family: inherit;
+  transition: background .1s;
+}
+.np-find-btn:hover { background: #e3f2fd; border-color: #0078d7; }
+.np-find-label     { font-size: 12px; color: #555; }
+.np-find-close {
+  margin-left: auto; cursor: pointer;
+  font-size: 16px; color: #666; line-height: 1;
+  padding: 0 4px;
+}
+.np-find-close:hover { color: #e81123; }
+.np-find-notfound    { font-size: 12px; color: #e81123; }
+
+/* ── TEXTAREA ── */
+.np-editor {
+  flex: 1;
+  border: none; outline: none; resize: none;
+  padding: 8px 10px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 14px; line-height: 1.6;
+  color: #1a1a1a; background: #fff;
+  overflow-y: auto; overflow-x: auto;
+  white-space: pre;
+  caret-color: #0078d7;
+  user-select: text; -webkit-user-select: text;
+}
+.np-editor.wordwrap {
+  white-space: pre-wrap;
+  overflow-x: hidden;
+}
+.np-editor:focus { background: #fefefe; }
+/* highlight for find */
+.np-highlight { background: #fff59d; }
+
+/* ── STATUS BAR ── */
+.np-statusbar {
+  height: 22px;
+  background: #f2f2f2;
+  border-top: 1px solid #d0d0d0;
+  display: flex; align-items: center;
+  padding: 0 10px; gap: 24px;
+  flex-shrink: 0;
+}
+.np-status-item {
+  font-size: 11px; color: #555; white-space: nowrap;
+}
+.np-status-sep {
+  width: 1px; height: 14px; background: #ccc; flex-shrink: 0;
+}
+
+/* ── OPEN FILES PANEL (sidebar) ── */
+.np-sidebar {
+  width: 200px; flex-shrink: 0;
+  background: #f7f7f7;
+  border-right: 1px solid #d5d5d5;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.np-sidebar.hidden { display: none; }
+.np-sidebar-title {
+  font-size: 11px; font-weight: 700;
+  color: #555; padding: 8px 12px 5px;
+  text-transform: uppercase; letter-spacing: .5px;
+  border-bottom: 1px solid #e0e0e0; flex-shrink: 0;
+}
+.np-files-list {
+  flex: 1; overflow-y: auto;
+}
+.np-files-list::-webkit-scrollbar { width: 5px; }
+.np-files-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+.np-file-entry {
+  display: flex; align-items: center; gap: 7px;
+  padding: 7px 10px; font-size: 12px; color: #333;
+  cursor: pointer; border-bottom: 1px solid #efefef;
+  transition: background .1s;
+}
+.np-file-entry:hover  { background: #e3f2fd; }
+.np-file-entry.active { background: #cce4f7; color: #0078d7; font-weight: 600; }
+.np-file-entry img    { width: 14px; height: 14px; object-fit: contain; flex-shrink: 0; }
+.np-file-name-text    { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.np-file-dot          { width: 7px; height: 7px; border-radius: 50%; background: #e81123; flex-shrink: 0; }
+.np-file-dot.saved    { background: transparent; }
+
+.np-sidebar-new {
+  padding: 8px 10px; border-top: 1px solid #e0e0e0; flex-shrink: 0;
+}
+.np-sidebar-new-btn {
+  width: 100%; padding: 5px; font-size: 12px;
+  background: #0078d7; color: #fff; border: none;
+  cursor: pointer; font-family: inherit; transition: background .15s;
+}
+.np-sidebar-new-btn:hover { background: #005fa3; }
+
+/* ── FONT DIALOG ── */
+#npFontDialog {
+  position: fixed; top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  z-index: 900;
+  background: #fff;
+  border: 1px solid #aaa;
+  box-shadow: 0 8px 32px rgba(0,0,0,.35);
+  width: 380px;
+  display: none; flex-direction: column;
+}
+#npFontDialog.open { display: flex; }
+.npd-titlebar {
+  height: 30px; background: linear-gradient(to bottom, #3c3c3c, #2d2d2d);
+  display: flex; align-items: center; padding: 0 10px;
+  font-size: 12px; color: rgba(255,255,255,.85);
+  justify-content: space-between;
+}
+.npd-close {
+  cursor: pointer; color: rgba(255,255,255,.7); font-size: 14px;
+  transition: color .1s;
+}
+.npd-close:hover { color: #fff; }
+.npd-body { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.npd-row  { display: flex; align-items: center; gap: 10px; }
+.npd-label { font-size: 13px; color: #333; width: 90px; flex-shrink: 0; }
+.npd-select, .npd-input {
+  flex: 1; padding: 4px 8px; font-size: 13px;
+  border: 1px solid #aaa; font-family: inherit;
+}
+.npd-preview {
+  border: 1px solid #d0d0d0; padding: 10px 12px;
+  min-height: 48px; font-size: 14px; color: #222;
+  background: #fafafa;
+}
+.npd-footer { display: flex; justify-content: flex-end; gap: 8px; padding: 0 16px 14px; }
+.npd-btn {
+  padding: 5px 18px; font-size: 13px;
+  border: 1px solid #aaa; background: #f0f0f0;
+  cursor: pointer; font-family: inherit; transition: background .1s;
+}
+.npd-btn:hover { background: #e3f2fd; border-color: #0078d7; }
+.npd-btn.primary { background: #0078d7; color: #fff; border-color: #005fa3; }
+.npd-btn.primary:hover { background: #005fa3; }
+
+/* ── RESIZE HANDLE ── */
+.np-resize {
+  position: absolute; bottom: 0; right: 0;
+  width: 16px; height: 16px; cursor: se-resize; z-index: 10;
+}
+.np-resize::after {
+  content: ''; position: absolute; bottom: 3px; right: 3px;
+  width: 8px; height: 8px;
+  border-right: 2px solid #bbb; border-bottom: 2px solid #bbb;
+}
+
+/* ── UNSAVED INDICATOR in title ── */
+.np-unsaved { color: #e81123; }
+
+/* ── TASKBAR ENTRY ── */
+#tbNotepad {
+  height: 100%; display: flex; align-items: center;
+  gap: 6px; padding: 0 10px; cursor: pointer;
+  transition: background .15s; position: relative;
+  min-width: 110px; max-width: 150px;
+}
+#tbNotepad:hover { background: rgba(255,255,255,.1); }
+#tbNotepad img   { width: 16px; height: 16px; object-fit: contain; flex-shrink: 0; }
+#tbNotepad span  { font-size: 12px; color: rgba(255,255,255,.85); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#tbNotepad::after {
+  content: ''; position: absolute; bottom: 0; left: 10%;
+  width: 80%; height: 2px; background: #0078d7;
+}
+#tbNotepad.minimised::after { background: rgba(255,255,255,.3); }
+ 
