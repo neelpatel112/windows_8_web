@@ -62,7 +62,13 @@ function openSettings(startPage) {
 
 function closeSettings() {
   const win = document.getElementById('settingsWindow');
-  if (win) win.classList.remove('open');
+  if (!win) return;
+  win.classList.remove('open');
+  win.classList.add('closing');
+  setTimeout(() => {
+    win.classList.remove('closing');
+    win.style.display = 'none';
+  }, 260);
 }
 
 /* ════════════════════════════════════════════════════════════
