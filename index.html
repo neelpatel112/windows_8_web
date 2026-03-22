@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="thispc.css">
 <link rel="stylesheet" href="settings.css">
 <link rel="stylesheet" href="notepad.css">
+<link rel="stylesheet" href="terminal.css">
 </head>
 <body>
 
@@ -51,6 +52,11 @@
     <div class="d-icon" ondblclick="openNotepad()"
          oncontextmenu="showIconCtx(event,'notepad')">
       <img src="icons/notepad.png" alt="Notepad"><span>Notepad</span>
+    </div>
+    <div class="d-icon" ondblclick="openTerminal()"
+         oncontextmenu="showIconCtx(event,'terminal')">
+      <img src="icons/terminal.png" alt="Command Prompt"
+           onerror="this.style.display='none'"><span>Command Prompt</span>
     </div>
   </div>
 </div>
@@ -578,7 +584,34 @@
 </div>
 
 <!-- ══════════════════════════════════════════════════════
-     TASKBAR APP RIGHT-CLICK CONTEXT MENU
+     TERMINAL ICON RIGHT-CLICK CONTEXT MENU
+     ══════════════════════════════════════════════════════ -->
+<div id="terminalIconCtx" class="ctx-menu">
+  <div class="ctx-item" onclick="openTerminal(); hideAllCtx()">
+    <span class="ctx-icon" style="font-weight:700">&#x25B7;</span><b>Open</b>
+  </div>
+  <div class="ctx-item" onclick="openTerminal('C:\\Users\\nx4real\\Documents'); hideAllCtx()">
+    <span class="ctx-icon">&#x1F4C2;</span>Open in Documents
+  </div>
+  <div class="ctx-item" onclick="openTerminal('C:\\Users\\nx4real\\Desktop'); hideAllCtx()">
+    <span class="ctx-icon">&#x1F4C2;</span>Open in Desktop
+  </div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="openTerminal(); hideAllCtx(); setTimeout(()=>termRunCmd('javac'),400)">
+    <span class="ctx-icon">&#x2615;</span>Run as Java compiler
+  </div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item ctx-disabled">
+    <span class="ctx-icon">&#x2702;</span>Delete
+  </div>
+  <div class="ctx-item ctx-disabled">
+    <span class="ctx-icon">&#x270F;</span>Rename
+  </div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="notify('Command Prompt — Windows 8 Web','Properties'); hideAllCtx()">
+    <span class="ctx-icon">&#x2139;</span>Properties
+  </div>
+</div>
      ══════════════════════════════════════════════════════ -->
 <div id="taskbarAppCtx" class="ctx-menu ctx-menu-up">
   <div class="ctx-item" id="tbarCtxPin" onclick="taskbarCtxPin()">
@@ -648,6 +681,7 @@
 <script src="thispc.js"></script>
 <script src="settings.js"></script>
 <script src="notepad.js"></script>
+<script src="terminal.js"></script>
 </body>
 </html>
  
