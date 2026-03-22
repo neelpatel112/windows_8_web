@@ -462,8 +462,10 @@ function showIconCtx(e, type) {
   e.stopPropagation();
   if (type === 'thispc') {
     openCtx('thisPcIconCtx', e.clientX, e.clientY);
+  } else if (type === 'notepad') {
+    openCtx('notepadIconCtx', e.clientX, e.clientY);
   }
-  /* other icons — could add more menus later, for now just suppress default */
+  /* other icons — suppress browser default */
 }
 
 /* ── TASKBAR APP RIGHT-CLICK ── */
