@@ -163,7 +163,14 @@ window.addEventListener('resize', () => { if (startOpen) sizeTiles(); });
 
 // close start on Escape or desktop click
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { if (startOpen) toggleStart(); hideShutdown(); }
+  if (e.key === 'Escape') {
+    if (startOpen) toggleStart();
+    hideShutdown();
+    hideAllCtx();
+    /* close settings if open */
+    const sw = document.getElementById('settingsWindow');
+    if (sw && sw.classList.contains('open')) closeSettings();
+  }
 });
 document.getElementById('desktop').addEventListener('click', () => {
   if (startOpen) toggleStart();
