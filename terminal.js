@@ -816,14 +816,23 @@ function javaCompile(source, filename) {
         tokens.push({ type:'STRING', value:s });
         continue;
       }
-      /* char literal */
+      /* char literal — if more than one char treat as String (common mistake) */
       if (src[i] === "'") {
-        let c = '';
+        let s = '';
         i++;
-        if (src[i]==='\\') { i++; c = ({n:'\n',t:'\t',r:'\r'}[src[i]] || src[i]); i++; }
-        else { c = src[i]; i++; }
+        while (i < src.length && src[i] !== "'") {
+          if (src[i] === '\\') {
+            i++;
+            s += ({ n:'\n', t:'\t', r:'\r', '\\':'\\', "'":"'" }[src[i]] || src[i]);
+          } else {
+            s += src[i];
+          }
+          i++;
+        }
         i++; /* closing ' */
-        tokens.push({ type:'CHAR', value:c }); continue;
+        /* if single char → CHAR, else treat as STRING so println works */
+        tokens.push({ type: s.length === 1 ? 'CHAR' : 'STRING', value: s });
+        continue;
       }
       /* number */
       if (/[0-9]/.test(src[i]) || (src[i]==='-' && /[0-9]/.test(src[i+1]) && tokens.length && ['OP','PUNCT'].includes(tokens[tokens.length-1]?.type))) {
@@ -1510,13 +1519,45 @@ class JavaRuntime {
       case 'fieldaccess': {
         const obj = this.evalExpr(expr.object, env);
         if (obj === null || obj === undefined) return null;
+
+        /* ── Java built-in static field access ── */
+        if (obj && obj._javaSystem) {
+          if (expr.field === 'out')  return { _out:true,  _isPrintStream:true };
+          if (expr.field === 'err')  return { _err:true,  _isPrintStream:true };
+          if (expr.field === 'in')   return { _scanner:true };
+          return null;
+        }
+        if (obj && obj._javaMath) {
+          if (expr.field === 'PI')   return Math.PI;
+          if (expr.field === 'E')    return Math.E;
+          return null;
+        }
+        if (obj && obj._javaInteger) {
+          if (expr.field === 'MAX_VALUE') return 2147483647;
+          if (expr.field === 'MIN_VALUE') return -2147483648;
+        }
+        if (obj && obj._javaDouble) {
+          if (expr.field === 'MAX_VALUE') return Number.MAX_VALUE;
+          if (expr.field === 'MIN_VALUE') return Number.MIN_VALUE;
+          if (expr.field === 'NaN')       return NaN;
+        }
+
+        /* string length */
         if (typeof obj === 'string') {
           if (expr.field === 'length') return obj.length;
         }
+        /* array length */
         if (Array.isArray(obj)) {
           if (expr.field === 'length') return obj.length;
         }
-        if (typeof obj === 'object' && obj !== null) return obj[expr.field] ?? null;
+        /* ArrayList/list size */
+        if (obj && obj._list) {
+          if (expr.field === 'size') return obj.data.length;
+        }
+        /* general object field */
+        if (typeof obj === 'object' && obj !== null) {
+          return obj[expr.field] ?? null;
+        }
         return null;
       }
       case 'arrayaccess': {
@@ -1548,16 +1589,26 @@ class JavaRuntime {
   callMethod(obj, method, args, env) {
     if (obj === null || obj === undefined) throw new Error('NullPointerException');
 
-    /* System.out.println / print / printf */
-    if (obj && obj._javaSystem) return { _out:true, _err:true };
-    if (obj && (obj._out || obj._err || (typeof obj === 'object' && (obj._isPrintStream)))) {
-      const text = args.map(a => this.javaToString(a, env)).join('');
+    /* System — static methods */
+    if (obj && obj._javaSystem) {
+      if (method === 'exit')              { this.output.push('[Program exited with code ' + (args[0]??0) + ']'); return null; }
+      if (method === 'currentTimeMillis') return Date.now();
+      if (method === 'nanoTime')          return Date.now() * 1e6;
+      if (method === 'arraycopy')         return null;
+      if (method === 'out' || method === 'err') return { _out:true, _isPrintStream:true };
+      return null;
+    }
+
+    /* PrintStream (System.out / System.err) */
+    if (obj && (obj._out || obj._err || obj._isPrintStream)) {
+      const text = args.map(a => this.javaToString(a)).join('');
       if (method === 'println') { this.output.push(text); return null; }
       if (method === 'print')   { this.output.push(text); return null; }
       if (method === 'printf' || method === 'format') {
         this.output.push(this.javaFormat(args[0], args.slice(1)));
         return null;
       }
+      if (method === 'flush' || method === 'close') return null;
       return null;
     }
 
