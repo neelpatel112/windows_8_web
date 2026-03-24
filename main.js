@@ -460,9 +460,10 @@ function desktopNewFolder() {
 function showIconCtx(e, type) {
   e.preventDefault();
   e.stopPropagation();
-  if (type === 'thispc')    openCtx('thisPcIconCtx',    e.clientX, e.clientY);
-  else if (type === 'notepad')  openCtx('notepadIconCtx',  e.clientX, e.clientY);
-  else if (type === 'terminal') openCtx('terminalIconCtx', e.clientX, e.clientY);
+  if      (type === 'thispc')    openCtx('thisPcIconCtx',    e.clientX, e.clientY);
+  else if (type === 'notepad')   openCtx('notepadIconCtx',   e.clientX, e.clientY);
+  else if (type === 'terminal')  openCtx('terminalIconCtx',  e.clientX, e.clientY);
+  else if (type === 'ie')        openCtx('ieIconCtx',        e.clientX, e.clientY);
   /* other icons — suppress browser default */
 }
 
@@ -561,3 +562,4 @@ function closeSysProp() {
 
 /* ── WELCOME ── (keep original below) */
 setTimeout(() => notify('Welcome to Windows 8 Web', 'Windows 8'), 2900);
+ 
