@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="settings.css">
 <link rel="stylesheet" href="notepad.css">
 <link rel="stylesheet" href="terminal.css">
+<link rel="stylesheet" href="ie.css">
 </head>
 <body>
 
@@ -45,8 +46,8 @@
          oncontextmenu="showIconCtx(event,'generic')">
       <img src="icons/recycle.png" alt="Recycle Bin"><span>Recycle Bin</span>
     </div>
-    <div class="d-icon" ondblclick="notify('Opening Internet Explorer…','Internet Explorer')"
-         oncontextmenu="showIconCtx(event,'generic')">
+    <div class="d-icon" ondblclick="openIE()"
+         oncontextmenu="showIconCtx(event,'ie')">
       <img src="icons/ie.png" alt="Internet Explorer"><span>Internet Explorer</span>
     </div>
     <div class="d-icon" ondblclick="openNotepad()"
@@ -194,7 +195,7 @@
           <span class="tile-label">Store</span>
         </div>
 
-        <div class="tile tc-blue" onclick="tileOpen(this,'Internet Explorer')" style="grid-column:1/3;grid-row:3">
+        <div class="tile tc-blue" onclick="openIE();if(startOpen)setTimeout(toggleStart,200);" style="grid-column:1/3;grid-row:3">
           <div class="tile-icon"><img src="icons/ie.png" alt="IE"></div>
           <span class="tile-label">Internet Explorer</span>
         </div>
@@ -584,6 +585,32 @@
 </div>
 
 <!-- ══════════════════════════════════════════════════════
+     INTERNET EXPLORER ICON RIGHT-CLICK CONTEXT MENU
+     ══════════════════════════════════════════════════════ -->
+<div id="ieIconCtx" class="ctx-menu">
+  <div class="ctx-item" onclick="openIE(); hideAllCtx()">
+    <span class="ctx-icon" style="font-weight:700">&#x25B7;</span><b>Open</b>
+  </div>
+  <div class="ctx-item" onclick="openIE('search:Google'); hideAllCtx()">
+    <span class="ctx-icon">&#x1F50D;</span>Open Google Search
+  </div>
+  <div class="ctx-item" onclick="openIE(); hideAllCtx()">
+    <span class="ctx-icon">&#x2B;</span>New Tab
+  </div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item ctx-disabled">
+    <span class="ctx-icon">&#x2702;</span>Delete
+  </div>
+  <div class="ctx-item ctx-disabled">
+    <span class="ctx-icon">&#x270F;</span>Rename
+  </div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="notify('Internet Explorer 10 — Windows 8 Web Edition','Properties'); hideAllCtx()">
+    <span class="ctx-icon">&#x2139;</span>Properties
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
      TERMINAL ICON RIGHT-CLICK CONTEXT MENU
      ══════════════════════════════════════════════════════ -->
 <div id="terminalIconCtx" class="ctx-menu">
@@ -682,6 +709,7 @@
 <script src="settings.js"></script>
 <script src="notepad.js"></script>
 <script src="terminal.js"></script>
+<script src="ie.js"></script>
 </body>
 </html>
  
