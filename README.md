@@ -16,8 +16,6 @@
 
 *No frameworks. No libraries. No build tools. Pure HTML, CSS, and vanilla JavaScript.*
 
-*The only external dependency is the Anthropic Claude API — used exclusively to power AI search in Internet Explorer.*
-
 </div>
 
 ---
@@ -82,37 +80,6 @@ Six tiles animate with a **3D X-axis flip** to reveal live content on the back f
 | Music | Now Playing track and artist |
 | News | Breaking headline text |
 | Bing | Daily photo caption |
-
-### 📋 Taskbar
-- **Windows logo button** (`logo.png`) opens and closes the Start Screen
-- **Pinned apps** — Internet Explorer, File Explorer, Windows Media Player with blue underline indicators
-- **Right-click on any taskbar app** → context menu: Pin to taskbar / Unpin, Close window
-- App windows injected into the taskbar when opened (This PC, Notepad, Terminal, IE)
-
-### 🔔 System Tray — All Interactive
-
-| Icon | Behaviour |
-|------|-----------|
-| 🌐 Language | Dropdown panel — switch input language (ENG / HIN / ESP) |
-| 📶 Wi-Fi | Network panel — connected network + nearby networks list |
-| 🔊 Volume | Slider panel — live blue fill track, real-time percentage |
-| 🔋 Battery | Hover-only tooltip showing battery percentage |
-| 📋 Action Center | Panel — Defender status, Windows Update, Mail |
-| 🕐 Clock | Full calendar popup with month navigation, today highlight, live ticking clock |
-| ▌ Show Desktop | Sliver button on far right edge |
-
-### 📅 Calendar Popup
-- Full month grid with day-of-week headers (Su Mo Tu We Th Fr Sa)
-- Today highlighted in Windows blue (`#0078d7`)
-- Sundays shown in red
-- Previous / next month navigation arrows
-- Live clock below the grid — ticks every second while open
-- Smooth slide-up animation on open, closes on outside click
-
-### 🔮 Charms Bar
-- Slides in from the **right screen edge** on mouse hover
-- Search, Share, Start, Devices, Settings charms
-- Live clock at the bottom
 
 ### ⚙️ PC Settings (Personalise)
 Full-screen Windows 8 style settings panel with 12 pages:
@@ -340,47 +307,7 @@ Built-in Java class support:
    → Runtime exceptions shown in red
 ```
 
----
 
-### 🌐 Internet Explorer (AI-Powered Browser)
-
-A Windows 8 IE10 style browser window with AI-powered Google search.
-
-**Window:** Draggable, resizable, minimise/maximise/close. Dark title bar, grey navigation bar, tab bar, content area, status bar with Protected Mode indicator.
-
-**Navigation bar:**
-- Back, Forward, Refresh, Home buttons with per-tab history
-- Address bar — type a URL to navigate, type anything else to search
-- Smart detection: if input looks like a URL it navigates, otherwise it searches
-
-**Tab system:**
-- Multiple tabs with independent navigation histories
-- Click **+** to open a new tab, click **×** to close
-- Each tab shows its own favicon and title
-- Closing the last tab closes the window
-
-**Home page (New Tab):**
-- IE logo with "Windows 8 Web Edition" branding
-- Large search box
-- Quick links: YouTube, Wikipedia, Gmail, GitHub, Twitter, Amazon (all open as AI searches)
-
-**AI-Powered Search:**
-When a search is performed, the app calls the **Anthropic Claude API** which responds with a structured JSON object containing a featured answer, organic results, result count, and related searches. The results are rendered as a faithful Google-style results page:
-
-- Coloured **Google logo** (each letter in its correct brand colour)
-- Editable search bar at the top — press Enter to search again
-- Result tabs: All / Images / News / Videos
-- Result count: *"About 412,000,000 results (0.31 seconds)"*
-- **✨ AI Overview card** — featured answer with a letter-by-letter typewriter animation
-- **4–6 organic results** — each with green URL, blue title, grey snippet with bold keywords
-- **Related searches** chips at the bottom — click any to search immediately
-
-If the API is unavailable, a realistic fallback result set is generated client-side so the page always renders.
-
-**Right-click menus:**
-- On browser content: Back, Forward, Refresh, Save As, Print, View Source, Close
-- On title bar: Restore, Minimise, Maximise, Close
-- On desktop icon: Open, Open Google Search, New Tab, Properties
 
 ---
 
@@ -490,42 +417,7 @@ windows8-web/
     └── file-sys.png
 ```
 
----
 
-## 🛠️ Getting Started
-
-### Option 1 — Open directly in browser
-
-```bash
-git clone https://github.com/neelpatel112/windows_8_web.git
-cd windows_8_web
-open index.html          # macOS
-start index.html         # Windows
-xdg-open index.html      # Linux
-```
-
-### Option 2 — Serve locally (recommended)
-
-```bash
-# Python 3
-python -m http.server 8080
-
-# Node.js
-npx serve .
-
-# VS Code — Live Server extension
-```
-
-Then open `http://localhost:8080`
-
-### Option 3 — Deploy to Vercel
-
-```bash
-npm i -g vercel
-vercel
-```
-
----
 
 ## 🎮 How to Use
 
