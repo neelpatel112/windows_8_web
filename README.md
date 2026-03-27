@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="logo.png" alt="Windows 8 Web Logo" width="80" />
+<img src="logo.png" alt="Windows 8 Web" width="80" />
 
 # Windows 8 Web
 
@@ -14,21 +14,21 @@
 
 <br/>
 
-<img src="https://windows8web.vercel.app/67.jpg" alt="Windows 8 Web Screenshot" width="780" style="border-radius:4px; box-shadow: 0 8px 32px rgba(0,0,0,0.4);" />
+*No frameworks. No libraries. No build tools. Pure HTML, CSS, and vanilla JavaScript.*
 
-<br/><br/>
-
-*No frameworks. No libraries. No build tools. Pure HTML, CSS, and JavaScript.*
+*The only external dependency is the Anthropic Claude API — used exclusively to power AI search in Internet Explorer.*
 
 </div>
 
 ---
 
-## ✨ Overview
+## ✨ What Is This?
 
-**Windows 8 Web** is a browser-based recreation of the Microsoft Windows 8 operating system experience. It faithfully reproduces the look, feel, and interaction patterns of Windows 8 — from the animated boot screen and cinematic lock screen unlock, all the way to the Metro Start Screen with live tile flips, a fully functional system tray, and real working apps like **This PC** with a virtual file system.
+**Windows 8 Web** is a complete browser-based recreation of the Microsoft Windows 8 operating system. It faithfully reproduces the look, feel, and interaction patterns of Windows 8 — from the animated boot screen and cinematic lock screen, to the Metro Start Screen with live tile flips, a fully functional system tray, and a suite of real working apps.
 
-The entire project is built with **zero dependencies** — no React, no Vue, no bundler, no framework. Just raw, handcrafted HTML, CSS, and vanilla JavaScript.
+Every single pixel of UI, every animation, every interaction is hand-crafted in pure HTML, CSS, and vanilla JavaScript — zero npm packages, zero frameworks, zero bundlers. Open `index.html` and it runs.
+
+The project includes five fully functional apps: **This PC** (file explorer), **Notepad** (text editor), **Command Prompt** (terminal with a built-from-scratch Java compiler and runtime), **Internet Explorer** (AI-powered browser), and **PC Settings** (personalisation panel) — all with proper window management, drag, resize, minimise, maximise, and close behaviours.
 
 ---
 
@@ -36,125 +36,364 @@ The entire project is built with **zero dependencies** — no React, no Vue, no 
 
 > **[https://windows8web.vercel.app/](https://windows8web.vercel.app/)**
 
-Open it in your browser. It works on desktop and mobile.
+Works on desktop and mobile browsers.
 
 ---
 
-## 🎬 Features
+## 🎬 Full Feature Breakdown
 
 ### 🖥️ Boot Screen
-- Authentic Windows logo (`logo.png`) fades and scales in on a pure black background
-- **8-dot circular spinner** — each dot pulses in sequence, matching the exact Windows 8 boot animation
-- Smooth 2.3-second boot sequence before transitioning to the lock screen
+- Pure black background with `logo.png` centred, fading and scaling in on load
+- **8-dot circular spinner** — each dot pulses in sequence at staggered delays, matching the exact Windows 8 boot animation visually
+- 2.3-second boot sequence before transitioning to the lock screen
 
 ### 🔒 Lock Screen
-- Custom wallpaper (`67.jpg`) with a dark gradient overlay for readability
-- **Live clock and date** update every second
-- **Two-stage cinematic unlock** — a subtle 18px nudge upward on first click (responsiveness feedback), followed by a slow 900ms slide-up reveal
+- Custom wallpaper (`67.jpg`) with a dark gradient overlay for text readability
+- **Live clock and date** — updates every second
+- **Two-stage cinematic unlock animation:**
+  - Stage 1: A subtle 18px upward nudge on first click (responsiveness feedback)
+  - Stage 2: A slow 900ms slide-up reveal of the desktop
 - Battery and Wi-Fi status icons in the bottom-right corner
 
 ### 🖼️ Desktop
-- Wallpaper background with radial vignette
-- **Desktop icons** — This PC, Documents, Recycle Bin, Internet Explorer, Notepad
-- Double-click any icon to open its app
-- Clean icon layout with hover highlight states
+- Wallpaper background with a radial vignette overlay
+- Desktop icons: This PC, Documents, Recycle Bin, Internet Explorer, Notepad, Command Prompt
+- Double-click any icon to launch its app
+- **Right-click on empty desktop** → context menu with View, Refresh, New (Folder / Shortcut / Text Document), Display Settings, Personalise, Properties
+- **Right-click on icons** → app-specific context menus (Open, Rename greyed, Delete greyed, Properties)
 
 ### 🪟 Start Screen
 - Opens with a smooth **slide-up animation** from the taskbar
-- **"Start" title** top-left in authentic Windows 8 light-weight font
-- **User block** top-right with a **power dropdown** that slides down with `opacity + translateY` animation
-- Power dropdown includes: Lock, Sign out, Other user (disabled), Sleep, Shut down, Restart
-- **5 tile column groups** — horizontally scrollable, each column **staggers in from the right** with a scale-up animation on open (80ms delay per column)
-- **Transparent tile borders** that appear on hover, compress inward on press — matching the original Metro UI feel
-- **Wallpaper background** visible behind a dark semi-transparent overlay
-- Tile groups: Mail, Calendar, News, People, Finance, Messaging, Desktop, Weather, Store, Internet Explorer, Maps, SkyDrive, Skype, Travel, Bing, Games, Camera, Photos, Music, Video, Settings, OneNote
+- `"Start"` title top-left in authentic Windows 8 light-weight font
+- **User block** top-right with avatar (`user.png`) and a **power dropdown** that slides down smoothly
+- Power dropdown: Lock, Sign out, Other user (disabled), Sleep, Shut down, Restart
+- **5 tile column groups** — each column staggers in from the right with a scale-up animation (80ms delay per column) on open
+- Tiles have **transparent borders by default** that appear on hover, compress inward on press — matching the real Metro UI interaction model
+- **Wallpaper visible behind** a dark semi-transparent overlay
 
 ### 📌 Live Tiles
-Six tiles have **live flip animations** — they periodically rotate on the X-axis to reveal live content on the back face:
+Six tiles animate with a **3D X-axis flip** to reveal live content on the back face, each on its own independent timer:
 
 | Tile | Live Content |
 |------|-------------|
-| Mail | Unread message count |
-| Calendar | Current date and month |
-| Weather | Temperature and conditions |
-| Music | Now Playing track info |
-| News | Breaking headline |
+| Mail | Unread message count and inbox status |
+| Calendar | Current day number and month name |
+| Weather | Temperature and weather conditions |
+| Music | Now Playing track and artist |
+| News | Breaking headline text |
 | Bing | Daily photo caption |
 
 ### 📋 Taskbar
-- **Windows logo button** (`logo.png`) opens/closes the Start Screen
-- **Pinned apps** — Internet Explorer, File Explorer, Windows Media Player with running indicators
-- **Full system tray** on the right side with working interactive panels:
+- **Windows logo button** (`logo.png`) opens and closes the Start Screen
+- **Pinned apps** — Internet Explorer, File Explorer, Windows Media Player with blue underline indicators
+- **Right-click on any taskbar app** → context menu: Pin to taskbar / Unpin, Close window
+- App windows injected into the taskbar when opened (This PC, Notepad, Terminal, IE)
 
-| Tray Item | Behaviour |
-|-----------|-----------|
-| 🌐 Language | Dropdown panel — switch input language |
-| 📶 Wi-Fi | Network panel — shows connected + nearby networks |
-| 🔊 Volume | Slider panel — drag to adjust, live percentage display |
-| 🔋 Battery | Hover tooltip only — shows battery percentage |
-| 📋 Action Center | Panel — Defender, Windows Update, Mail status |
-| 🕐 Clock | Click opens a **full calendar popup** with month navigation, today highlight, live ticking clock |
-| ▌ Show Desktop | Sliver button on the far right edge |
+### 🔔 System Tray — All Interactive
 
-### 📅 Calendar Panel
-- Full month grid with day-of-week headers
-- **Today highlighted in blue** (`#0078d7`)
+| Icon | Behaviour |
+|------|-----------|
+| 🌐 Language | Dropdown panel — switch input language (ENG / HIN / ESP) |
+| 📶 Wi-Fi | Network panel — connected network + nearby networks list |
+| 🔊 Volume | Slider panel — live blue fill track, real-time percentage |
+| 🔋 Battery | Hover-only tooltip showing battery percentage |
+| 📋 Action Center | Panel — Defender status, Windows Update, Mail |
+| 🕐 Clock | Full calendar popup with month navigation, today highlight, live ticking clock |
+| ▌ Show Desktop | Sliver button on far right edge |
+
+### 📅 Calendar Popup
+- Full month grid with day-of-week headers (Su Mo Tu We Th Fr Sa)
+- Today highlighted in Windows blue (`#0078d7`)
 - Sundays shown in red
-- Previous/next month navigation arrows
-- **Live ticking clock** displayed below the grid
+- Previous / next month navigation arrows
+- Live clock below the grid — ticks every second while open
 - Smooth slide-up animation on open, closes on outside click
 
-### 🔊 Volume Panel
-- Horizontal range slider with a **live blue fill track** that updates as you drag
-- Volume percentage shown in real time
-
-### 🖥️ This PC App
-A fully functional File Explorer-style window app:
-
-#### Window System
-- **Draggable** — click and drag the title bar to move anywhere on screen
-- **Resizable** — drag the bottom-right corner handle to resize
-- **Minimise** — smooth shrink-to-taskbar animation; click the taskbar entry to restore
-- **Maximise / Restore** — fills the full viewport, button icon toggles between square and clone
-- **Close** — removes the window with a fade-out animation
-- Window entry appears in the taskbar while open
-
-#### Ribbon Toolbar
-- **Computer tab** — New Folder, Open, Rename, Delete, Properties
-- **View tab** — Large Icons, List view, Sort by name, Sort by type
-
-#### Navigation
-- Back / Forward / Up buttons with full **history stack**
-- **Address bar** updates at every navigation step with path breadcrumb and matching icon
-- **Live search** — filters items in current folder as you type
-- **Sidebar** with Favourites (Desktop, Downloads, This PC) and device shortcuts
-
-#### This PC View
-- **4 drive tiles** — Windows (C:), Data (D:), USB Drive (E:), DVD Drive (F:)
-- Each drive shows a **storage progress bar** that changes colour by usage:
-  - 🔵 Blue — normal (under 60%)
-  - 🟡 Yellow — moderate (60–85%)
-  - 🔴 Red — critical (above 85%)
-- Free space and total capacity displayed below each drive name
-- **6 system folder shortcuts** — Desktop, Documents, Downloads, Music, Pictures, Videos
-
-#### File System
-- **Virtual file system** — pre-populated with realistic folders and files in every location
-- **New Folder** — creates a folder with the name input already selected; duplicate names auto-increment (New Folder, New Folder (1)…)
-- **Rename** — double-click name area or press F2; confirm with Enter, cancel with Escape
-- **Delete** — Delete key or ribbon button removes selected item
-- **Right-click context menu** — New folder, Open, Rename, Delete, Properties
-- **Keyboard shortcuts** — F2 (rename), Delete (delete), Backspace (navigate back)
-
 ### 🔮 Charms Bar
-- Slide in from the **right screen edge** on mouse hover
+- Slides in from the **right screen edge** on mouse hover
 - Search, Share, Start, Devices, Settings charms
-- Live clock displayed at the bottom of the bar
+- Live clock at the bottom
+
+### ⚙️ PC Settings (Personalise)
+Full-screen Windows 8 style settings panel with 12 pages:
+
+**Personalise** (3 sub-tabs):
+- **Lock screen** — live preview with ticking clock overlay, wallpaper picker strip (10 wallpapers from `wallpapers/` folder + default), Browse button to upload from device. Selecting any wallpaper **instantly changes the real lock screen background**.
+- **Start screen** — 20-colour accent colour grid, selecting a colour changes the start screen background live. Wallpaper strip also changes the desktop and start screen backgrounds.
+- **Account picture** — shows `user.png` with name **Neel Patel**, Browse button to upload a new photo — updates the Start Screen avatar instantly everywhere.
+
+**Other pages:** Notifications (5 toggles), Search (3 toggles + SafeSearch dropdown), General (5 toggles + brightness slider), Privacy (4 toggles), Devices (printer / Bluetooth / mobile), Wireless (Wi-Fi / Bluetooth / Airplane mode), Ease of Access (4 toggles), Sync your settings (5 toggles), HomeGroup, Windows Update (live date, auto-update toggle, check button), Share.
+
+**Close:** ✕ button top-right, or press **Escape**. Slides out with a reverse animation.
 
 ### 🔌 Shutdown
-- Triggered from power dropdown in Start Screen
-- Full overlay with Sleep, Shut down, Restart options
-- Shut down plays a fade-to-black animation with Windows logo
+- Triggered from power dropdown in Start Screen or PC Settings
+- Full overlay with Sleep, Shut down, Restart
+- Shut down: fade-to-black with Windows logo
+- Restart: reloads the page
+- Sleep: screen dims to black, click anywhere to wake
+
+---
+
+## 🖥️ Apps
+
+### 📁 This PC (File Explorer)
+
+A fully functional Windows File Explorer style app:
+
+**Window system:**
+- Draggable by title bar, resizable from bottom-right corner handle
+- Minimise → smooth animation to taskbar, click taskbar entry to restore
+- Maximise → fills full viewport, button icon toggles between square and clone symbol
+- Close → removes with fade-out animation
+- Double-click title bar to toggle maximise
+
+**Ribbon toolbar:**
+- Computer tab: New Folder, Open, Rename, Delete, Properties
+- View tab: Large Icons, List view, Sort by name, Sort by type
+
+**Navigation:**
+- Back / Forward / Up buttons with full per-session history stack
+- Address bar updates at every step with path breadcrumb and matching icon
+- Sidebar: Favourites (Desktop, Downloads, This PC) and Devices shortcuts
+- Live search — filters items in current folder as you type
+
+**This PC view:**
+- 4 drive tiles: Windows (C:), Data (D:), USB Drive (E:), DVD Drive (F:)
+- Each drive shows a colour-coded **storage progress bar**:
+  - 🔵 Blue — healthy (under 60% full)
+  - 🟡 Yellow — moderate (60–85% full)
+  - 🔴 Red — critical (above 85% full)
+- Free space and total capacity shown below each drive name
+- 6 system folder shortcuts: Desktop, Documents, Downloads, Music, Pictures, Videos
+
+**Virtual file system:**
+- Pre-populated with realistic folders and files across all locations
+- **New Folder** — creates with the name input already selected, duplicate names auto-increment
+- **Rename** — click name or press F2, confirm with Enter, cancel with Escape
+- **Delete** — Delete key or ribbon button
+- **Right-click context menu** — New folder, Open, Rename, Delete, Properties
+- **Keyboard shortcuts** — F2 rename, Delete delete, Backspace navigate back
+- **Double-click `.txt` or `.java` files** → opens them directly in Notepad
+
+---
+
+### 📝 Notepad
+
+A full-featured text editor supporting multiple file types including `.java`, `.txt`, `.py`, `.html`, `.css` and more.
+
+**File menu:**
+- New — creates a new blank tab
+- Open — dialog listing all saved files in Documents, with Browse to open from device
+- Save — writes to virtual FS Documents; prompts for filename on first save (preserves any extension — `.java`, `.txt`, etc.)
+- Save As — always prompts, preserves typed extension
+- Download file — downloads to your real device as the correct file type
+- Exit — warns if unsaved tabs exist
+
+**Edit menu — all working:**
+Cut, Copy, Paste, Delete, Select All, Undo, Find (Ctrl+F), Find Next (F3), Replace (Ctrl+H), Go To Line (Ctrl+G), Insert Date/Time (F5)
+
+**Find bar:**
+Slides open below menu bar. Wraps around on reaching end. Replace mode shows second input field + Replace / Replace All buttons.
+
+**Format menu:**
+- Word Wrap toggle with checkmark
+- Font dialog — family (8 options), style (normal / italic / bold / bold italic), size, live preview
+
+**View menu:**
+- Status Bar toggle
+- Zoom In / Out / Reset (Ctrl++ / Ctrl+- / Ctrl+0)
+
+**Status bar:**
+Live Line + Column position, word count, character count, encoding label (UTF-8).
+
+**Saved notes sidebar:**
+Left panel showing all text files from Documents. Red dot = unsaved changes. Click to switch tabs. Files saved in Notepad appear in This PC → Documents.
+
+**Right-click menus:**
+- On editor textarea: Cut, Copy, Paste, Delete, Select All, Find, Replace, Font
+- On sidebar file entries: Open, Rename, Delete, Save
+- On title bar: Restore, Minimise, Maximise, Close
+
+**Java file support:**
+Write Java code, save as `ClassName.java` (the exact class name must match the filename). The file appears immediately in This PC → Documents and is accessible from the Terminal.
+
+---
+
+### ⌨️ Command Prompt (Terminal)
+
+A fully working terminal with a **built-from-scratch Java compiler and runtime engine** implemented entirely in JavaScript.
+
+**Window:** Draggable, resizable, minimise/maximise/close. Dark `#0c0c0c` background, cyan prompt, colour-coded output. Status bar shows current directory and Java version.
+
+**Menu bar:** File (Clear / Exit), Edit (Copy / Paste / Select All / Clear), View (Zoom), Help (Commands / About)
+
+**Built-in commands — all work with the virtual file system:**
+
+| Command | Behaviour |
+|---------|-----------|
+| `dir` / `ls` | Lists files and folders with sizes, timestamps, file count and bytes free |
+| `cd <path>` | Changes directory — supports `..`, drive letters, `documents`, `desktop`, `downloads` shortcuts |
+| `mkdir <name>` | Creates a folder in virtual FS (visible in This PC immediately) |
+| `del <file>` | Deletes a file from virtual FS |
+| `type <file>` | Displays file contents — including Java source code |
+| `copy <src> <dst>` | Copies a file |
+| `move <src> <dst>` | Moves a file |
+| `ren <old> <new>` | Renames a file |
+| `echo <text>` | Prints text |
+| `set` | Shows all environment variables (PATH, JAVA_HOME, etc.) |
+| `date` / `time` | Current date / time |
+| `ver` | Windows version string |
+| `whoami` | `nx4real-pc\nx4real` |
+| `hostname` | `NX4REAL-PC` |
+| `ipconfig` | Full network info with IPv4, subnet, gateway for both Ethernet and Wi-Fi |
+| `ping <host>` | Simulates 4 pings with realistic RTT values and statistics |
+| `tree` | Directory tree of current folder |
+| `tasklist` | Running processes list including `java.exe`, `notepad.exe`, `cmd.exe` |
+| `systeminfo` | Full system info — Owner: **Neel Patel**, Org: **nx4real**, 8GB RAM, i7 processor |
+| `path` | Shows the PATH environment variable |
+| `cls` / `clear` | Clears terminal output |
+| `help` | Lists all commands |
+| `exit` | Closes the terminal |
+
+**Quality of life:**
+- ↑ / ↓ arrow keys — navigate command history
+- Tab — autocomplete filenames from current directory
+- Ctrl+C — interrupt current input
+- Ctrl+L — clear screen
+
+**Output colour coding:**
+- 🟢 Green — Java program output
+- 🔵 Cyan — system / info messages
+- 🟡 Yellow — hints and warnings
+- 🔴 Red — errors and exceptions
+- ⚪ White — normal command output
+
+**Right-click menus:**
+- On terminal body: Copy, Paste, Select All, Clear, Close
+- On title bar: Restore, Minimise, Maximise, Close
+
+#### ☕ Java Compiler & Runtime Engine
+
+The most complex feature of the project — a full Java interpreter written in JavaScript from scratch. No external libraries.
+
+**Stage 1 — Tokenizer:**
+Reads raw Java source code character-by-character and produces a token stream. Handles all Java token types: keywords, identifiers, string/char/number literals, operators, punctuation. Skips `//` and `/* */` comments. Handles escape sequences (`\n`, `\t`, `\\`). Multi-character single-quoted strings are treated as String literals (forgiving mode).
+
+**Stage 2 — Recursive Descent Parser:**
+Walks the token stream and builds a complete Abstract Syntax Tree (AST). Supports:
+- Class declarations, fields, static/instance methods, constructors
+- Full expression parsing with correct operator precedence (BODMAS): arithmetic, comparison, logical, ternary `? :`, pre/post `++/--`, compound assignment `+= -= *= /= %=`
+- All statement types: `if/else`, `for`, `while`, `do-while`, `switch/case/default`, `try/catch/finally`, `throw`, `return`, `break`, `continue`
+- Method calls, field access (`System.out`), array access, `new` expressions
+- Validates that the public class name must match the filename — produces a compile error if it does not
+
+**Stage 3 — Compiler:**
+Stores the parsed AST in a `compiledClasses` object in memory. Also creates actual `.class` files in the virtual FS Documents folder, visible in This PC.
+
+**Stage 4 — Runtime Executor (`JavaRuntime` class):**
+Walks the AST and executes it with full scoped environments (each block/method gets its own variable scope with parent chain — exactly how the JVM stack frames work). Includes call stack protection (throws `StackOverflowError` after 500 recursive calls) and loop protection (throws after 100,000 iterations).
+
+**Supported Java features:**
+
+Data types: `int`, `long`, `double`, `float`, `boolean`, `char`, `String`, arrays `int[]`, `String[]`
+
+Control flow: `if/else`, `while`, `for`, `do-while`, `switch/case/default`, `break`, `continue`, `return`, `try/catch/finally`, `throw`
+
+OOP: classes, instance fields, static fields, instance methods, static methods, constructors, `this`, `new`, user-defined class instantiation and method calls between classes
+
+Built-in Java class support:
+
+| Class | Supported methods |
+|-------|-------------------|
+| `System.out` | `println`, `print`, `printf`, `format` |
+| `Math` | `abs`, `sqrt`, `pow`, `max`, `min`, `floor`, `ceil`, `round`, `log`, `log10`, `sin`, `cos`, `tan`, `random`, `PI`, `E` |
+| `String` | `length`, `charAt`, `substring`, `indexOf`, `lastIndexOf`, `contains`, `startsWith`, `endsWith`, `replace`, `replaceAll`, `toLowerCase`, `toUpperCase`, `trim`, `split`, `toCharArray`, `equals`, `equalsIgnoreCase`, `isEmpty`, `concat`, `format`, `matches` |
+| `StringBuilder` | `append`, `toString`, `length`, `charAt`, `reverse`, `deleteCharAt`, `insert` |
+| `Integer` | `parseInt`, `toBinaryString`, `toHexString`, `MAX_VALUE`, `MIN_VALUE` |
+| `Double` | `parseDouble`, `isNaN`, `MAX_VALUE`, `MIN_VALUE`, `NaN` |
+| `Arrays` | `sort`, `fill`, `toString`, `copyOf` |
+| `ArrayList` | `add`, `get`, `size`, `remove`, `contains`, `toString` |
+| `HashMap` | `put`, `get`, `containsKey`, `size`, `keySet`, `toString` |
+| `HashSet` | `add`, `contains`, `size`, `remove`, `toString` |
+| `Collections` | `sort`, `reverse`, `max`, `min` |
+| `Random` | `nextInt`, `nextDouble`, `nextBoolean` |
+| `String.format` / `printf` | Full format specifiers: `%d`, `%f`, `%s`, `%c`, `%b`, `%o`, `%x`, `%X`, `%n` |
+
+**The Java workflow:**
+
+```
+1. Open Notepad → write Java code → save as ClassName.java (goes to Documents)
+
+2. Open Terminal → cd documents (or javac searches Documents automatically)
+
+3. javac ClassName.java
+   → Tokenize → Parse → Validate class name matches filename
+   → On success: ClassName.class created in virtual FS
+   → Shows: ✔ Compilation successful — 1 class(es) compiled
+   → Suggests: Run it with: java ClassName
+
+4. java ClassName
+   → Loads compiled AST
+   → Executes main() method
+   → Output printed in green
+   → Runtime exceptions shown in red
+```
+
+---
+
+### 🌐 Internet Explorer (AI-Powered Browser)
+
+A Windows 8 IE10 style browser window with AI-powered Google search.
+
+**Window:** Draggable, resizable, minimise/maximise/close. Dark title bar, grey navigation bar, tab bar, content area, status bar with Protected Mode indicator.
+
+**Navigation bar:**
+- Back, Forward, Refresh, Home buttons with per-tab history
+- Address bar — type a URL to navigate, type anything else to search
+- Smart detection: if input looks like a URL it navigates, otherwise it searches
+
+**Tab system:**
+- Multiple tabs with independent navigation histories
+- Click **+** to open a new tab, click **×** to close
+- Each tab shows its own favicon and title
+- Closing the last tab closes the window
+
+**Home page (New Tab):**
+- IE logo with "Windows 8 Web Edition" branding
+- Large search box
+- Quick links: YouTube, Wikipedia, Gmail, GitHub, Twitter, Amazon (all open as AI searches)
+
+**AI-Powered Search:**
+When a search is performed, the app calls the **Anthropic Claude API** which responds with a structured JSON object containing a featured answer, organic results, result count, and related searches. The results are rendered as a faithful Google-style results page:
+
+- Coloured **Google logo** (each letter in its correct brand colour)
+- Editable search bar at the top — press Enter to search again
+- Result tabs: All / Images / News / Videos
+- Result count: *"About 412,000,000 results (0.31 seconds)"*
+- **✨ AI Overview card** — featured answer with a letter-by-letter typewriter animation
+- **4–6 organic results** — each with green URL, blue title, grey snippet with bold keywords
+- **Related searches** chips at the bottom — click any to search immediately
+
+If the API is unavailable, a realistic fallback result set is generated client-side so the page always renders.
+
+**Right-click menus:**
+- On browser content: Back, Forward, Refresh, Save As, Print, View Source, Close
+- On title bar: Restore, Minimise, Maximise, Close
+- On desktop icon: Open, Open Google Search, New Tab, Properties
+
+---
+
+## 🔗 App Integration
+
+All five apps share the same virtual file system object (`FS`) — any change in one app is immediately visible in others:
+
+- **Save a `.txt` or `.java` file in Notepad** → it appears instantly in This PC → Documents
+- **Create a folder with `mkdir` in Terminal** → it appears in This PC
+- **`del` a file in Terminal** → it's removed from This PC
+- **`javac` compiles a `.java` file** → a `.class` file appears in This PC → Documents
+- **Double-click a `.txt` or `.java` file in This PC** → opens it directly in Notepad with content loaded
+- **Settings wallpaper change** → instantly updates the actual desktop and lock screen backgrounds
 
 ---
 
@@ -163,66 +402,92 @@ A fully functional File Explorer-style window app:
 ```
 windows8-web/
 │
-├── index.html          # Main entry point — all screens & UI scaffolding
-├── style.css           # Core styles — boot, lock, desktop, start, taskbar, tray panels
-├── main.js             # Core logic — boot, lock, clock, start screen, tray, shutdown
+├── index.html          # Main entry — all screens, context menus, tray panels, shutdown overlay
+├── style.css           # Core styles — boot, lock, desktop, start screen, taskbar, tray, settings
+├── main.js             # Core logic — boot, lock, clock, start, tray panels, context menus, shutdown
 │
-├── thispc.css          # This PC app — window, ribbon, drives, file grid, context menu
-├── thispc.js           # This PC app — virtual FS, navigation, CRUD, drag, resize
+├── thispc.css          # This PC app — window, ribbon, address bar, drives, file grid, context menu
+├── thispc.js           # This PC app — virtual FS, navigation history, CRUD, drag, resize
 │
-├── logo.png            # Windows logo — used on boot screen and taskbar start button
-├── 67.jpg              # Desktop & lock screen wallpaper
+├── notepad.css         # Notepad app — window, menu bar, find bar, editor, sidebar, font dialog
+├── notepad.js          # Notepad app — tabs, save/open/download, find/replace, font, right-click menus
+│
+├── terminal.css        # Terminal app — CMD window, menu bar, input row, status bar, context menus
+├── terminal.js         # Terminal app — all commands, Java tokenizer, parser, compiler, runtime engine
+│
+├── settings.css        # PC Settings — full-screen panel, sidebar nav, personalise tabs, toggles
+├── settings.js         # PC Settings — wallpaper apply, accent colours, account picture, 12 pages
+│
+├── ie.css              # Internet Explorer — browser window, navbar, tabs, results page, loading bar
+├── ie.js               # Internet Explorer — tab system, navigation, AI search via Anthropic API
+│
+├── logo.png            # Windows logo — boot screen + taskbar start button
+├── 67.jpg              # Default wallpaper — desktop + lock screen
+├── user.png            # User account picture — Start Screen avatar
+│
+├── wallpapers/
+│   ├── wp1.jpg         # Mountain Lake
+│   ├── wp2.jpg         # City Lights
+│   ├── wp3.jpg         # Forest Path
+│   ├── wp4.jpg         # Ocean Sunset
+│   ├── wp5.jpg         # Desert Dunes
+│   ├── wp6.jpg         # Snow Peaks
+│   ├── wp7.jpg         # Autumn Leaves
+│   ├── wp8.jpg         # Night Sky
+│   ├── wp9.jpg         # Tropical Beach
+│   └── wp10.jpg        # Abstract Blue
 │
 └── icons/
-    ├── computer.png        # This PC desktop icon
-    ├── folder.png          # Documents / generic folder
+    ├── computer.png        # This PC — desktop + sidebar
+    ├── folder.png          # Folders everywhere
     ├── recycle.png         # Recycle Bin
     ├── ie.png              # Internet Explorer
     ├── notepad.png         # Notepad
+    ├── terminal.png        # Command Prompt
     ├── explorer.png        # File Explorer (taskbar)
     ├── mediaplayer.png     # Windows Media Player (taskbar)
     │
-    ├── mail.png            # Mail tile
-    ├── calendar.png        # Calendar tile
-    ├── news.png            # News tile
-    ├── people.png          # People tile
-    ├── finance.png         # Finance tile
-    ├── messaging.png       # Messaging tile
-    ├── weather.png         # Weather tile
-    ├── store.png           # Store tile
-    ├── maps.png            # Maps tile
-    ├── skydrive.png        # SkyDrive tile
-    ├── skype.png           # Skype tile
-    ├── travel.png          # Travel tile
-    ├── bing.png            # Bing tile
-    ├── games.png           # Games tile
-    ├── camera.png          # Camera tile
-    ├── photos.png          # Photos tile
-    ├── music.png           # Music tile
-    ├── video.png           # Video tile
-    ├── settings.png        # Settings tile
-    ├── onenote.png         # OneNote tile
+    ├── mail.png            # Start Screen tiles
+    ├── calendar.png
+    ├── news.png
+    ├── people.png
+    ├── finance.png
+    ├── messaging.png
+    ├── weather.png
+    ├── store.png
+    ├── maps.png
+    ├── skydrive.png
+    ├── skype.png
+    ├── travel.png
+    ├── bing.png
+    ├── games.png
+    ├── camera.png
+    ├── photos.png
+    ├── music.png
+    ├── video.png
+    ├── settings.png
+    ├── onenote.png
     │
-    ├── tray-wifi.png       # System tray — Wi-Fi
-    ├── tray-volume.png     # System tray — Volume / Speaker
-    ├── tray-battery.png    # System tray — Battery
-    ├── tray-action.png     # System tray — Action Center
-    ├── tray-language.png   # System tray — Language / Input
+    ├── tray-wifi.png       # System tray icons
+    ├── tray-volume.png
+    ├── tray-battery.png
+    ├── tray-action.png
+    ├── tray-language.png
     │
-    ├── drive-system.png    # This PC — C: Windows system drive
-    ├── drive-hdd.png       # This PC — D: Hard disk drive
-    ├── drive-usb.png       # This PC — E: USB flash drive
-    ├── drive-dvd.png       # This PC — F: DVD/optical drive
+    ├── drive-system.png    # This PC — drive icons
+    ├── drive-hdd.png
+    ├── drive-usb.png
+    ├── drive-dvd.png
     │
-    ├── file-text.png       # .txt file type icon
-    ├── file-image.png      # .jpg / .png file type icon
-    ├── file-word.png       # .docx file type icon
-    ├── file-excel.png      # .xlsx file type icon
-    ├── file-exe.png        # .exe file type icon
-    ├── file-audio.png      # .mp3 file type icon
-    ├── file-video.png      # .mp4 file type icon
-    ├── file-zip.png        # .zip file type icon
-    └── file-sys.png        # .sys file type icon
+    ├── file-text.png       # File type icons
+    ├── file-image.png
+    ├── file-word.png
+    ├── file-excel.png
+    ├── file-exe.png
+    ├── file-audio.png
+    ├── file-video.png
+    ├── file-zip.png
+    └── file-sys.png
 ```
 
 ---
@@ -231,12 +496,9 @@ windows8-web/
 
 ### Option 1 — Open directly in browser
 
-No build step needed. Just clone the repo and open `index.html`:
-
 ```bash
-git clone https://github.com/yourusername/windows8-web.git
-cd windows8-web
-# Open index.html in your browser
+git clone https://github.com/neelpatel112/windows_8_web.git
+cd windows_8_web
 open index.html          # macOS
 start index.html         # Windows
 xdg-open index.html      # Linux
@@ -244,19 +506,17 @@ xdg-open index.html      # Linux
 
 ### Option 2 — Serve locally (recommended)
 
-To avoid any CORS issues with local assets, serve it with a simple HTTP server:
-
 ```bash
 # Python 3
 python -m http.server 8080
 
-# Node.js (npx)
+# Node.js
 npx serve .
 
-# VS Code — use the Live Server extension
+# VS Code — Live Server extension
 ```
 
-Then open `http://localhost:8080` in your browser.
+Then open `http://localhost:8080`
 
 ### Option 3 — Deploy to Vercel
 
@@ -271,99 +531,113 @@ vercel
 
 | Action | What happens |
 |--------|-------------|
-| **Click** the lock screen | Cinematic slide-up unlock |
-| **Double-click** a desktop icon | Opens the app |
-| **Click** the Windows logo | Opens / closes Start Screen |
-| **Scroll** the Start Screen | Horizontal tile scrolling |
-| **Click** a tile | Opens that app |
+| **Click** lock screen | Cinematic slide-up unlock |
+| **Double-click** desktop icon | Opens the app |
+| **Right-click** desktop | Context menu |
+| **Right-click** icon | App-specific context menu |
+| **Click** Windows logo (taskbar) | Opens / closes Start Screen |
+| **Scroll** Start Screen | Horizontal tile scroll |
+| **Click** a tile | Opens that app or function |
 | **Hover** right screen edge | Charms bar slides in |
-| **Click** clock in taskbar | Opens calendar popup |
+| **Click** clock | Opens calendar popup |
 | **Click** volume icon | Opens volume slider |
 | **Click** Wi-Fi icon | Opens network panel |
-| **Hover** battery icon | Shows battery tooltip |
-| **Click** Action Center | Opens notification panel |
-| **Double-click** This PC | Opens the file explorer window |
-| **Drag** window titlebar | Move the window anywhere |
-| **Drag** bottom-right corner | Resize the window |
-| **Press F2** | Rename selected file/folder |
-| **Press Delete** | Delete selected item |
-| **Press Backspace** | Navigate back in This PC |
-| **Press Escape** | Close Start Screen / panels |
+| **Hover** battery | Tooltip with percentage |
+| **Right-click** taskbar app | Close / Pin options |
+| **Drag** window title bar | Move window |
+| **Drag** window corner | Resize window |
+| **Double-click** title bar | Maximise / restore |
+| **Escape** key | Close Start Screen / panels / Settings |
+| **F2** in This PC / Notepad | Rename selected item |
+| **Delete** in This PC | Delete selected item |
+| **Backspace** in This PC | Navigate back |
+| **Ctrl+S** in Notepad | Save file |
+| **Ctrl+F** in Notepad | Find bar |
+| **↑ / ↓** in Terminal | Command history |
+| **Tab** in Terminal | Autocomplete filename |
+| **javac file.java** | Compile Java source file |
+| **java ClassName** | Run compiled Java class |
 
 ---
 
 ## 🏗️ Architecture
 
-The project follows a **per-feature file pattern** — each major feature has its own dedicated CSS and JS file, keeping the codebase clean and easy to extend.
+### Per-feature file pattern
+
+Each major feature has its own isolated CSS and JS file. The core OS (boot, lock, desktop, start screen, taskbar, tray) lives in `style.css` + `main.js`. Every app is fully self-contained:
 
 ```
-Feature           CSS file        JS file
-─────────────────────────────────────────
-Core UI           style.css       main.js
-This PC app       thispc.css      thispc.js
-(next app)        nextapp.css     nextapp.js
+Feature              CSS file          JS file
+────────────────────────────────────────────────
+Core OS              style.css         main.js
+This PC              thispc.css        thispc.js
+Notepad              notepad.css       notepad.js
+Command Prompt       terminal.css      terminal.js
+PC Settings          settings.css      settings.js
+Internet Explorer    ie.css            ie.js
 ```
 
 ### Key design decisions
 
-**No CSS variables for layout-critical sizes** — tile sizes are calculated in JavaScript from the actual measured `clientHeight` of the metro area and stamped as real pixel values. This guarantees tiles never overflow or leave gaps on any screen size.
+**JS-calculated tile sizes** — tile dimensions are computed from the actual measured `clientHeight` of the metro area on every open, stamping real pixel values onto each CSS grid. This guarantees tiles never overflow or leave gaps on any screen size.
 
-**`visibility: hidden` for inactive overlays** — the Start Screen uses `visibility: hidden` + `pointer-events: none` when closed (with a transition delay matching the slide-out duration). This fully prevents off-screen elements from bleeding through on mobile browsers.
+**`visibility: hidden` for inactive overlays** — the Start Screen uses `visibility: hidden` + `pointer-events: none` when closed with a transition delay matching the slide-out animation. This prevents off-screen elements from bleeding through on any browser.
 
-**Virtual file system as plain objects** — the This PC file system is a simple JavaScript object (`FS`) mapping location names to arrays of items. No localStorage, no IndexedDB — keeping the app stateless and deployable anywhere.
+**Shared virtual FS** — a single global `FS` object is the source of truth for all file operations across all apps. No localStorage, no IndexedDB — zero persistence complexity.
+
+**Java interpreter architecture** — the compiler is a classic 4-stage pipeline: tokenizer → recursive descent parser → AST → tree-walking interpreter. The runtime uses a prototype-based `Environment` class for scoped variable lookup, mirroring JVM stack frame semantics.
+
+**AI search via direct API call** — Internet Explorer calls the Anthropic Claude API with a structured system prompt requesting Google-style search result JSON. A client-side fallback ensures the page always renders even if the API is unavailable.
 
 ---
 
 ## 🗺️ Roadmap
 
-Planned apps and features for future updates:
-
-- [ ] **Notepad** — text editor with File menu (New, Open, Save), font settings
-- [ ] **Internet Explorer** — embedded browser frame with address bar and tabs
-- [ ] **Photos** — image gallery viewer with slideshow mode
-- [ ] **Settings** — Personalization, Display, Accounts panels
-- [ ] **Recycle Bin** — collects deleted files from This PC, restore functionality
-- [ ] **Calendar App** — full calendar tile app with event creation
-- [ ] **Task Manager** — running apps list, close from list
-- [ ] **Multiple window stacking** — z-index focus management, click to bring to front
-- [ ] **Start Screen search** — live app search across all tiles
-- [ ] **Snap layouts** — drag windows to screen edges to snap side-by-side
-- [ ] **Touch / swipe gestures** — full mobile swipe support for all interactions
+- [ ] **Multiple window z-index focus** — click to bring any window to front, proper stacking
+- [ ] **Window snap** — drag to screen edge to snap side-by-side (Win8 Snap Assist)
+- [ ] **Recycle Bin** — collects deleted files, restore or empty permanently
+- [ ] **Photos app** — image gallery with slideshow, zoom, the Photos live tile shows real images
+- [ ] **Calculator** — standard + scientific mode, Win8 exact look
+- [ ] **Paint** — canvas drawing with colour picker, brush sizes, save as PNG download
+- [ ] **Alt+Tab switcher** — animated app switcher overlay like real Windows
+- [ ] **Start Screen search** — type while Start Screen is open to filter tiles live
+- [ ] **Touch / swipe gestures** — swipe from left for app switcher, right for charms
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! If you want to add a new app, fix a bug, or improve the styling:
-
 1. Fork the repository
-2. Create a feature branch — `git checkout -b feature/notepad-app`
+2. Create a feature branch — `git checkout -b feature/calculator-app`
 3. Follow the per-feature file pattern — create `yourapp.css` and `yourapp.js`
 4. Keep it dependency-free — no npm packages, no frameworks
-5. Open a pull request with a clear description of what you added
+5. Wire it into `index.html` (CSS link in `<head>`, script tag before `</body>`, desktop icon + context menu)
+6. Open a pull request
 
 ---
 
 ## 📜 License
 
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+MIT License — see [LICENSE](LICENSE) for details.
 
-> **Disclaimer:** This is a fan-made educational project. Windows, the Windows logo, and all related trademarks are the property of Microsoft Corporation. This project is not affiliated with, endorsed by, or connected to Microsoft in any way.
+> **Disclaimer:** This is a fan-made educational project. Windows, Windows 8, Internet Explorer, and all related names and logos are trademarks of Microsoft Corporation. This project is not affiliated with, endorsed by, or connected to Microsoft in any way. The Anthropic Claude API is used solely to power the AI search feature.
 
 ---
 
 ## 🙏 Acknowledgements
 
-- **[Font Awesome](https://fontawesome.com/)** — Icons used throughout the UI
-- **[Google Fonts — Segoe UI](https://fonts.google.com/)** — Typography matching the original Windows 8 system font
-- **Microsoft Windows 8** — The original design that inspired every pixel of this project
+- **[Font Awesome](https://fontawesome.com/)** — icons used throughout the UI
+- **[Google Fonts — Segoe UI](https://fonts.google.com/)** — matching the Windows 8 system font
+- **[Anthropic Claude API](https://www.anthropic.com/)** — powering AI-driven search in Internet Explorer
+- **Microsoft Windows 8** — the original design that inspired every pixel of this project
 
 ---
 
 <div align="center">
 
-Made with ❤️ and a whole lot of nostalgia
+Built with ❤️ and a whole lot of nostalgia by **[nx4real](https://github.com/neelpatel112)**
 
-**[⭐ Star this repo if you like it](https://github.com/yourusername/windows8-web)**
+**[⭐ Star this repo](https://github.com/neelpatel112/windows_8_web)** · **[🐛 Report a bug](https://github.com/neelpatel112/windows_8_web/issues)** · **[💡 Request a feature](https://github.com/neelpatel112/windows_8_web/issues)**
 
 </div>
+ 
