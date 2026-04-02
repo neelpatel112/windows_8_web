@@ -28,8 +28,32 @@
 <div id="lockScreen">
   <div class="lock-time" id="lockTime">12:00</div>
   <div class="lock-date" id="lockDate">Friday, March 20</div>
-  <div class="lock-arrow"><i class="fas fa-chevron-up"></i><span>Click to unlock</span></div>
-  <div class="lock-status"><i class="fas fa-wifi"></i><i class="fas fa-battery-full"></i></div>
+  <div class="lock-arrow" id="lockArrow">
+    <span style="font-size:22px">&#x2303;</span>
+    <span>Click to unlock</span>
+  </div>
+  <div class="lock-status">
+    <span style="font-size:16px">&#x1F4F6;</span>
+    <span style="font-size:16px">&#x1F50B;</span>
+  </div>
+
+  <!-- Password panel — slides up on click -->
+  <div id="lockPassPanel">
+    <img class="lock-pass-avatar" id="lockAvatar" src="user.png"
+         onerror="this.src='icons/computer.png'" alt="User">
+    <div class="lock-pass-name" id="lockUserName">Neel Patel</div>
+    <div class="lock-pass-row" style="position:relative">
+      <input id="lockPassInput" type="password"
+             placeholder="Password (or press Enter if none)"
+             onkeydown="lockPassKey(event)"
+             autocomplete="current-password">
+      <span class="lock-pass-eye" id="lockPassEye"
+            onclick="lockToggleEye()" title="Show/hide">&#x1F441;</span>
+      <button class="lock-pass-submit" onclick="lockTryPass()" title="Sign in">&#x276F;</button>
+    </div>
+    <div class="lock-pass-error" id="lockPassError"></div>
+    <div class="lock-pass-hint" id="lockPassHint">Sign in as Neel Patel · Local Account</div>
+  </div>
 </div>
 
 <!-- DESKTOP — only icons here, NO start tiles -->
@@ -78,7 +102,7 @@
         <img src="user.png" alt="User" onerror="this.outerHTML='<i class=\'fas fa-user\'></i>'">
       </div>
       <ul class="ss-power-menu" id="powerMenu">
-        <li class="pm-item" onclick="notify('Locking…','Windows');toggleStart()"><i class="fas fa-lock"></i>Lock</li>
+        <li class="pm-item" onclick="reLockScreen();toggleStart()"><i class="fas fa-lock"></i>Lock</li>
         <li class="pm-item" onclick="notify('Signing out…','Windows');toggleStart()"><i class="fas fa-sign-out-alt"></i>Sign out</li>
         <li class="pm-item disabled"><i class="fas fa-user-plus"></i>Other user</li>
         <li class="pm-item" onclick="doShutdown('sleep')"><i class="fas fa-moon"></i>Sleep</li>
