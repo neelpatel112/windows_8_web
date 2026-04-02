@@ -186,6 +186,47 @@ function buildSettingsWindow() {
               <button class="pers-account-opt-btn" onclick="notify('Crop tool coming soon','Account')">Crop picture</button>
             </div>
           </div>
+
+          <!-- ── PASSWORD SECTION ── -->
+          <div style="margin-top:28px;padding-top:20px;border-top:1px solid #d0d0d0">
+            <div class="pcs-section-label" style="font-size:14px;font-weight:600;color:#333;margin-bottom:16px;text-transform:none;letter-spacing:0;border:none;padding:0">Sign-in options</div>
+
+            <div class="pcs-setting-row">
+              <div>
+                <div class="pcs-setting-label">Password</div>
+                <div class="pcs-setting-sub" id="pwStatusLabel">
+                  ${typeof lockPassword !== 'undefined' && lockPassword ? 'Password is set' : 'No password — anyone can sign in'}
+                </div>
+              </div>
+              <button class="pers-browse-btn" onclick="settingsChangePassword()">Change</button>
+            </div>
+
+            <!-- inline password form (hidden by default) -->
+            <div id="settingsPwForm" style="display:none;flex-direction:column;gap:10px;margin-top:12px;padding:16px;background:#f8f8f8;border:1px solid #e0e0e0">
+              <div style="font-size:13px;color:#555;margin-bottom:4px">Change your password</div>
+
+              <div style="display:flex;align-items:center;gap:10px">
+                <label style="font-size:12px;color:#555;width:140px;flex-shrink:0">Current password</label>
+                <input id="pwCurrent" type="password" placeholder="Leave blank if none"
+                       style="flex:1;padding:6px 10px;font-size:13px;border:1px solid #ccc;outline:none;font-family:inherit">
+              </div>
+              <div style="display:flex;align-items:center;gap:10px">
+                <label style="font-size:12px;color:#555;width:140px;flex-shrink:0">New password</label>
+                <input id="pwNew" type="password" placeholder="Leave blank to remove password"
+                       style="flex:1;padding:6px 10px;font-size:13px;border:1px solid #ccc;outline:none;font-family:inherit">
+              </div>
+              <div style="display:flex;align-items:center;gap:10px">
+                <label style="font-size:12px;color:#555;width:140px;flex-shrink:0">Confirm new password</label>
+                <input id="pwConfirm" type="password" placeholder="Re-enter new password"
+                       style="flex:1;padding:6px 10px;font-size:13px;border:1px solid #ccc;outline:none;font-family:inherit">
+              </div>
+              <div id="pwError" style="font-size:12px;color:#e81123;min-height:16px"></div>
+              <div style="display:flex;gap:8px;justify-content:flex-end">
+                <button class="pers-browse-btn" onclick="settingsCancelPassword()">Cancel</button>
+                <button class="pers-account-opt-btn" style="padding:6px 20px" onclick="settingsSavePassword()">Save</button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -563,5 +604,116 @@ function adjustBrightness(val) {
 document.addEventListener('DOMContentLoaded', () => {
   /* swap FA icon in avatar to real user.png */
   applyUserPic();
+});
+
+/* ════════════════════════════════════════════════════════════
+   PASSWORD MANAGEMENT (in Settings)
+   ════════════════════════════════════════════════════════════ */
+function settingsChangePassword() {
+  const form = document.getElementById('settingsPwForm');
+  if (!form) return;
+  form.style.display = form.style.display === 'none' ? 'flex' : 'none';
+  const err = document.getElementById('pwError');
+  if (err) err.textContent = '';
+  /* pre-fill hint if no current password */
+  const cur = document.getElementById('pwCurrent');
+  if (cur && !lockPassword) cur.placeholder = 'No current password — leave blank';
+}
+
+function settingsCancelPassword() {
+  const form = document.getElementById('settingsPwForm');
+  if (form) form.style.display = 'none';
+  ['pwCurrent','pwNew','pwConfirm'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  const err = document.getElementById('pwError');
+  if (err) err.textContent = '';
+}
+
+function settingsSavePassword() {
+  const curEl  = document.getElementById('pwCurrent');
+  const newEl  = document.getElementById('pwNew');
+  const confEl = document.getElementById('pwConfirm');
+  const errEl  = document.getElementById('pwError');
+  if (!newEl || !confEl) return;
+
+  const cur  = curEl?.value  || '';
+  const nw   = newEl.value   || '';
+  const conf = confEl.value  || '';
+
+  /* validate current password */
+  if (lockPassword && cur !== lockPassword) {
+    if (errEl) errEl.textContent = 'Current password is incorrect.';
+    curEl?.classList.add('pcs-input-error');
+    return;
+  }
+
+  /* validate new passwords match */
+  if (nw !== conf) {
+    if (errEl) errEl.textContent = 'Passwords do not match.';
+    return;
+  }
+
+  /* save */
+  if (typeof setLockPassword === 'function') setLockPassword(nw);
+  else lockPassword = nw;
+
+  /* update status label */
+  const statusLabel = document.getElementById('pwStatusLabel');
+  if (statusLabel) statusLabel.textContent = nw
+    ? 'Password is set'
+    : 'No password — anyone can sign in';
+
+  settingsCancelPassword();
+  if (typeof saveState === 'function') saveState();
+
+  /* success notification */
+  if (typeof notify === 'function') {
+    notify(nw ? 'Password changed successfully' : 'Password removed', 'Sign-in options');
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   HOOK SAVE STATE into all settings changes
+   ════════════════════════════════════════════════════════════ */
+
+/* Patch applyWallpaper to also save */
+const _origApplyWallpaper = applyWallpaper;
+applyWallpaper = function(file, target, thumbEl, stripId) {
+  _origApplyWallpaper(file, target, thumbEl, stripId);
+  if (typeof saveState === 'function') saveState();
+};
+
+/* Patch applyAccent to also save */
+const _origApplyAccent = applyAccent;
+applyAccent = function(colour, swatchEl) {
+  _origApplyAccent(colour, swatchEl);
+  if (typeof saveState === 'function') saveState();
+};
+
+/* Patch browseAccountPic to also save */
+const _origBrowseAccountPic = browseAccountPic;
+browseAccountPic = function() {
+  _origBrowseAccountPic();
+  /* save happens after FileReader loads — patch applyUserPic too */
+};
+
+const _origApplyUserPic = applyUserPic;
+applyUserPic = function() {
+  _origApplyUserPic();
+  if (typeof saveState === 'function') saveState();
+};
+
+/* ════════════════════════════════════════════════════════════
+   LOAD SAVED STATE on DOMContentLoaded
+   ════════════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof loadState === 'function') {
+    const saved = loadState();
+    if (saved && typeof applyLoadedState === 'function') {
+      applyLoadedState(saved);
+    }
+  }
 });
  
