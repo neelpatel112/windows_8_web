@@ -14,26 +14,246 @@ window.addEventListener('load', () => {
   }, 2300);
 });
 
-/* ── LOCK ── */
+/* ════════════════════════════════════════════════════════════
+   LOCAL STORAGE PERSISTENCE
+   Key: win8web_state
+   Saves: wallpaper, accent colour, user pic, password, username
+   ════════════════════════════════════════════════════════════ */
+const STORE_KEY = 'win8web_state';
+
+function saveState() {
+  try {
+    const data = {
+      desktopWallpaper : (typeof state !== 'undefined' ? state.desktopWallpaper : '67.jpg'),
+      lockWallpaper    : (typeof state !== 'undefined' ? state.lockWallpaper    : '67.jpg'),
+      accentColour     : (typeof state !== 'undefined' ? state.accentColour     : '#008299'),
+      userName         : (typeof state !== 'undefined' ? state.userName         : 'Neel Patel'),
+      userPic          : (typeof state !== 'undefined' ? state.userPic          : 'user.png'),
+      lockPassword     : lockPassword,
+      savedAt          : Date.now(),
+    };
+    localStorage.setItem(STORE_KEY, JSON.stringify(data));
+  } catch(e) { /* localStorage may be unavailable in some environments */ }
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch(e) { return null; }
+}
+
+function applyLoadedState(data) {
+  if (!data) return;
+
+  /* restore password */
+  if (data.lockPassword) lockPassword = data.lockPassword;
+
+  /* restore wallpaper + accent — settings.js state object */
+  /* we call these after a short delay to ensure settings.js is loaded */
+  setTimeout(() => {
+    if (typeof state === 'undefined') return;
+    if (data.desktopWallpaper) {
+      state.desktopWallpaper = data.desktopWallpaper;
+      const desktop = document.getElementById('desktop');
+      if (desktop && data.desktopWallpaper !== '67.jpg') {
+        desktop.style.backgroundImage = `url('${data.desktopWallpaper}')`;
+      }
+    }
+    if (data.lockWallpaper) {
+      state.lockWallpaper = data.lockWallpaper;
+      const lock = document.getElementById('lockScreen');
+      if (lock && data.lockWallpaper !== '67.jpg') {
+        lock.style.backgroundImage = `url('${data.lockWallpaper}')`;
+      }
+    }
+    if (data.accentColour) {
+      state.accentColour = data.accentColour;
+      document.documentElement.style.setProperty('--accent-live', data.accentColour);
+    }
+    if (data.userName) {
+      state.userName = data.userName;
+      const nameEl = document.getElementById('lockUserName');
+      if (nameEl) nameEl.textContent = data.userName;
+    }
+    if (data.userPic) {
+      state.userPic = data.userPic;
+      if (typeof applyUserPic === 'function') applyUserPic();
+    }
+  }, 200);
+}
+
+/* ════════════════════════════════════════════════════════════
+   LOCK SCREEN + PASSWORD SYSTEM
+   ════════════════════════════════════════════════════════════ */
+let lockPassword    = '';         /* '' means no password — press Enter to unlock */
+let lockPanelOpen   = false;
+let lockDone        = false;      /* once unlocked, stays unlocked until re-locked */
+let lockWrongCount  = 0;
+
+/* Called from Settings to set/change/remove password */
+function setLockPassword(newPass) {
+  lockPassword = newPass || '';
+  saveState();
+  if (typeof notify === 'function') {
+    notify(newPass ? 'Password set successfully' : 'Password removed', 'Account');
+  }
+}
+
+/* Show password panel (called on first click of lock screen) */
+function lockShowPassPanel() {
+  if (lockDone) return;
+  const lock  = document.getElementById('lockScreen');
+  const panel = document.getElementById('lockPassPanel');
+  if (!lock || !panel) return;
+
+  lockPanelOpen = true;
+  lock.classList.add('pass-mode');
+  panel.classList.add('visible');
+
+  /* update avatar + name from settings state */
+  const avatar = document.getElementById('lockAvatar');
+  const nameEl = document.getElementById('lockUserName');
+  if (avatar && typeof state !== 'undefined') avatar.src = state.userPic || 'user.png';
+  if (nameEl && typeof state !== 'undefined') nameEl.textContent = state.userName || 'Neel Patel';
+
+  /* hint: tell user if there's no password */
+  const hint = document.getElementById('lockPassHint');
+  if (hint) hint.textContent = lockPassword
+    ? `Sign in as ${typeof state !== 'undefined' ? state.userName : 'Neel Patel'}`
+    : 'No password set — press Enter or ➜ to sign in';
+
+  setTimeout(() => {
+    const inp = document.getElementById('lockPassInput');
+    if (inp) inp.focus();
+  }, 350);
+}
+
+/* Try to unlock with typed password */
+function lockTryPass() {
+  if (lockDone) return;
+  const inp = document.getElementById('lockPassInput');
+  const err = document.getElementById('lockPassError');
+  if (!inp) return;
+
+  const typed = inp.value;
+
+  /* if no password is set — any input (including blank) unlocks */
+  if (!lockPassword || typed === lockPassword) {
+    lockDoUnlock(inp);
+  } else {
+    /* wrong password */
+    lockWrongCount++;
+    inp.classList.remove('wrong');
+    void inp.offsetWidth; /* force reflow for re-trigger */
+    inp.classList.add('wrong');
+    inp.value = '';
+    if (err) {
+      err.textContent = lockWrongCount >= 3
+        ? `Incorrect password. (${lockWrongCount} attempts)`
+        : 'The password is incorrect. Try again.';
+    }
+    setTimeout(() => inp.classList.remove('wrong'), 450);
+    inp.focus();
+  }
+}
+
+function lockPassKey(e) {
+  if (e.key === 'Enter') lockTryPass();
+  if (e.key === 'Escape') lockHidePassPanel();
+}
+
+function lockHidePassPanel() {
+  const lock  = document.getElementById('lockScreen');
+  const panel = document.getElementById('lockPassPanel');
+  const inp   = document.getElementById('lockPassInput');
+  const err   = document.getElementById('lockPassError');
+  if (!lock || !panel) return;
+  lockPanelOpen = false;
+  lock.classList.remove('pass-mode');
+  panel.classList.remove('visible');
+  if (inp) inp.value = '';
+  if (err) err.textContent = '';
+}
+
+function lockToggleEye() {
+  const inp = document.getElementById('lockPassInput');
+  const eye = document.getElementById('lockPassEye');
+  if (!inp) return;
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  if (eye) eye.textContent = inp.type === 'password' ? '👁' : '🙈';
+}
+
+function lockDoUnlock(inp) {
+  lockDone = true;
+  lockWrongCount = 0;
+  const lock = document.getElementById('lockScreen');
+  if (!lock) return;
+
+  /* slide everything up and away */
+  lock.classList.remove('pass-mode');
+  lock.style.transition = 'transform .9s cubic-bezier(.32,0,.18,1), opacity .4s ease';
+  lock.style.transform  = 'translateY(-100%)';
+  lock.style.opacity    = '0';
+  lock.style.pointerEvents = 'none';
+
+  setTimeout(() => {
+    lock.style.display = 'none';
+    if (typeof notify === 'function') {
+      const name = (typeof state !== 'undefined' ? state.userName : null) || 'Neel Patel';
+      notify(`Welcome back, ${name}`, 'Windows 8');
+    }
+  }, 600);
+}
+
+/* Re-lock the screen (called from Start > Lock) */
+function reLockScreen() {
+  lockDone       = false;
+  lockPanelOpen  = false;
+  lockWrongCount = 0;
+  const lock = document.getElementById('lockScreen');
+  const panel= document.getElementById('lockPassPanel');
+  const inp  = document.getElementById('lockPassInput');
+  const err  = document.getElementById('lockPassError');
+  if (!lock) return;
+
+  /* reset all transform/styles */
+  lock.style.cssText = '';
+  lock.style.display = '';
+  lock.classList.remove('pass-mode', 'touched', 'unlock');
+  if (panel) panel.classList.remove('visible');
+  if (inp)   inp.value = '';
+  if (err)   err.textContent = '';
+}
+
+/* Wire click/touch to lock screen */
 (function() {
   const lock = document.getElementById('lockScreen');
   if (!lock) return;
-  let used = false;
-  function unlock() {
-    if (used) return; used = true;
+
+  function onLockClick(e) {
+    if (lockDone) return;
+    /* if panel already open — don't re-trigger on panel itself */
+    if (lockPanelOpen && e.target.closest('#lockPassPanel')) return;
+    if (lockPanelOpen) {
+      /* clicking outside panel hides it */
+      if (!e.target.closest('#lockPassPanel')) lockHidePassPanel();
+      return;
+    }
+    /* first click — nudge then show password panel */
     lock.classList.add('touched');
     setTimeout(() => {
       lock.classList.remove('touched');
-      lock.classList.add('unlock');
-      setTimeout(() => notify('Welcome back, User', 'Windows 8'), 500);
+      lockShowPassPanel();
     }, 190);
   }
-  lock.addEventListener('click',      unlock);
-  lock.addEventListener('touchstart', () => lock.classList.add('touched'), { passive: true });
-  lock.addEventListener('touchend',   unlock, { passive: true });
+
+  lock.addEventListener('click', onLockClick);
+  lock.addEventListener('touchend', (e) => { e.preventDefault(); onLockClick(e); }, { passive: false });
 })();
 
-/* ── CLOCK ── */
+/* ── BOOT ── */
 function q(sel) { return document.querySelector(sel); }
 
 function tick() {
@@ -562,4 +782,61 @@ function closeSysProp() {
 
 /* ── WELCOME ── (keep original below) */
 setTimeout(() => notify('Welcome to Windows 8 Web', 'Windows 8'), 2900);
+
+/* ════════════════════════════════════════════════════════════
+   FS PERSISTENCE  — save virtual file system to localStorage
+   ════════════════════════════════════════════════════════════ */
+const FS_KEY = 'win8web_fs';
+
+function saveFS() {
+  try {
+    if (typeof FS === 'undefined') return;
+    /* only save text-editable files — skip large blobs */
+    const saveable = {};
+    Object.keys(FS).forEach(dir => {
+      saveable[dir] = (FS[dir] || []).map(item => {
+        if (item.type === 'file' && item.content && item.content.length > 50000) {
+          return { ...item, content: item.content.slice(0, 50000) };
+        }
+        return item;
+      });
+    });
+    localStorage.setItem(FS_KEY, JSON.stringify(saveable));
+  } catch(e) {}
+}
+
+function loadFS() {
+  try {
+    const raw = localStorage.getItem(FS_KEY);
+    if (!raw) return;
+    const saved = JSON.parse(raw);
+    if (typeof FS === 'undefined') return;
+    /* merge saved files into FS — don't overwrite everything, only add saved ones */
+    Object.keys(saved).forEach(dir => {
+      if (!FS[dir]) FS[dir] = [];
+      saved[dir].forEach(savedItem => {
+        const exists = FS[dir].find(f => f.name === savedItem.name);
+        if (!exists) {
+          FS[dir].push(savedItem);
+        } else if (savedItem.content !== undefined) {
+          exists.content = savedItem.content;
+        }
+      });
+    });
+  } catch(e) {}
+}
+
+/* Auto-save FS every 10 seconds if FS exists */
+setInterval(() => {
+  if (typeof FS !== 'undefined') saveFS();
+}, 10000);
+
+/* Load FS on boot */
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    loadFS();
+    const saved = loadState ? loadState() : null;
+    if (saved && typeof applyLoadedState === 'function') applyLoadedState(saved);
+  }, 300);
+});
  
