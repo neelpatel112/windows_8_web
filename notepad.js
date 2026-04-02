@@ -358,6 +358,7 @@ function npSave() {
 
   npUpdateTitle();
   npRefreshSidebar();
+  if (typeof saveFS === 'function') saveFS();
   if (typeof notify === 'function') notify(`"${tab.name}" saved to Documents`, 'Notepad');
 }
 
