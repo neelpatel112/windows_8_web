@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Windows 8 Web</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap">
+<link rel="stylesheet" href="bios.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="thispc.css">
@@ -15,7 +17,95 @@
 </head>
 <body>
 
-<!-- BOOT -->
+<!-- ════════════════════════════════════════════════════
+     BIOS BOOT SEQUENCE — runs before Windows loads
+     Fires 'bios:complete' event when done
+     ════════════════════════════════════════════════════ -->
+
+<!-- PHASE 0 — Black flash -->
+<div id="phase-black" class="phase active"></div>
+
+<!-- PHASE 1 — POST Screen -->
+<div id="phase-post" class="phase">
+  <div class="bios-screen">
+    <div class="top-bar">
+      <span class="tb-left">AMIBIOS(C)2011 American Megatrends, Inc.</span>
+      <span class="tb-right">BIOS Date: 04/25/11 09:12:53  Ver: 08.00.15</span>
+    </div>
+    <div id="cpu-line" class="cpu-line"></div>
+    <div class="mem-block">
+      <div id="mem-test-line" class="mem-test-line"></div>
+      <div id="mem-ok-line"   class="mem-ok-line" style="display:none;">Memory OK</div>
+    </div>
+    <div id="post-lines" class="post-lines"></div>
+    <div class="bottom-bar">
+      <span>Auto-Detecting USB Mass Storage Devices..</span>
+      <span class="tb-right">DEL: Setup &nbsp; F8: Boot Menu</span>
+    </div>
+  </div>
+</div>
+
+<!-- PHASE 2 — Summary Screen -->
+<div id="phase-summary" class="phase">
+  <div class="bios-screen">
+    <div class="top-bar">
+      <span class="tb-left">AMIBIOS(C)2011 American Megatrends, Inc.</span>
+      <span class="tb-right">BIOS Date: 04/25/11 09:12:53  Ver: 08.00.15</span>
+    </div>
+    <div class="summary-body">
+      <div class="ami-logo">
+<pre class="ami-art">
+    ___    __  ___ ____
+   /   |  /  |/  //  _/
+  / /| | / /|_/ / / /
+ / ___ |/ /  / /_/ /
+/_/  |_/_/  /_//___/
+</pre>
+        <div class="ami-tagline">American Megatrends Inc.,</div>
+        <div class="ami-tagline ami-ver">BIOS v08.00.15</div>
+      </div>
+      <div class="summary-table">
+        <div class="srow"><span class="slabel">CPU Type</span><span class="scolon">:</span><span id="sum-cpu" class="sval"></span></div>
+        <div class="srow"><span class="slabel">CPU Speed</span><span class="scolon">:</span><span id="sum-speed" class="sval"></span></div>
+        <div class="srow sspacer"></div>
+        <div class="srow"><span class="slabel">Floppy Drive A</span><span class="scolon">:</span><span class="sval">Not Detected</span></div>
+        <div class="srow"><span class="slabel">Pri. Master Disk</span><span class="scolon">:</span><span id="sum-pri-m" class="sval"></span></div>
+        <div class="srow"><span class="slabel">Pri. Slave Disk</span><span class="scolon">:</span><span id="sum-pri-s" class="sval"></span></div>
+        <div class="srow"><span class="slabel">Sec. Master Disk</span><span class="scolon">:</span><span id="sum-sec-m" class="sval"></span></div>
+        <div class="srow"><span class="slabel">Sec. Slave Disk</span><span class="scolon">:</span><span id="sum-sec-s" class="sval"></span></div>
+        <div class="srow sspacer"></div>
+        <div class="srow"><span class="slabel">Total Memory</span><span class="scolon">:</span><span id="sum-ram" class="sval"></span></div>
+        <div class="srow"><span class="slabel">Memory Frequency</span><span class="scolon">:</span><span id="sum-ramfreq" class="sval"></span></div>
+      </div>
+      <div class="boot-order-block">
+        <div class="bo-title">Boot Order:</div>
+        <div id="boot-order-list"></div>
+      </div>
+    </div>
+    <div class="bottom-bar sum-bottom">
+      <span>Press F1 to Run SETUP</span>
+      <span class="tb-right">Press F2 to Load Default Values and Continue</span>
+    </div>
+  </div>
+</div>
+
+<!-- PHASE 3 — Handoff black (transitions into Windows) -->
+<div id="phase-handoff" class="phase"></div>
+
+<!-- BIOS SETUP overlay (DEL key) -->
+<div id="setup-overlay"    class="full-overlay" style="display:none;"></div>
+<!-- BOOT MENU overlay (F8 key) -->
+<div id="bootmenu-overlay" class="full-overlay" style="display:none;"></div>
+
+<!-- BIOS scripts — must load before Windows scripts -->
+<script src="config.js"></script>
+<script src="audio.js"></script>
+<script src="bios.js"></script>
+
+<!-- ════════════════════════════════════════════════════
+     WINDOWS 8 OS — hidden until BIOS completes
+     ════════════════════════════════════════════════════ -->
+<div id="win8OS" style="display:none;opacity:0;transition:opacity .5s ease">
 <div id="bootScreen">
   <img class="boot-logo-img" src="logo.png" alt="Windows">
   <div class="boot-spinner">
@@ -729,6 +819,8 @@
   </div>
 </div>
 
+</div><!-- /win8OS -->
+
 <script src="main.js"></script>
 <script src="thispc.js"></script>
 <script src="settings.js"></script>
@@ -736,6 +828,36 @@
 <script src="terminal.js"></script>
 <script src="ie.js"></script>
 <script src="taskmanager.js"></script>
+
+<script>
+/* ── BIOS → Windows handoff ──────────────────────────────
+   Listen for the 'bios:complete' event fired by bios.js
+   after the CRT-off animation. Then fade in Windows.
+   ───────────────────────────────────────────────────────── */
+window.addEventListener('bios:complete', function onBiosComplete() {
+  const os = document.getElementById('win8OS');
+  if (!os) return;
+
+  /* make Windows visible */
+  os.style.display = 'block';
+
+  /* tiny delay so display:block paints first, then fade in */
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      os.style.opacity = '1';
+    });
+  });
+
+  /* hide all BIOS phase divs cleanly */
+  setTimeout(() => {
+    ['phase-black','phase-post','phase-summary','phase-handoff',
+     'setup-overlay','bootmenu-overlay'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+  }, 600);
+});
+</script>
 </body>
 </html>
  
