@@ -4,15 +4,17 @@ let startOpen  = false;
 let toastTimer = null;
 let charmsTimer= null;
 
-/* ── BOOT ── */
-window.addEventListener('load', () => {
+/* ── WINDOWS BOOT (runs AFTER bios:complete) ── */
+function runWindowsBoot() {
   const boot = document.getElementById('bootScreen');
+  if (!boot) return;
+  /* boot screen is already visible inside win8OS — let it run for 2.6s then fade */
   setTimeout(() => {
     boot.style.transition = 'opacity .5s ease';
     boot.style.opacity    = '0';
     setTimeout(() => boot.remove(), 600);
-  }, 2300);
-});
+  }, 2600);
+}
 
 /* ════════════════════════════════════════════════════════════
    LOCAL STORAGE PERSISTENCE
