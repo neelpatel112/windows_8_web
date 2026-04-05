@@ -1,0 +1,261 @@
+/* ═══════════════════════════════════════════════════════════
+   Weather App  ·  weather.css
+   Windows 8 Bing Weather — exact look from WeatherApp.tsx
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── WINDOW ── */
+#weatherWindow {
+  position: fixed;
+  top: 30px; left: 50px;
+  width: 960px; height: 580px;
+  min-width: 600px; min-height: 400px;
+  z-index: 440;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 8px 40px rgba(0,0,0,.6);
+  border: 1px solid rgba(255,255,255,.1);
+  transform-origin: center bottom;
+  animation: wxOpen .22s cubic-bezier(.16,1,.3,1) both;
+  font-family: 'Segoe UI', 'Segoe WP', Tahoma, sans-serif;
+}
+@keyframes wxOpen {
+  from { opacity:0; transform:scale(.94) translateY(16px); }
+  to   { opacity:1; transform:scale(1) translateY(0); }
+}
+#weatherWindow.minimising {
+  animation: wxMin .2s cubic-bezier(.4,0,1,1) both;
+  pointer-events: none;
+}
+@keyframes wxMin {
+  from { opacity:1; transform:scale(1) translateY(0); }
+  to   { opacity:0; transform:scale(.4) translateY(100vh); }
+}
+#weatherWindow.restoring { animation: wxOpen .22s cubic-bezier(.16,1,.3,1) both; }
+#weatherWindow.maximised {
+  top:0!important; left:0!important;
+  width:100vw!important; height:calc(100vh - 44px)!important;
+  border:none;
+}
+
+/* ── TITLE BAR (invisible until hover) ── */
+.wx-titlebar {
+  position: absolute; top:0; left:0; right:0;
+  height: 32px; z-index: 20;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 0 0 12px;
+  background: transparent;
+  transition: background .2s;
+  flex-shrink: 0;
+}
+.wx-titlebar:hover { background: rgba(0,0,0,.85); }
+.wx-title-left {
+  display: flex; align-items: center; gap: 8px;
+  opacity: 0; transition: opacity .2s;
+}
+.wx-titlebar:hover .wx-title-left { opacity: 1; }
+.wx-title-icon {
+  width: 16px; height: 16px; background: #0078d7;
+  border-radius: 2px; display: flex; align-items: center; justify-content: center;
+  font-size: 10px; color: #fff; font-weight: 700; flex-shrink: 0;
+}
+.wx-title-text { font-size: 12px; color: #fff; font-weight: 600; letter-spacing: .5px; }
+.wx-controls {
+  display: flex; height: 100%;
+  opacity: 0; transition: opacity .2s;
+}
+.wx-titlebar:hover .wx-controls { opacity: 1; }
+.wx-btn {
+  width: 44px; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 15px; color: rgba(255,255,255,.8);
+  border: none; background: transparent;
+  font-family: 'Segoe UI', Arial, sans-serif; line-height: 1;
+  transition: background .12s, color .12s;
+}
+.wx-btn:hover        { background: rgba(255,255,255,.2); color: #fff; }
+.wx-btn.close:hover  { background: #e81123; color: #fff; }
+
+/* ── BACKGROUND ── */
+.wx-bg {
+  position: absolute; inset: 0; z-index: 0;
+  background: url('wallpapers/wp1.jpg') center/cover no-repeat;
+  /* fallback gradient if no image */
+  background-color: #1a3a6b;
+  filter: brightness(.85);
+}
+
+/* ── MAIN LAYOUT ── */
+.wx-body {
+  position: relative; z-index: 1;
+  display: flex; flex: 1; height: 100%;
+  color: #fff;
+}
+
+/* ── LEFT CONTENT ── */
+.wx-left {
+  flex: 1; display: flex; flex-direction: column;
+  padding: 40px 0 28px 48px;
+  overflow: hidden;
+}
+
+/* Header */
+.wx-header { display: flex; align-items: flex-start; gap: 20px; margin-bottom: 28px; }
+.wx-back-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,.7);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; flex-shrink: 0; margin-top: 2px;
+  font-size: 18px; color: #fff;
+  transition: background .15s;
+}
+.wx-back-btn:hover { background: rgba(255,255,255,.2); }
+.wx-location { font-size: 26px; font-weight: 600; letter-spacing: 2px; line-height: 1.1; }
+.wx-app-name { font-size: 12px; letter-spacing: 3px; color: rgba(255,255,255,.7); margin-top: 4px; font-weight: 600; text-transform: uppercase; }
+
+/* Current weather */
+.wx-current { display: flex; align-items: flex-start; gap: 0; }
+.wx-temp-big { display: flex; align-items: flex-start; line-height: 1; }
+.wx-temp-num { font-size: 110px; font-weight: 200; letter-spacing: -4px; line-height: .85; }
+.wx-temp-unit { font-size: 48px; font-weight: 200; margin-top: 8px; }
+.wx-current-icon { font-size: 64px; margin-left: 16px; margin-top: 8px; }
+
+.wx-condition { font-size: 26px; font-weight: 300; margin-top: 8px; }
+.wx-feels { font-size: 16px; opacity: .85; margin-top: 4px; }
+.wx-timezone { font-size: 11px; letter-spacing: 3px; opacity: .7; margin-top: 4px; text-transform: uppercase; }
+
+/* Details grid */
+.wx-details {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 16px 48px; margin-top: 20px;
+  max-width: 260px;
+}
+.wx-detail-label { font-size: 11px; opacity: .65; margin-bottom: 2px; }
+.wx-detail-val   { font-size: 14px; font-weight: 600; }
+
+/* Forecast strip */
+.wx-forecast-area { flex: 1; display: flex; flex-direction: column; padding: 40px 0 28px 20px; }
+.wx-forecast-days { display: flex; gap: 0; align-items: flex-start; flex: 0 0 auto; }
+.wx-day {
+  width: 110px; display: flex; flex-direction: column;
+  padding: 0 8px 0 0;
+}
+.wx-day-label { font-size: 11px; font-weight: 700; letter-spacing: 2px; opacity: .85; margin-bottom: 12px; }
+.wx-day-icon  { height: 56px; display: flex; align-items: center; font-size: 42px; margin-bottom: 6px; }
+.wx-day-temps { font-size: 20px; font-weight: 300; margin-bottom: 4px; }
+.wx-day-temps .low { opacity: .55; font-size: 17px; }
+.wx-day-cond  { font-size: 13px; opacity: .85; margin-bottom: 4px; }
+.wx-day-precip{ font-size: 11px; opacity: .7; display: flex; align-items: center; gap: 3px; }
+
+/* Providers comparison */
+.wx-providers { margin-top: 20px; display: flex; gap: 0; position: relative; padding-left: 100px; }
+.wx-provider-labels {
+  position: absolute; left: 0; top: 0;
+  display: flex; flex-direction: column; gap: 22px;
+  padding-top: 2px; width: 95px; text-align: right;
+}
+.wx-provider-name { font-size: 10px; opacity: .6; letter-spacing: 2px; text-transform: uppercase; line-height: 28px; }
+.wx-provider-col { width: 110px; display: flex; flex-direction: column; gap: 22px; padding: 0 8px 0 0; }
+.wx-prow { display: flex; align-items: center; gap: 6px; height: 28px; }
+.wx-prow-icon { width: 24px; font-size: 20px; opacity: .85; display: flex; align-items: center; }
+.wx-prow-data { display: flex; flex-direction: column; }
+.wx-prow-temps { font-size: 11px; font-weight: 600; }
+.wx-prow-temps .low { opacity: .55; }
+.wx-prow-precip { font-size: 10px; opacity: .75; display: flex; align-items: center; gap: 2px; }
+
+/* ── RIGHT SIDEBAR ── */
+.wx-sidebar {
+  width: 220px; flex-shrink: 0;
+  background: rgba(11,34,65,.92);
+  display: flex; flex-direction: column;
+  border-left: 1px solid rgba(255,255,255,.08);
+}
+.wx-sidebar-header {
+  padding: 44px 20px 12px;
+  border-bottom: 1px solid rgba(255,255,255,.1);
+}
+.wx-hourly-title { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 12px; }
+.wx-hourly-col-labels {
+  display: flex; justify-content: space-between;
+  font-size: 10px; text-transform: uppercase; letter-spacing: 2px; opacity: .55;
+}
+.wx-hourly-list { flex: 1; overflow-y: auto; }
+.wx-hourly-list::-webkit-scrollbar { width: 0; }
+.wx-hour-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 20px;
+  font-size: 13px;
+  border-left: 3px solid transparent;
+  transition: background .12s;
+}
+.wx-hour-row:hover { background: rgba(255,255,255,.05); }
+.wx-hour-row.active { background: rgba(0,0,0,.3); border-left-color: #4fc3f7; }
+.wx-hour-time { width: 68px; font-size: 12px; }
+.wx-hour-right { display: flex; align-items: center; gap: 12px; }
+.wx-hour-icon  { font-size: 18px; opacity: .8; }
+.wx-hour-temp  { font-size: 17px; font-weight: 600; width: 32px; text-align: right; }
+
+/* ── FOOTER ── */
+.wx-footer {
+  position: absolute; bottom: 10px; left: 48px;
+  font-size: 11px; opacity: .55; z-index: 2;
+}
+
+/* ── LOADING STATE ── */
+.wx-loading {
+  position: absolute; inset: 0; z-index: 10;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: rgba(11,34,65,.85); gap: 16px;
+  color: #fff; font-family: 'Segoe UI', Tahoma, sans-serif;
+}
+.wx-spinner {
+  width: 40px; height: 40px;
+  border: 3px solid rgba(255,255,255,.2);
+  border-top-color: #4fc3f7;
+  border-radius: 50%;
+  animation: wxSpin .8s linear infinite;
+}
+@keyframes wxSpin { to { transform: rotate(360deg); } }
+.wx-loading-text { font-size: 14px; opacity: .7; }
+
+/* ── ERROR STATE ── */
+.wx-error {
+  position: absolute; inset: 0; z-index: 10;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: rgba(11,34,65,.85); gap: 12px; color: #fff; text-align: center;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+}
+.wx-error-icon { font-size: 40px; opacity: .6; }
+.wx-error-msg  { font-size: 15px; font-weight: 300; }
+.wx-error-sub  { font-size: 12px; opacity: .6; max-width: 300px; line-height: 1.6; }
+
+/* ── RESIZE ── */
+.wx-resize {
+  position: absolute; bottom: 0; right: 0;
+  width: 16px; height: 16px; cursor: se-resize; z-index: 10;
+}
+.wx-resize::after {
+  content: ''; position: absolute; bottom: 3px; right: 3px;
+  width: 8px; height: 8px;
+  border-right: 2px solid rgba(255,255,255,.3);
+  border-bottom: 2px solid rgba(255,255,255,.3);
+}
+
+/* ── TASKBAR ENTRY ── */
+#tbWeather {
+  height: 100%; display: flex; align-items: center;
+  gap: 6px; padding: 0 10px; cursor: pointer;
+  transition: background .15s; position: relative;
+  min-width: 100px; max-width: 140px;
+}
+#tbWeather:hover { background: rgba(255,255,255,.1); }
+#tbWeather span  { font-size: 12px; color: rgba(255,255,255,.85); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#tbWeather::after {
+  content: ''; position: absolute; bottom: 0; left: 10%;
+  width: 80%; height: 2px; background: #0078d7;
+}
+#tbWeather.minimised::after { background: rgba(255,255,255,.3); }
+
+/* ── ICON SVG HELPERS ── */
+.wx-icon { display: inline-flex; align-items: center; justify-content: center; }
+.wx-icon svg { stroke-width: 1; }
+ 
