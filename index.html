@@ -831,31 +831,31 @@
 
 <script>
 /* ── BIOS → Windows handoff ──────────────────────────────
-   Listen for the 'bios:complete' event fired by bios.js
-   after the CRT-off animation. Then fade in Windows.
+   Sequence:
+   1. bios:complete fires  (BIOS CRT-off done)
+   2. win8OS becomes visible — Windows boot screen shows instantly
+   3. Boot screen plays for 2.6s (logo + spinner animation)
+   4. Boot screen fades out → lock screen appears
    ───────────────────────────────────────────────────────── */
 window.addEventListener('bios:complete', function onBiosComplete() {
   const os = document.getElementById('win8OS');
   if (!os) return;
 
-  /* make Windows visible */
-  os.style.display = 'block';
+  /* show Windows OS instantly — no fade, just black first frame
+     then the bootScreen takes over immediately */
+  os.style.display  = 'block';
+  os.style.opacity  = '1';
+  os.style.transition = 'none';
 
-  /* tiny delay so display:block paints first, then fade in */
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      os.style.opacity = '1';
-    });
+  /* hide all BIOS phase divs — Windows boot screen is now showing */
+  ['phase-black','phase-post','phase-summary','phase-handoff',
+   'setup-overlay','bootmenu-overlay'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
   });
 
-  /* hide all BIOS phase divs cleanly */
-  setTimeout(() => {
-    ['phase-black','phase-post','phase-summary','phase-handoff',
-     'setup-overlay','bootmenu-overlay'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.style.display = 'none';
-    });
-  }, 600);
+  /* now trigger the Windows boot sequence */
+  if (typeof runWindowsBoot === 'function') runWindowsBoot();
 });
 </script>
 </body>
