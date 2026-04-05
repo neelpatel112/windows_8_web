@@ -859,4 +859,29 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
   opacity: 0; pointer-events: none;
   transition: opacity .2s;
 }
+
+
+/* ════════════════════════════════════════════════════════
+   BIOS INTEGRATION OVERRIDES
+   BIOS phase divs must sit above the entire Windows OS.
+   The win8OS wrapper is hidden until bios:complete fires.
+   ════════════════════════════════════════════════════════ */
+
+/* Elevate BIOS phases above everything Windows */
+#phase-black,
+#phase-post,
+#phase-summary,
+#phase-handoff,
+#setup-overlay,
+#bootmenu-overlay { z-index: 999999 !important; }
+
+/* Windows OS container */
+#win8OS {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+}
+
+/* bios.css overrides html/body background to #000 and overflow:hidden —
+   that's fine since the BIOS runs first and Windows takes over after */
  
