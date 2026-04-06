@@ -1,0 +1,446 @@
+/* ═══════════════════════════════════════════════════════════
+   Maps App  ·  maps.css
+   Windows 8 Bing Maps exact look — Leaflet.js powered
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── WINDOW ── */
+#mapsWindow {
+  position: fixed;
+  top: 25px; left: 70px;
+  width: 920px; height: 600px;
+  min-width: 500px; min-height: 360px;
+  z-index: 445;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 10px 48px rgba(0,0,0,.65), 0 2px 8px rgba(0,0,0,.4);
+  border: 1px solid rgba(255,255,255,.08);
+  transform-origin: center bottom;
+  animation: mpOpen .22s cubic-bezier(.16,1,.3,1) both;
+  font-family: 'Segoe UI', 'Segoe WP', Tahoma, sans-serif;
+  background: #1a1a1a;
+}
+@keyframes mpOpen {
+  from { opacity:0; transform:scale(.94) translateY(14px); }
+  to   { opacity:1; transform:scale(1) translateY(0); }
+}
+#mapsWindow.minimising {
+  animation: mpMin .2s cubic-bezier(.4,0,1,1) both; pointer-events:none;
+}
+@keyframes mpMin {
+  from { opacity:1; transform:scale(1) translateY(0); }
+  to   { opacity:0; transform:scale(.4) translateY(100vh); }
+}
+#mapsWindow.restoring { animation: mpOpen .22s cubic-bezier(.16,1,.3,1) both; }
+#mapsWindow.maximised {
+  top:0!important; left:0!important;
+  width:100vw!important; height:calc(100vh - 44px)!important;
+  border:none;
+}
+
+/* ── TITLE BAR ── */
+.mp-titlebar {
+  height: 36px; flex-shrink: 0;
+  background: linear-gradient(to bottom, #1a1a2e, #111122);
+  display: flex; align-items: center; padding: 0 0 0 10px;
+  cursor: default; z-index: 20; gap: 8px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.mp-titlebar-icon {
+  width: 20px; height: 20px; object-fit: contain; flex-shrink: 0;
+  opacity: .85;
+}
+.mp-titlebar-text {
+  font-size: 13px; color: rgba(255,255,255,.82);
+  font-weight: 400; flex: 1; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+  letter-spacing: .3px;
+}
+.mp-controls { display: flex; height: 100%; }
+.mp-btn {
+  width: 44px; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 16px; color: rgba(255,255,255,.65);
+  border: none; background: transparent;
+  font-family: 'Segoe UI', Arial, sans-serif; line-height: 1;
+  transition: background .12s, color .12s;
+}
+.mp-btn:hover        { background: rgba(255,255,255,.1); color: #fff; }
+.mp-btn.close:hover  { background: #e81123; color: #fff; }
+
+/* ── TOP SEARCH BAR ── */
+.mp-searchbar {
+  height: 44px; flex-shrink: 0;
+  background: #1e2235;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  display: flex; align-items: center; gap: 0;
+  padding: 0 8px; z-index: 15;
+}
+.mp-search-wrap {
+  flex: 1; max-width: 420px;
+  display: flex; align-items: center;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.12);
+  height: 30px; padding: 0 10px; gap: 8px;
+  transition: background .15s, border-color .15s;
+}
+.mp-search-wrap:focus-within {
+  background: rgba(255,255,255,.14);
+  border-color: #4fc3f7;
+}
+.mp-search-icon { font-size: 14px; opacity: .55; flex-shrink: 0; color: #fff; }
+.mp-search-input {
+  flex: 1; background: transparent; border: none; outline: none;
+  color: #fff; font-size: 13px;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  caret-color: #4fc3f7;
+}
+.mp-search-input::placeholder { color: rgba(255,255,255,.38); }
+.mp-search-clear {
+  cursor: pointer; font-size: 14px; color: rgba(255,255,255,.4);
+  transition: color .12s; display: none;
+}
+.mp-search-clear.visible { display: block; }
+.mp-search-clear:hover { color: #fff; }
+.mp-search-btn {
+  height: 30px; padding: 0 14px; background: #0078d7;
+  border: none; color: #fff; font-size: 13px; cursor: pointer;
+  font-family: inherit; transition: background .12s; flex-shrink: 0;
+  margin-left: 6px;
+}
+.mp-search-btn:hover { background: #005fa3; }
+
+/* view mode buttons */
+.mp-view-group {
+  display: flex; gap: 2px; margin-left: 12px; flex-shrink: 0;
+}
+.mp-view-btn {
+  height: 28px; padding: 0 12px; font-size: 11px;
+  background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1);
+  color: rgba(255,255,255,.65); cursor: pointer;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  transition: all .12s; white-space: nowrap;
+}
+.mp-view-btn:hover  { background: rgba(255,255,255,.14); color: #fff; }
+.mp-view-btn.active { background: #0078d7; border-color: #0078d7; color: #fff; }
+
+/* toolbar right side */
+.mp-toolbar-right {
+  display: flex; align-items: center; gap: 6px;
+  margin-left: auto; flex-shrink: 0;
+}
+.mp-tool-btn {
+  width: 30px; height: 28px;
+  background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1);
+  color: rgba(255,255,255,.65); cursor: pointer; font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .12s;
+}
+.mp-tool-btn:hover { background: rgba(255,255,255,.14); color: #fff; }
+.mp-tool-btn.active { background: #0078d7; border-color: #0078d7; color: #fff; }
+
+/* ── BODY ── */
+.mp-body {
+  flex: 1; display: flex; overflow: hidden; position: relative;
+}
+
+/* ── LEAFLET MAP CONTAINER ── */
+#mpLeaflet {
+  flex: 1; height: 100%;
+  background: #1a2744;
+  position: relative;
+}
+
+/* Override leaflet default styles to match Win8 dark theme */
+#mpLeaflet .leaflet-control-zoom {
+  border: none !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,.5) !important;
+}
+#mpLeaflet .leaflet-control-zoom a {
+  background: #1e2235 !important;
+  color: rgba(255,255,255,.8) !important;
+  border: 1px solid rgba(255,255,255,.1) !important;
+  width: 32px !important; height: 32px !important;
+  line-height: 32px !important; font-size: 18px !important;
+  transition: background .12s !important;
+}
+#mpLeaflet .leaflet-control-zoom a:hover {
+  background: #0078d7 !important; color: #fff !important;
+}
+#mpLeaflet .leaflet-control-attribution {
+  background: rgba(0,0,0,.55) !important;
+  color: rgba(255,255,255,.45) !important;
+  font-size: 10px !important;
+}
+#mpLeaflet .leaflet-control-attribution a {
+  color: rgba(255,255,255,.45) !important;
+}
+#mpLeaflet .leaflet-popup-content-wrapper {
+  background: #1e2235 !important;
+  color: #fff !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+  border-radius: 2px !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,.5) !important;
+}
+#mpLeaflet .leaflet-popup-tip { background: #1e2235 !important; }
+#mpLeaflet .leaflet-popup-close-button { color: rgba(255,255,255,.5) !important; }
+#mpLeaflet .leaflet-popup-close-button:hover { color: #fff !important; }
+
+/* ── LEFT SIDEBAR ── */
+.mp-sidebar {
+  width: 260px; flex-shrink: 0;
+  background: #14192d;
+  border-right: 1px solid rgba(255,255,255,.06);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.mp-sidebar.hidden { display: none; }
+
+/* Sidebar header */
+.mp-sidebar-title {
+  font-size: 11px; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase; color: rgba(255,255,255,.45);
+  padding: 14px 16px 10px; border-bottom: 1px solid rgba(255,255,255,.06);
+  flex-shrink: 0;
+}
+
+/* Favourites / recent list */
+.mp-place-list { flex: 1; overflow-y: auto; }
+.mp-place-list::-webkit-scrollbar { width: 4px; }
+.mp-place-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 2px; }
+
+.mp-place-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 16px; cursor: pointer;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+  transition: background .12s;
+}
+.mp-place-item:hover { background: rgba(255,255,255,.06); }
+.mp-place-item.active { background: rgba(0,120,215,.2); border-left: 3px solid #0078d7; }
+.mp-place-pin {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0;
+}
+.mp-place-pin.red    { background: rgba(232,17,35,.25); color: #e81123; }
+.mp-place-pin.blue   { background: rgba(0,120,215,.25); color: #4fc3f7; }
+.mp-place-pin.green  { background: rgba(0,176,80,.25);  color: #55ff55; }
+.mp-place-pin.orange { background: rgba(250,104,0,.25); color: #ffa726; }
+.mp-place-info { flex: 1; min-width: 0; }
+.mp-place-name { font-size: 13px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mp-place-desc { font-size: 11px; color: rgba(255,255,255,.45); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ── ZOOM CONTROLS (custom, Win8 style) ── */
+.mp-zoom-controls {
+  position: absolute; right: 16px; bottom: 40px;
+  display: flex; flex-direction: column; gap: 2px; z-index: 1000;
+}
+.mp-zoom-btn {
+  width: 36px; height: 36px;
+  background: #1e2235; border: 1px solid rgba(255,255,255,.12);
+  color: rgba(255,255,255,.8); font-size: 20px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .12s, color .12s;
+  user-select: none;
+}
+.mp-zoom-btn:hover { background: #0078d7; color: #fff; border-color: #0078d7; }
+
+/* ── MY LOCATION BUTTON ── */
+.mp-locate-btn {
+  position: absolute; right: 16px; bottom: 118px; z-index: 1000;
+  width: 36px; height: 36px;
+  background: #1e2235; border: 1px solid rgba(255,255,255,.12);
+  color: rgba(255,255,255,.7); font-size: 16px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+}
+.mp-locate-btn:hover { background: #0078d7; color: #fff; border-color: #0078d7; }
+.mp-locate-btn.locating { animation: mpLocatePulse 1s infinite; }
+@keyframes mpLocatePulse { 0%,100%{border-color:rgba(255,255,255,.12)} 50%{border-color:#4fc3f7} }
+
+/* ── COMPASS ── */
+.mp-compass {
+  position: absolute; right: 16px; top: 50px; z-index: 1000;
+  width: 36px; height: 36px;
+  background: #1e2235; border: 1px solid rgba(255,255,255,.12);
+  border-radius: 50%; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; color: rgba(255,255,255,.7);
+  transition: all .15s;
+}
+.mp-compass:hover { background: #1e2235; border-color: #4fc3f7; }
+
+/* ── SCALE BAR ── */
+.mp-scale {
+  position: absolute; left: 16px; bottom: 36px; z-index: 1000;
+  font-size: 10px; color: rgba(255,255,255,.5);
+  background: rgba(0,0,0,.4); padding: 2px 8px;
+  pointer-events: none;
+}
+
+/* ── SEARCH SUGGESTIONS DROPDOWN ── */
+.mp-suggestions {
+  position: absolute; top: 100%; left: 0; right: 0; z-index: 9999;
+  background: #1e2235; border: 1px solid rgba(255,255,255,.12);
+  box-shadow: 0 8px 32px rgba(0,0,0,.5);
+  max-height: 280px; overflow-y: auto; display: none;
+}
+.mp-suggestions.open { display: block; }
+.mp-suggestion-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; cursor: pointer; color: rgba(255,255,255,.8);
+  font-size: 13px; border-bottom: 1px solid rgba(255,255,255,.05);
+  transition: background .1s;
+}
+.mp-suggestion-item:hover { background: rgba(0,120,215,.25); color: #fff; }
+.mp-suggestion-icon { font-size: 16px; flex-shrink: 0; opacity: .65; }
+.mp-suggestion-name { font-weight: 500; }
+.mp-suggestion-region { font-size: 11px; opacity: .55; margin-top: 1px; }
+
+/* ── STATUS BAR ── */
+.mp-statusbar {
+  height: 24px; flex-shrink: 0;
+  background: #111122; border-top: 1px solid rgba(255,255,255,.06);
+  display: flex; align-items: center; padding: 0 12px; gap: 20px;
+}
+.mp-status-item {
+  font-size: 10px; color: rgba(255,255,255,.38); letter-spacing: .5px;
+}
+#mpCoords { font-family: 'Consolas', 'Courier New', monospace; }
+
+/* ── ROUTE PANEL ── */
+.mp-route-panel {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 280px; z-index: 500;
+  background: #14192d;
+  border-right: 1px solid rgba(255,255,255,.06);
+  display: flex; flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform .3s cubic-bezier(.16,1,.3,1);
+}
+.mp-route-panel.open { transform: translateX(0); }
+
+.mp-route-header {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+}
+.mp-route-title { font-size: 14px; color: #fff; font-weight: 300; flex: 1; }
+.mp-route-close { cursor: pointer; font-size: 16px; color: rgba(255,255,255,.5); transition: color .12s; }
+.mp-route-close:hover { color: #fff; }
+
+.mp-route-inputs {
+  padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,.06); flex-shrink: 0;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.mp-route-input-wrap {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1);
+  padding: 6px 10px;
+}
+.mp-route-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.mp-route-input {
+  flex: 1; background: transparent; border: none; outline: none;
+  color: #fff; font-size: 13px; font-family: 'Segoe UI', Tahoma, sans-serif;
+  caret-color: #4fc3f7;
+}
+.mp-route-input::placeholder { color: rgba(255,255,255,.35); }
+.mp-route-go-btn {
+  background: #0078d7; border: none; color: #fff;
+  padding: 7px 16px; font-size: 13px; cursor: pointer;
+  font-family: inherit; width: 100%; transition: background .12s;
+}
+.mp-route-go-btn:hover { background: #005fa3; }
+
+.mp-route-mode-bar {
+  display: flex; gap: 0; padding: 8px 16px;
+  border-bottom: 1px solid rgba(255,255,255,.06); flex-shrink: 0;
+}
+.mp-mode-btn {
+  flex: 1; padding: 6px 0; font-size: 18px; text-align: center;
+  background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08);
+  cursor: pointer; color: rgba(255,255,255,.55); transition: all .12s;
+}
+.mp-mode-btn:hover  { color: #fff; background: rgba(255,255,255,.1); }
+.mp-mode-btn.active { color: #fff; background: #0078d7; border-color: #0078d7; }
+
+.mp-route-steps { flex: 1; overflow-y: auto; padding: 8px 0; }
+.mp-route-steps::-webkit-scrollbar { width: 4px; }
+.mp-route-steps::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 2px; }
+
+.mp-step {
+  display: flex; gap: 12px; padding: 10px 16px;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+  color: rgba(255,255,255,.75); font-size: 12px; line-height: 1.5;
+}
+.mp-step-num {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: rgba(0,120,215,.3); color: #4fc3f7;
+  font-size: 11px; font-weight: 700; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.mp-step-dist { font-size: 10px; color: rgba(255,255,255,.4); margin-top: 2px; }
+
+.mp-route-summary {
+  padding: 12px 16px;
+  border-top: 1px solid rgba(255,255,255,.06); flex-shrink: 0;
+  display: flex; gap: 16px;
+}
+.mp-route-stat { display: flex; flex-direction: column; gap: 2px; }
+.mp-route-stat-val { font-size: 20px; font-weight: 200; color: #fff; }
+.mp-route-stat-label { font-size: 10px; color: rgba(255,255,255,.45); letter-spacing: 1px; }
+
+/* ── LAYER PICKER ── */
+.mp-layer-popup {
+  position: absolute; right: 60px; top: 50px; z-index: 1000;
+  background: #1e2235; border: 1px solid rgba(255,255,255,.12);
+  box-shadow: 0 8px 32px rgba(0,0,0,.5);
+  padding: 6px 0; min-width: 160px; display: none;
+}
+.mp-layer-popup.open { display: block; }
+.mp-layer-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 16px; cursor: pointer; font-size: 13px;
+  color: rgba(255,255,255,.75); transition: background .1s;
+}
+.mp-layer-item:hover  { background: rgba(255,255,255,.07); color: #fff; }
+.mp-layer-item.active { color: #4fc3f7; }
+.mp-layer-check { width: 14px; flex-shrink: 0; text-align: center; }
+
+/* ── TASKBAR ENTRY ── */
+#tbMaps {
+  height: 100%; display: flex; align-items: center;
+  gap: 6px; padding: 0 10px; cursor: pointer;
+  transition: background .15s; position: relative;
+  min-width: 80px; max-width: 120px;
+}
+#tbMaps:hover { background: rgba(255,255,255,.1); }
+#tbMaps span  { font-size: 12px; color: rgba(255,255,255,.85); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#tbMaps::after {
+  content: ''; position: absolute; bottom: 0; left: 10%;
+  width: 80%; height: 2px; background: #0078d7;
+}
+#tbMaps.minimised::after { background: rgba(255,255,255,.3); }
+
+/* ── RESIZE ── */
+.mp-resize {
+  position: absolute; bottom: 0; right: 0;
+  width: 16px; height: 16px; cursor: se-resize; z-index: 10;
+}
+.mp-resize::after {
+  content: ''; position: absolute; bottom: 3px; right: 3px;
+  width: 8px; height: 8px;
+  border-right: 2px solid rgba(255,255,255,.2);
+  border-bottom: 2px solid rgba(255,255,255,.2);
+}
+
+/* ── 3D TILT BUTTON ── */
+.mp-3d-badge {
+  position: absolute; left: 16px; top: 50px; z-index: 1000;
+  background: #1e2235; border: 1px solid rgba(255,255,255,.12);
+  color: rgba(255,255,255,.6); font-size: 10px; font-weight: 700;
+  letter-spacing: 1px; padding: 4px 8px; cursor: pointer;
+  transition: all .15s;
+}
+.mp-3d-badge:hover { background: #0078d7; color: #fff; border-color: #0078d7; }
+.mp-3d-badge.active { background: #0078d7; color: #fff; border-color: #0078d7; }
+ 
