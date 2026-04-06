@@ -687,6 +687,7 @@ function showIconCtx(e, type) {
   else if (type === 'terminal')  openCtx('terminalIconCtx',  e.clientX, e.clientY);
   else if (type === 'ie')        openCtx('ieIconCtx',        e.clientX, e.clientY);
   else if (type === 'weather')   openCtx('weatherIconCtx',   e.clientX, e.clientY);
+  else if (type === 'maps')      openCtx('mapsIconCtx',       e.clientX, e.clientY);
   /* other icons — suppress browser default */
 }
 
