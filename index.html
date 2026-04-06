@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,6 +15,7 @@
 <link rel="stylesheet" href="ie.css">
 <link rel="stylesheet" href="taskmanager.css">
 <link rel="stylesheet" href="weather.css">
+<link rel="stylesheet" href="maps.css">
 </head>
 <body>
 
@@ -181,6 +181,11 @@
       <img src="icons/weather.png" alt="Weather"
            onerror="this.outerHTML='<span style=font-size:28px>⛅</span>'"><span>Weather</span>
     </div>
+    <div class="d-icon" ondblclick="openMaps()"
+         oncontextmenu="showIconCtx(event,'maps')">
+      <img src="icons/maps.png" alt="Maps"
+           onerror="this.outerHTML='<span style=font-size:28px>🗺</span>'"><span>Maps</span>
+    </div>
   </div>
 </div>
 
@@ -322,7 +327,7 @@
           <span class="tile-label">Internet Explorer</span>
         </div>
 
-        <div class="tile tc-orange" onclick="tileOpen(this,'Maps')" style="grid-column:3/5;grid-row:3">
+        <div class="tile tc-orange" onclick="openMaps();if(startOpen)setTimeout(toggleStart,200);" style="grid-column:3/5;grid-row:3">
           <div class="tile-icon"><img src="icons/maps.png" alt="Maps"></div>
           <span class="tile-label">Maps</span>
         </div>
@@ -712,6 +717,32 @@
 <!-- ══════════════════════════════════════════════════════
      WEATHER ICON RIGHT-CLICK CONTEXT MENU
      ══════════════════════════════════════════════════════ -->
+<!-- ══════════════════════════════════════════════════════
+     MAPS ICON RIGHT-CLICK CONTEXT MENU
+     ══════════════════════════════════════════════════════ -->
+<div id="mapsIconCtx" class="ctx-menu">
+  <div class="ctx-item" onclick="openMaps(); hideAllCtx()">
+    <span class="ctx-icon" style="font-weight:700">&#x25B7;</span><b>Open</b>
+  </div>
+  <div class="ctx-item" onclick="openMaps(); hideAllCtx()">
+    <span class="ctx-icon">&#x1F4CD;</span>My location
+  </div>
+  <div class="ctx-item" onclick="openMaps(); setTimeout(mpToggleRoute,800); hideAllCtx()">
+    <span class="ctx-icon">&#x27A1;</span>Get directions
+  </div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item ctx-disabled">
+    <span class="ctx-icon">&#x2702;</span>Delete
+  </div>
+  <div class="ctx-item ctx-disabled">
+    <span class="ctx-icon">&#x270F;</span>Rename
+  </div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="notify('Bing Maps — Windows 8 Web Edition','Properties'); hideAllCtx()">
+    <span class="ctx-icon">&#x2139;</span>Properties
+  </div>
+</div>
+
 <div id="weatherIconCtx" class="ctx-menu">
   <div class="ctx-item" onclick="openWeather(); hideAllCtx()">
     <span class="ctx-icon" style="font-weight:700">&#x25B7;</span><b>Open</b>
@@ -859,6 +890,7 @@
 <script src="ie.js"></script>
 <script src="taskmanager.js"></script>
 <script src="weather.js"></script>
+<script src="maps.js"></script>
 
 <script>
 /* ── BIOS → Windows handoff ──────────────────────────────
