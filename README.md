@@ -4,7 +4,7 @@
 
 # Windows 8 Web
 
-**A pixel-perfect, fully interactive replica of Windows 8 — running entirely in the browser.**
+**A pixel-perfect, fully interactive replica of Windows 8 —running entirely in the browser.**
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-windows8web.vercel.app-0078d7?style=for-the-badge&logo=vercel&logoColor=white)](https://windows8web.vercel.app/)
 [![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
