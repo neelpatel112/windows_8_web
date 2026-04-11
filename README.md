@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="logo.png" alt="Windows 8 Web" width="80" />
+<img src="logo.png" alt="Windows 8 Web" width="80"/>
 
 # Windows 8 Web
 
