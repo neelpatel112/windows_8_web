@@ -1,581 +1,962 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    user-select: none;
-    font-family: 'Segoe UI', 'Arial', sans-serif;
+/* Windows 8 Web — style.css */
+@import url('https://fonts.googleapis.com/css2?family=Segoe+UI:wght@100;300;400;600&display=swap');
+
+*, *::before, *::after {
+  margin: 0; padding: 0; box-sizing: border-box;
+  user-select: none; -webkit-user-select: none;
+  font-family: 'Segoe UI', 'Segoe WP', Tahoma, sans-serif;
+}
+html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
+
+/* ── BOOT ── */
+#bootScreen {
+  position: fixed; inset: 0; z-index: 99999; background: #000;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 52px;
+}
+.boot-logo-img { width: 96px; height: 96px; object-fit: contain; animation: bootIn 1s cubic-bezier(.16,1,.3,1) both; }
+@keyframes bootIn { from { opacity:0; transform:scale(.7) } to { opacity:1; transform:scale(1) } }
+.boot-spinner { position: relative; width: 36px; height: 36px; animation: bsFade .4s .8s ease both; }
+@keyframes bsFade { from { opacity:0 } to { opacity:1 } }
+.boot-spinner span {
+  position: absolute; width: 4px; height: 4px; border-radius: 50%; background: #fff;
+  top: 50%; left: 50%; margin: -2px 0 0 -2px;
+  animation: dotP 1.2s infinite ease-in-out;
+}
+.boot-spinner span:nth-child(1) { --r:0deg;   animation-delay:0s    }
+.boot-spinner span:nth-child(2) { --r:45deg;  animation-delay:.15s  }
+.boot-spinner span:nth-child(3) { --r:90deg;  animation-delay:.30s  }
+.boot-spinner span:nth-child(4) { --r:135deg; animation-delay:.45s  }
+.boot-spinner span:nth-child(5) { --r:180deg; animation-delay:.60s  }
+.boot-spinner span:nth-child(6) { --r:225deg; animation-delay:.75s  }
+.boot-spinner span:nth-child(7) { --r:270deg; animation-delay:.90s  }
+.boot-spinner span:nth-child(8) { --r:315deg; animation-delay:1.05s }
+.boot-spinner span { transform: rotate(var(--r,0deg)) translateY(-14px); }
+@keyframes dotP {
+  0%,100% { opacity:.12; transform:rotate(var(--r,0deg)) translateY(-14px) scale(.7) }
+  50%     { opacity:1;   transform:rotate(var(--r,0deg)) translateY(-14px) scale(1)  }
 }
 
-body {
-    overflow: hidden;
-    height: 100vh;
-    background: #0c7cd5; /* Windows 8 default background */
+/* ── LOCK SCREEN ── */
+#lockScreen {
+  position: fixed; inset: 0; z-index: 9999;
+  display: flex; flex-direction: column;
+  /* content anchored bottom-left — exactly like Win8 screenshot */
+  align-items: flex-start;
+  justify-content: flex-end;
+  cursor: pointer; overflow: hidden;
+  /* background is now driven by JS wallpaper slideshow */
+  background: #0d1b2a;
 }
 
-/* Desktop */
-.desktop {
-    height: 100vh;
-    position: relative;
-    background: linear-gradient(135deg, #0c7cd5 0%, #0a5e9e 100%);
-    overflow: hidden;
+/* Two background layers for crossfade transition */
+#lockScreen .lock-bg-a,
+#lockScreen .lock-bg-b {
+  position: absolute; inset: 0; z-index: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: opacity 1.2s ease;
 }
 
-/* Desktop Icons */
+/* subtle dark gradient — heavier at bottom-left where text sits */
+#lockScreen::before {
+  content: ''; position: absolute; inset: 0; z-index: 1;
+  background:
+    linear-gradient(to top,   rgba(0,0,0,.55) 0%, rgba(0,0,0,.0) 45%),
+    linear-gradient(to right, rgba(0,0,0,.35) 0%, rgba(0,0,0,.0) 50%);
+  pointer-events: none;
+}
+
+#lockScreen > * { position: relative; z-index: 2; }
+
+/* slide-up animations */
+#lockScreen         { transform: translateY(0); transition: none; }
+#lockScreen.touched { transform: translateY(-20px); transition: transform .22s cubic-bezier(.4,0,.6,1); }
+#lockScreen.unlock  { transform: translateY(-100%); transition: transform .9s cubic-bezier(.32,0,.18,1); pointer-events: none; }
+
+/* ── TIME — giant, bottom-left, weight 100 ── */
+.lock-time {
+  font-size: clamp(72px, 10vw, 120px);
+  font-weight: 100;
+  color: #fff;
+  letter-spacing: -2px;
+  line-height: 1;
+  margin: 0 0 0 52px;
+  text-shadow: 0 2px 16px rgba(0,0,0,.4);
+  font-family: 'Segoe UI', 'Segoe WP', Tahoma, sans-serif;
+}
+
+/* ── DATE — below time, same left margin ── */
+.lock-date {
+  font-size: clamp(16px, 2.2vw, 26px);
+  font-weight: 300;
+  color: rgba(255,255,255,.92);
+  margin: 8px 0 48px 52px;
+  letter-spacing: .3px;
+  text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  font-family: 'Segoe UI', 'Segoe WP', Tahoma, sans-serif;
+}
+
+/* ── ARROW — bottom-center, subtle bounce ── */
+.lock-arrow {
+  position: absolute; bottom: 22px; left: 50%;
+  transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  color: rgba(255,255,255,.5);
+  animation: arrowF 2.2s infinite ease-in-out;
+  z-index: 3;
+}
+.lock-arrow span:first-child { font-size: 18px; line-height: 1; }
+.lock-arrow span:last-child  { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; }
+@keyframes arrowF { 0%,100%{transform:translateX(-50%) translateY(0);opacity:.4} 50%{transform:translateX(-50%) translateY(-6px);opacity:.85} }
+
+/* ── STATUS — bottom-right (wifi + battery) ── */
+.lock-status {
+  position: absolute; bottom: 18px; right: 24px;
+  display: flex; gap: 14px; color: rgba(255,255,255,.75);
+  font-size: 15px; z-index: 3;
+}
+
+/* ── pass-mode: time/date slide up slightly when password panel shows ── */
+#lockScreen.pass-mode .lock-time,
+#lockScreen.pass-mode .lock-date {
+  opacity: .28;
+  transform: translateY(-24px);
+  transition: all .4s cubic-bezier(.4,0,.2,1);
+}
+#lockScreen.pass-mode .lock-arrow {
+  opacity: 0; pointer-events: none;
+  transition: opacity .2s;
+}
+
+/* responsive */
+@media (max-width: 700px) {
+  .lock-time { font-size: 64px; margin-left: 28px; }
+  .lock-date { font-size: 16px; margin-left: 28px; }
+}
+
+/* ── DESKTOP ── */
+#desktop {
+  position: fixed; inset: 0;
+  background: url('67.jpg') center/cover no-repeat #012456;
+  overflow: hidden;
+}
+#desktop::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,.42) 100%);
+}
 .desktop-icons {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 25px;
+  position: absolute; top: 16px; left: 16px;
+  display: flex; flex-direction: column; gap: 22px; z-index: 10;
+}
+.d-icon {
+  display: flex; flex-direction: column; align-items: center;
+  width: 80px; color: #fff; cursor: pointer; padding: 6px 4px; transition: background .15s;
+}
+.d-icon:hover  { background: rgba(255,255,255,.18); }
+.d-icon:active { background: rgba(255,255,255,.30); }
+.d-icon img { width: 40px; height: 40px; object-fit: contain; margin-bottom: 5px; filter: drop-shadow(0 2px 5px rgba(0,0,0,.6)); }
+.d-icon span { font-size: 11px; text-align: center; text-shadow: 0 1px 3px rgba(0,0,0,.8); line-height: 1.3; }
+
+/* ── TASKBAR ── */
+#taskbar {
+  position: fixed; bottom: 0; left: 0; right: 0; height: 44px; z-index: 300;
+  background: rgba(14,14,14,.98); border-top: 1px solid rgba(255,255,255,.07);
+  display: flex; align-items: center;
+}
+#startBtn {
+  width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; flex-shrink: 0; transition: background .15s;
+}
+#startBtn:hover  { background: rgba(255,255,255,.09); }
+#startBtn.active { background: rgba(0,120,215,.22); }
+.start-logo-img { width: 24px; height: 24px; object-fit: contain; opacity: .88; transition: opacity .15s, filter .15s; }
+#startBtn:hover  .start-logo-img { opacity: 1; filter: brightness(1.15); }
+#startBtn.active .start-logo-img { opacity: 1; filter: brightness(1.3) drop-shadow(0 0 4px rgba(0,180,255,.5)); }
+.tb-left { display: flex; align-items: center; height: 100%; flex: 1; }
+.tb-app {
+  width: 46px; height: 100%; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; position: relative; transition: background .15s;
+}
+.tb-app:hover { background: rgba(255,255,255,.09); }
+.tb-app img { width: 22px; height: 22px; object-fit: contain; filter: brightness(.85); transition: filter .15s; }
+.tb-app:hover img { filter: brightness(1); }
+.tb-app.running::after {
+  content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 20px; height: 2px; background: #0078d7;
+}
+.tb-right {
+  display: flex; align-items: center; height: 100%;
+  gap: 2px; padding: 0 0 0 4px;
 }
 
-.desktop-icon {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 80px;
-    padding: 8px;
-    color: white;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-    border-radius: 5px;
-    transition: all 0.2s;
-    cursor: pointer;
+/* ── generic tray button ── */
+.tray-btn {
+  width: 32px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; position: relative;
+  transition: background .15s;
+  flex-shrink: 0;
+}
+.tray-btn:hover { background: rgba(255,255,255,.1); }
+.tray-icon { width: 16px; height: 16px; object-fit: contain; opacity: .85; transition: opacity .15s; }
+.tray-btn:hover .tray-icon { opacity: 1; }
+
+/* ── battery tooltip ── */
+.bat-tooltip {
+  position: absolute; bottom: calc(100% + 8px); left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background: rgba(30,30,30,.97); color: #fff;
+  font-size: 12px; padding: 5px 10px; white-space: nowrap;
+  pointer-events: none; opacity: 0;
+  transition: opacity .2s, transform .2s;
+  box-shadow: 0 2px 12px rgba(0,0,0,.5);
+}
+.tray-btn:hover .bat-tooltip { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── clock ── */
+.tray-clock {
+  height: 44px; padding: 0 12px;
+  display: flex; flex-direction: column;
+  align-items: flex-end; justify-content: center;
+  cursor: pointer; transition: background .15s; flex-shrink: 0;
+}
+.tray-clock:hover { background: rgba(255,255,255,.1); }
+.tray-clock .time { font-size: 13px; font-weight: 400; color: rgba(255,255,255,.9); line-height: 1.3; }
+.tray-clock .date { font-size: 11px; color: rgba(255,255,255,.65); line-height: 1.3; }
+
+/* ── show-desktop sliver ── */
+.tray-desktop-btn {
+  width: 6px; height: 44px;
+  border-left: 1px solid rgba(255,255,255,.15);
+  background: transparent; flex-shrink: 0;
+}
+.tray-desktop-btn:hover { background: rgba(255,255,255,.12); }
+
+/* ════════════════════════════════════════════════════
+   TRAY PANELS
+   All panels slide up from the taskbar bottom-right.
+   ════════════════════════════════════════════════════ */
+.tray-panel {
+  position: fixed;
+  bottom: 52px;   /* sits just above taskbar */
+  right: 8px;
+  z-index: 800;
+  background: rgba(22,22,22,.98);
+  border: 1px solid rgba(255,255,255,.1);
+  box-shadow: 0 -4px 32px rgba(0,0,0,.6);
+  color: #fff;
+  /* hidden state */
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(12px);
+  transition: opacity .25s ease, transform .3s cubic-bezier(.16,1,.3,1);
+}
+.tray-panel.open {
+  opacity: 1; pointer-events: all; transform: translateY(0);
 }
 
-.desktop-icon:hover {
-    background: rgba(255,255,255,0.2);
+/* ── CALENDAR PANEL ── */
+#calPanel {
+  width: 280px;
+  padding: 16px;
+}
+.cal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.cal-month-label { font-size: 15px; font-weight: 400; letter-spacing: .3px; }
+.cal-nav {
+  background: none; border: none; color: rgba(255,255,255,.7);
+  font-size: 22px; cursor: pointer; padding: 0 6px; line-height: 1;
+  transition: color .15s;
+}
+.cal-nav:hover { color: #fff; }
+.cal-dow {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  text-align: center; font-size: 11px;
+  color: rgba(255,255,255,.4); margin-bottom: 6px;
+}
+.cal-dow span { padding: 3px 0; }
+.cal-days {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+.cal-day {
+  text-align: center; padding: 5px 2px; font-size: 13px;
+  cursor: pointer; border-radius: 2px;
+  color: rgba(255,255,255,.8);
+  transition: background .12s;
+}
+.cal-day:hover { background: rgba(255,255,255,.12); }
+.cal-day.today {
+  background: #0078d7; color: #fff; font-weight: 600;
+}
+.cal-day.other-month { color: rgba(255,255,255,.25); }
+.cal-day.sunday  { color: rgba(255,100,100,.8); }
+.cal-day.today.sunday { color: #fff; }
+.cal-time-display {
+  margin-top: 14px; padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,.08);
+  text-align: center; font-size: 28px; font-weight: 100;
+  letter-spacing: 1px; color: rgba(255,255,255,.9);
 }
 
-.desktop-icon i {
-    font-size: 40px;
-    margin-bottom: 5px;
+/* ── VOLUME PANEL ── */
+#volPanel {
+  width: 240px;
+  padding: 16px 18px 12px;
+}
+.vol-wrap {
+  display: flex; align-items: center; gap: 10px;
+}
+.vol-icon { width: 18px; height: 18px; object-fit: contain; opacity: .8; flex-shrink: 0; }
+.vol-slider {
+  flex: 1; -webkit-appearance: none; appearance: none;
+  height: 4px; border-radius: 2px; outline: none;
+  background: linear-gradient(to right, #0078d7 80%, rgba(255,255,255,.2) 80%);
+  cursor: pointer;
+}
+.vol-slider::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 14px; height: 14px;
+  border-radius: 50%; background: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,.5);
+  cursor: pointer;
+}
+.vol-slider::-moz-range-thumb {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: #fff; border: none; cursor: pointer;
+}
+.vol-pct { font-size: 12px; color: rgba(255,255,255,.6); width: 32px; text-align: right; flex-shrink: 0; }
+.vol-label { font-size: 11px; color: rgba(255,255,255,.35); margin-top: 8px; }
+
+/* ── NETWORK PANEL ── */
+#netPanel {
+  width: 260px;
+  padding: 14px 0 8px;
+}
+.net-title {
+  font-size: 13px; font-weight: 600; color: rgba(255,255,255,.5);
+  text-transform: uppercase; letter-spacing: 1.5px;
+  padding: 0 16px 10px;
+}
+.net-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 9px 16px; cursor: pointer; transition: background .15s;
+}
+.net-item:hover { background: rgba(255,255,255,.07); }
+.net-connected { border-left: 2px solid #0078d7; }
+.net-icon { width: 18px; height: 18px; object-fit: contain; }
+.net-name { font-size: 13px; color: #fff; }
+.net-status { font-size: 11px; color: rgba(255,255,255,.45); }
+.net-footer {
+  padding: 8px 16px 0;
+  border-top: 1px solid rgba(255,255,255,.08);
+  margin-top: 4px;
+}
+.net-footer span {
+  font-size: 12px; color: #0078d7; cursor: pointer;
+  transition: color .15s;
+}
+.net-footer span:hover { color: #3a96dd; }
+
+/* ── ACTION CENTER PANEL ── */
+#actionPanel {
+  width: 260px;
+  padding: 14px 0 8px;
+}
+.action-title {
+  font-size: 13px; font-weight: 600; color: rgba(255,255,255,.5);
+  text-transform: uppercase; letter-spacing: 1.5px;
+  padding: 0 16px 10px;
+}
+.action-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 10px 16px; transition: background .15s;
+}
+.action-item:hover { background: rgba(255,255,255,.07); }
+.action-item i { font-size: 18px; color: rgba(255,255,255,.55); width: 20px; text-align: center; }
+.action-name { font-size: 13px; color: #fff; }
+.action-sub  { font-size: 11px; color: rgba(255,255,255,.4); }
+
+/* ── LANGUAGE PANEL ── */
+#langPanel {
+  width: 200px;
+  padding: 10px 0 6px;
+}
+.lang-title {
+  font-size: 11px; font-weight: 600; color: rgba(255,255,255,.4);
+  text-transform: uppercase; letter-spacing: 1.5px;
+  padding: 0 14px 8px;
+}
+.lang-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 9px 14px; cursor: pointer; font-size: 13px;
+  transition: background .15s; gap: 10px;
+}
+.lang-item:hover { background: rgba(255,255,255,.08); }
+.lang-item span:first-child { font-weight: 600; color: #0078d7; }
+.lang-active { background: rgba(0,120,215,.15); }
+.lang-active span:first-child { color: #3a96dd; }
+
+/* ══════════════════════════════════════════════════════════
+   START SCREEN
+   ══════════════════════════════════════════════════════════ */
+#startScreen {
+  position: fixed;
+  /* sits above taskbar, covers full screen */
+  top: 0; left: 0; right: 0; bottom: 44px;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background:
+    linear-gradient(to bottom, rgba(20,26,30,.92), rgba(18,22,26,.90)),
+    url('67.jpg') center/cover no-repeat;
+  background-color: #1a1e22;
+
+  /* HIDDEN STATE — pushed fully below viewport, invisible, non-interactive */
+  transform: translateY(100%);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    transform   .42s cubic-bezier(.32,0,.18,1),
+    opacity     .30s ease,
+    visibility  0s   .45s;     /* hide visibility only after slide finishes */
+}
+#startScreen.active {
+  transform: translateY(0);
+  opacity: 1;
+  visibility: visible;
+  pointer-events: all;
+  transition:
+    transform .42s cubic-bezier(.32,0,.18,1),
+    opacity   .30s ease;       /* no delay on open */
 }
 
-.desktop-icon span {
-    font-size: 12px;
-    text-align: center;
+/* ── header ── */
+.ss-info {
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 28px 12px 32px;
+}
+.ss-title { font-size: 36px; font-weight: 100; color: #fff; letter-spacing: .5px; }
+
+.ss-user {
+  position: relative; display: flex; align-items: center; gap: 10px;
+  color: #fff; cursor: pointer; padding: 6px 12px; transition: background .2s;
+}
+.ss-user:hover { background: rgba(255,255,255,.09); }
+.ss-user-text { text-align: right; }
+.ss-user-name { font-size: 14px; font-weight: 400; line-height: 1.2; }
+.ss-user-sub  { font-size: 11px; opacity: .55; }
+.ss-avatar {
+  width: 36px; height: 36px; border-radius: 2px; background: #0078d7;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; color: #fff; overflow: hidden; flex-shrink: 0;
+}
+.ss-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+/* power dropdown — slides down, white bg */
+.ss-power-menu {
+  position: absolute; top: calc(100% + 4px); right: 0;
+  background: #fff; color: #111; list-style: none;
+  min-width: 190px; padding: 6px 0; z-index: 20;
+  box-shadow: 0 8px 32px rgba(0,0,0,.55);
+  opacity: 0; pointer-events: none; transform: translateY(-10px);
+  transition: opacity .4s ease, transform .55s cubic-bezier(.16,1,.3,1);
+}
+.ss-power-menu.open { opacity: 1; pointer-events: all; transform: translateY(0); }
+.pm-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 36px 10px 16px; font-size: 13px; font-weight: 600;
+  color: #111; cursor: pointer; white-space: nowrap; transition: background .2s;
+}
+.pm-item i { font-size: 14px; opacity: .6; width: 16px; text-align: center; color: #333; }
+.pm-item:hover { background: rgba(0,0,0,.08); }
+.pm-item:hover i { opacity: 1; }
+.pm-item.disabled { color: #aaa; cursor: default; }
+.pm-item.disabled:hover { background: transparent; }
+
+/* ── TILE SCROLL AREA ──
+   flex:1 = fills exact remaining height after header.
+   overflow-x:auto + no-wrap = horizontal scroll only.
+   flex-direction:row = columns sit side by side.
+*/
+.ss-metro {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 10px 32px 16px;
+  gap: 20px;
+  /* prevent any vertical scrollbar */
+  min-height: 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,.2) transparent;
+}
+.ss-metro::-webkit-scrollbar { height: 5px; }
+.ss-metro::-webkit-scrollbar-thumb { background: rgba(255,255,255,.2); border-radius: 3px; }
+
+/* ── TILE COLUMN GROUP ──
+   Each column is a flex column, shrinks to its content width.
+   The stagger animation slides it in from right.
+*/
+.tg {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  opacity: 0;
+  transform: translateX(70px) scale(.82);
+  transition: opacity .55s ease, transform .55s cubic-bezier(.16,1,.3,1);
+}
+.tg.tg-in { opacity: 1; transform: translateX(0) scale(1); }
+
+.tg-label {
+  font-size: 10px; font-weight: 300; color: rgba(255,255,255,.3);
+  text-transform: uppercase; letter-spacing: 2px;
+  margin-bottom: 7px; white-space: nowrap;
 }
 
-/* Enhanced Taskbar Styles */
-.taskbar {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 48px;
-    background: rgba(20, 20, 20, 0.98);
-    backdrop-filter: blur(10px);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 10px;
-    color: white;
-    border-top: 1px solid rgba(255,255,255,0.2);
-    z-index: 1000;
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+/* Grid inside each column.
+   grid-template-columns and rows are set via inline style using px values
+   that JS calculates from the available height. */
+.tg-grid {
+  display: grid;
+  gap: 5px;
+  align-content: start;
 }
 
-.start-button {
-    width: 48px;
-    height: 48px;
-    background: transparent;
-    border: none;
-    color: white;
-    font-size: 24px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 0;
-    transition: all 0.2s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.start-button:hover {
-    background: rgba(255,255,255,0.15);
-}
-
-.start-button:active {
-    background: rgba(255,255,255,0.25);
-    transform: scale(0.95);
-}
-
-.start-button i {
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Windows button glow effect when start screen is open */
-.start-screen.active ~ .taskbar .start-button {
-    background: rgba(0, 120, 215, 0.3);
-}
-
-.start-screen.active ~ .taskbar .start-button i {
-    color: #00b7ff;
-    text-shadow: 0 0 10px #00b7ff;
-}
-
-/* Open apps area */
-.open-apps {
-    display: flex;
-    gap: 2px;
-    height: 100%;
-    align-items: center;
-}
-
-.taskbar-app {
-    width: 48px;
-    height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 0;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    position: relative;
-    color: rgba(255,255,255,0.8);
-}
-
-.taskbar-app:hover {
-    background: rgba(255,255,255,0.1);
-    color: white;
-}
-
-.taskbar-app.active {
-    color: #00b7ff;
-}
-
-.taskbar-app.active::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 20%;
-    width: 60%;
-    height: 3px;
-    background: #00b7ff;
-    animation: taskbarGlow 1.5s infinite;
-}
-
-@keyframes taskbarGlow {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-}
-
-/* Taskbar right section */
-.taskbar-right {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    height: 100%;
-    padding: 0 10px;
-    background: rgba(0,0,0,0.2);
-    font-size: 13px;
-}
-
-.taskbar-icons {
-    display: flex;
-    gap: 12px;
-}
-
-.taskbar-icons i {
-    font-size: 16px;
-    cursor: pointer;
-    opacity: 0.9;
-    transition: all 0.2s;
-}
-
-.taskbar-icons i:hover {
-    opacity: 1;
-    transform: translateY(-1px);
-}
-
-.taskbar-time, .taskbar-date {
-    cursor: default;
-    font-weight: 400;
-    letter-spacing: 0.5px;
-} 
-
-/* Start Screen */
-.start-screen {
-    position: absolute;
-    bottom: 48px;
-    left: 0;
-    right: 0;
-    height: calc(100% - 48px);
-    background: rgba(30, 30, 30, 0.98);
-    backdrop-filter: blur(10px);
-    transform: translateY(100%);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 90;
-    overflow-y: auto;
-    padding: 20px;
-}
-
-.start-screen.active {
-    transform: translateY(0);
-}
-
-.tiles-container {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 8px;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-}
-
-/* Tile Styles */
+/* ══════════════════════════════════════════════════════════
+   TILES
+   Sizes are set by JS calculating --sz from available height.
+   CSS classes just reference that variable.
+   ══════════════════════════════════════════════════════════ */
 .tile {
-    background: #00a8ff;
-    border-radius: 4px;
-    padding: 12px;
-    color: white;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    position: relative;
-    overflow: hidden;
-    animation: tileAppear 0.5s ease-out;
+  position: relative; overflow: hidden; cursor: pointer; color: #fff;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  padding: 7px 9px;
+  outline: 1px solid transparent;
+  transition: outline-color .12s, filter .12s, transform .10s;
+}
+.tile:hover  { outline-color: rgba(200,200,200,.65); filter: brightness(1.1); }
+.tile:active { outline-color: rgba(220,220,220,.9); outline-width: 2px; transform: scale(.96); filter: brightness(.88); }
+
+/* tile icon — bottom right */
+.tile-icon {
+  position: absolute; bottom: 8px; right: 10px;
+  display: flex; align-items: center; justify-content: center;
+}
+.tile-icon img { object-fit: contain; filter: brightness(0) invert(1); opacity: .92; }
+
+/* tile name label — bottom left */
+.tile-label {
+  position: relative; z-index: 2;
+  font-size: 11px; font-weight: 400; line-height: 1.2;
+  text-shadow: 0 1px 3px rgba(0,0,0,.3);
 }
 
-@keyframes tileAppear {
-    from {
-        opacity: 0;
-        transform: scale(0.8) translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
+/* big live number */
+.tile-big { font-size: 28px; font-weight: 100; line-height: 1; margin-bottom: 2px; position: relative; z-index: 2; }
+
+/* colours */
+.tc-teal    { background: #008299; }
+.tc-dkteal  { background: #006672; }
+.tc-blue    { background: #0078d7; }
+.tc-dkblue  { background: #004e8c; }
+.tc-lBlue   { background: #2d89ef; }
+.tc-sky     { background: #1ba1e2; }
+.tc-purple  { background: #7700cc; }
+.tc-lPurple { background: #9b59b6; }
+.tc-red     { background: #e51400; }
+.tc-orange  { background: #fa6800; }
+.tc-green   { background: #00a300; }
+.tc-lGreen  { background: #99b433; }
+.tc-yellow  { background: #ffb900; }
+.tc-pink    { background: #e3008c; }
+.tc-grey    { background: #525252; }
+.tc-charcoal{ background: #2d2d30; }
+.tc-brown   { background: #7e5c3e; }
+
+/* live tile flip */
+.tile-flip-wrap {
+  position: absolute; inset: 0;
+  transform-style: preserve-3d;
+  transition: transform .65s cubic-bezier(.4,0,.2,1);
+}
+.tf-front, .tf-back {
+  position: absolute; inset: 0; backface-visibility: hidden;
+  display: flex; flex-direction: column; justify-content: flex-end; padding: 7px 9px;
+}
+.tf-back { transform: rotateX(180deg); }
+.tile.flipped .tile-flip-wrap { transform: rotateX(180deg); }
+.live-txt { font-size: 11px; color: rgba(255,255,255,.9); line-height: 1.5; position: relative; z-index: 2; }
+.live-txt strong { font-size: 22px; font-weight: 100; display: block; margin-bottom: 2px; }
+
+/* ── CHARMS ── */
+#charms {
+  position: fixed; right: 0; top: 0; bottom: 0; width: 74px; z-index: 500;
+  background: linear-gradient(to bottom, rgba(10,10,10,.97), rgba(20,20,20,.97));
+  border-left: 1px solid rgba(255,255,255,.07);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  transform: translateX(100%); transition: transform .26s cubic-bezier(.4,0,.2,1);
+}
+#charms.open { transform: translateX(0); }
+.charm {
+  width: 100%; padding: 16px 0; display: flex; flex-direction: column; align-items: center; gap: 6px;
+  color: rgba(255,255,255,.65); font-size: 10px; letter-spacing: .6px;
+  cursor: pointer; transition: color .15s, background .15s;
+}
+.charm i { font-size: 22px; }
+.charm:hover { color: #fff; background: rgba(255,255,255,.08); }
+#charmTime { position: absolute; bottom: 28px; text-align: center; color: rgba(255,255,255,.42); font-size: 12px; font-weight: 300; }
+
+/* ── TOAST ── */
+#toast {
+  position: fixed; top: 20px; right: 20px; z-index: 9000;
+  background: rgba(20,20,20,.97); border-left: 3px solid #0078d7;
+  color: #fff; padding: 12px 18px; font-size: 13px; min-width: 230px;
+  box-shadow: 0 4px 28px rgba(0,0,0,.55);
+  transform: translateX(calc(100% + 30px));
+  transition: transform .3s cubic-bezier(.4,0,.2,1); pointer-events: none;
+}
+#toast.show { transform: translateX(0); }
+.toast-title { font-weight: 600; font-size: 11px; margin-bottom: 3px; opacity: .55; text-transform: uppercase; letter-spacing: 1px; }
+
+/* ── SHUTDOWN ── */
+#shutdownOverlay {
+  position: fixed; inset: 0; z-index: 9990; background: rgba(0,0,0,.75);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity .25s;
+}
+#shutdownOverlay.show { opacity: 1; pointer-events: all; }
+.sd-box { background: #1c1c1c; color: #fff; padding: 36px 40px; min-width: 400px; box-shadow: 0 12px 60px rgba(0,0,0,.7); animation: sdPop .25s cubic-bezier(.16,1,.3,1); }
+@keyframes sdPop { from { transform:scale(.92); opacity:0 } to { transform:scale(1); opacity:1 } }
+.sd-box h3 { font-size: 16px; font-weight: 300; margin-bottom: 28px; letter-spacing: .4px; }
+.sd-opts { display: flex; gap: 18px; margin-bottom: 28px; }
+.sd-opt { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 18px 10px; background: rgba(255,255,255,.04); cursor: pointer; font-size: 13px; transition: background .15s; }
+.sd-opt:hover { background: rgba(255,255,255,.11); }
+.sd-opt i { font-size: 28px; }
+.sd-cancel { background: #0078d7; border: none; color: #fff; padding: 10px; width: 100%; font-size: 14px; cursor: pointer; font-family: inherit; transition: background .15s; }
+.sd-cancel:hover { background: #006cc1; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 700px) {
+  .lock-time { font-size: 68px; }
+  .desktop-icons { display: none; }
+  .tb-clock .date { display: none; }
+  .ss-info { padding: 12px 16px 8px 20px; }
+  .ss-metro { padding: 6px 16px 10px; gap: 12px; }
 }
 
-.tile:hover {
-    transform: scale(1.02);
-    filter: brightness(1.1);
+
+/* ════════════════════════════════════════════════════════
+   CONTEXT MENUS  (desktop, icon, taskbar)
+   ════════════════════════════════════════════════════════ */
+.ctx-menu {
+  position: fixed;
+  z-index: 8000;
+  background: #fff;
+  border: 1px solid #c8c8c8;
+  box-shadow: 2px 4px 20px rgba(0,0,0,.22);
+  min-width: 200px;
+  padding: 4px 0;
+  display: none;
+  animation: ctxPop .12s cubic-bezier(.16,1,.3,1) both;
+}
+@keyframes ctxPop {
+  from { opacity:0; transform:scale(.95) translateY(-4px); }
+  to   { opacity:1; transform:scale(1)   translateY(0); }
+}
+.ctx-menu.open { display: block; }
+
+/* opens upward (for taskbar) */
+.ctx-menu-up { transform-origin: bottom center; }
+.ctx-menu-up.open { animation: ctxPopUp .12s cubic-bezier(.16,1,.3,1) both; }
+@keyframes ctxPopUp {
+  from { opacity:0; transform:scale(.95) translateY(4px); }
+  to   { opacity:1; transform:scale(1)   translateY(0); }
 }
 
-.tile:active {
-    transform: scale(0.98);
+.ctx-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 20px 7px 12px;
+  font-size: 13px; color: #1a1a1a;
+  cursor: pointer; white-space: nowrap;
+  position: relative;
+  transition: background .1s;
+}
+.ctx-item:hover { background: #e3f2fd; }
+.ctx-item b { font-weight: 700; }
+
+.ctx-icon {
+  width: 18px; text-align: center; flex-shrink: 0;
+  font-size: 14px; color: #444;
+}
+.ctx-img {
+  width: 16px; height: 16px; object-fit: contain; flex-shrink: 0;
+}
+.ctx-arrow {
+  margin-left: auto; font-size: 11px; color: #888; padding-left: 12px;
+}
+.ctx-sep {
+  height: 1px; background: #e0e0e0; margin: 4px 0;
+}
+.ctx-disabled {
+  color: #aaa !important; cursor: default !important; pointer-events: none;
+}
+.ctx-group { padding: 0; }
+
+/* submenu */
+.ctx-has-sub { position: relative; }
+.ctx-submenu {
+  display: none;
+  position: absolute;
+  left: 100%; top: -4px;
+  background: #fff;
+  border: 1px solid #c8c8c8;
+  box-shadow: 2px 4px 16px rgba(0,0,0,.18);
+  min-width: 180px; padding: 4px 0;
+  z-index: 8001;
+}
+.ctx-has-sub:hover .ctx-submenu { display: block; }
+
+
+/* ════════════════════════════════════════════════════════
+   SYSTEM PROPERTIES WINDOW
+   ════════════════════════════════════════════════════════ */
+#sysPropWindow {
+  position: fixed;
+  top: 80px; left: 50%;
+  transform: translateX(-50%);
+  width: 640px;
+  z-index: 600;
+  display: flex;
+  flex-direction: column;
+  background: #f2f2f2;
+  border: 1px solid rgba(0,0,0,.25);
+  box-shadow: 0 8px 40px rgba(0,0,0,.45);
+  animation: winOpen .22s cubic-bezier(.16,1,.3,1) both;
 }
 
-.tile i {
-    font-size: 32px;
-    margin-bottom: 8px;
+.sysprop-body {
+  display: flex;
+  flex: 1;
+  background: #fff;
 }
 
-.tile span {
-    font-size: 14px;
-    font-weight: 400;
+/* left blue banner */
+.sysprop-banner {
+  width: 160px; flex-shrink: 0;
+  background: linear-gradient(160deg, #0078d7 0%, #004e8c 100%);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 24px 16px; gap: 10px;
+}
+.sysprop-winlogo {
+  width: 64px; height: 64px; object-fit: contain;
+  filter: brightness(0) invert(1) drop-shadow(0 2px 8px rgba(0,0,0,.3));
+}
+.sysprop-edition {
+  font-size: 16px; font-weight: 300; color: #fff;
+  text-align: center; letter-spacing: .5px;
+}
+.sysprop-edition-sub {
+  font-size: 11px; color: rgba(255,255,255,.65);
+  text-align: center;
 }
 
-.tile-detail {
-    font-size: 20px !important;
-    font-weight: 300 !important;
-    margin-top: 5px;
+/* right info panel */
+.sysprop-info {
+  flex: 1; padding: 20px 24px; overflow-y: auto;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+}
+.sysprop-section-label {
+  font-size: 11px; font-weight: 600; color: #0078d7;
+  text-transform: uppercase; letter-spacing: .8px;
+  padding-bottom: 5px; border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 8px;
+}
+.sysprop-row {
+  display: flex; justify-content: space-between;
+  font-size: 12px; padding: 4px 0;
+  border-bottom: 1px solid #f5f5f5;
+  gap: 12px;
+}
+.sysprop-row span:first-child { color: #666; flex-shrink: 0; min-width: 130px; }
+.sysprop-row span:last-child  { color: #1a1a1a; font-weight: 400; text-align: right; }
+.sysprop-activated {
+  flex-direction: column; gap: 2px;
+}
+.sysprop-activated span:first-child  { color: #107c10; font-weight: 600; font-size: 13px; }
+.sysprop-activated span:last-child   { color: #888; font-size: 11px; text-align: left; }
+
+/* footer buttons */
+.sysprop-footer {
+  display: flex; justify-content: flex-end; gap: 8px;
+  padding: 10px 16px;
+  border-top: 1px solid #d0d0d0;
+  background: #f2f2f2;
+}
+.sysprop-btn {
+  padding: 6px 20px; font-size: 13px; border: 1px solid #adadad;
+  background: linear-gradient(#f0f0f0, #e0e0e0);
+  cursor: pointer; font-family: inherit;
+  transition: background .12s;
+  min-width: 75px;
+}
+.sysprop-btn:hover { background: linear-gradient(#e3f2fd, #bbdefb); border-color: #90caf9; }
+.sysprop-btn-primary {
+  background: linear-gradient(#0078d7, #005fa3);
+  color: #fff; border-color: #005fa3;
+}
+.sysprop-btn-primary:hover { background: linear-gradient(#1a88e0, #0070c0); }
+
+
+/* ════════════════════════════════════════════════════════════
+   LOCK SCREEN PASSWORD UI
+   ════════════════════════════════════════════════════════════ */
+
+/* password panel slides up from bottom of lock screen */
+#lockPassPanel {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 0 0 60px;
+  gap: 16px;
+  z-index: 2;
+  /* hidden by default */
+  transform: translateY(40px);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform .4s cubic-bezier(.16,1,.3,1), opacity .3s ease;
+}
+#lockPassPanel.visible {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: all;
 }
 
-/* Tile Sizes */
-.tile-small {
-    grid-column: span 1;
-    grid-row: span 1;
-    aspect-ratio: 1;
+/* avatar + name above the input */
+.lock-pass-avatar {
+  width: 72px; height: 72px; border-radius: 2px;
+  object-fit: cover;
+  border: 2px solid rgba(255,255,255,.35);
+  display: block;
+  box-shadow: 0 4px 20px rgba(0,0,0,.5);
+}
+.lock-pass-name {
+  font-size: 18px; font-weight: 300; color: #fff;
+  letter-spacing: .5px; text-shadow: 0 2px 8px rgba(0,0,0,.6);
 }
 
-.tile-medium {
-    grid-column: span 2;
-    grid-row: span 1;
-    aspect-ratio: 2;
+/* password input row */
+.lock-pass-row {
+  display: flex; align-items: center; gap: 0;
+}
+#lockPassInput {
+  width: 220px; height: 38px;
+  background: rgba(255,255,255,.15);
+  border: 1px solid rgba(255,255,255,.4);
+  border-right: none;
+  color: #fff; font-size: 15px;
+  padding: 0 14px;
+  outline: none; letter-spacing: 2px;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  caret-color: #fff;
+  transition: background .2s, border-color .2s;
+  user-select: text; -webkit-user-select: text;
+}
+#lockPassInput::placeholder {
+  color: rgba(255,255,255,.45); letter-spacing: .5px; font-size: 13px;
+}
+#lockPassInput:focus {
+  background: rgba(255,255,255,.22);
+  border-color: rgba(255,255,255,.7);
+}
+.lock-pass-submit {
+  width: 38px; height: 38px;
+  background: rgba(255,255,255,.2);
+  border: 1px solid rgba(255,255,255,.4);
+  color: #fff; font-size: 16px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+.lock-pass-submit:hover { background: rgba(255,255,255,.35); }
+
+/* wrong password shake + error */
+#lockPassInput.wrong {
+  animation: lockShake .4s cubic-bezier(.36,.07,.19,.97);
+  border-color: #ff6b6b;
+  background: rgba(232,17,35,.18);
+}
+@keyframes lockShake {
+  0%,100% { transform:translateX(0); }
+  20%     { transform:translateX(-8px); }
+  40%     { transform:translateX(8px); }
+  60%     { transform:translateX(-5px); }
+  80%     { transform:translateX(5px); }
+}
+.lock-pass-error {
+  font-size: 12px; color: #ff9999;
+  letter-spacing: .3px; text-shadow: 0 1px 4px rgba(0,0,0,.5);
+  min-height: 16px; text-align: center;
 }
 
-.tile-large {
-    grid-column: span 2;
-    grid-row: span 2;
-    aspect-ratio: 1;
+/* hint text: "Enter password or leave blank" */
+.lock-pass-hint {
+  font-size: 11px; color: rgba(255,255,255,.45);
+  letter-spacing: .3px; text-align: center;
 }
 
-.tile-wide {
-    grid-column: span 4;
-    grid-row: span 1;
-    aspect-ratio: 4;
+/* show/hide password eye toggle */
+.lock-pass-eye {
+  position: absolute; right: 46px;
+  font-size: 14px; color: rgba(255,255,255,.5);
+  cursor: pointer; user-select: none;
+  transition: color .15s; line-height: 38px;
+}
+.lock-pass-eye:hover { color: #fff; }
+
+/* clock fades out when password panel is visible */
+#lockScreen.pass-mode .lock-time,
+#lockScreen.pass-mode .lock-date {
+  opacity: .35;
+  transform: translateY(-30px);
+  transition: all .4s cubic-bezier(.4,0,.2,1);
+}
+#lockScreen.pass-mode .lock-arrow {
+  opacity: 0; pointer-events: none;
+  transition: opacity .2s;
 }
 
-/* Tile Colors */
-.tile-blue { background: #0078d7; }
-.tile-green { background: #00b294; }
-.tile-orange { background: #f7630c; }
-.tile-red { background: #e81123; }
-.tile-purple { background: #881798; }
-.tile-teal { background: #008b8b; }
-.tile-pink { background: #e3008c; }
-.tile-yellow { background: #ffb900; }
-.tile-grey { background: #767676; }
-.tile-darkblue { background: #004e8c; }
-.tile-brown { background: #7e5c3e; }
-.tile-lightblue { background: #3a96dd; }
-.tile-lime { background: #8cbf00; }
 
-/* Start Footer */
-.start-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 30px;
-    background: rgba(0,0,0,0.3);
-    margin-top: 20px;
-    border-radius: 8px;
-    color: white;
+/* ════════════════════════════════════════════════════════
+   BIOS INTEGRATION OVERRIDES
+   BIOS phase divs must sit above the entire Windows OS.
+   The win8OS wrapper is hidden until bios:complete fires.
+   ════════════════════════════════════════════════════════ */
+
+/* Elevate BIOS phases above everything Windows */
+#phase-black,
+#phase-post,
+#phase-summary,
+#phase-handoff,
+#setup-overlay,
+#bootmenu-overlay { z-index: 999999 !important; }
+
+/* Windows OS container */
+#win8OS {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
 }
 
-.user-info {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-    padding: 8px 15px;
-    border-radius: 5px;
-    transition: all 0.2s;
-}
-
-.user-info:hover {
-    background: rgba(255,255,255,0.1);
-}
-
-.user-info i {
-    font-size: 24px;
-}
-
-.start-actions i {
-    font-size: 24px;
-    cursor: pointer;
-    padding: 8px;
-    border-radius: 50%;
-    transition: all 0.2s;
-}
-
-.start-actions i:hover {
-    background: rgba(255,255,255,0.1);
-}
-
-/* Shutdown Dialog */
-.shutdown-dialog {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0,0,0,0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 200;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s;
-}
-
-.shutdown-dialog.active {
-    opacity: 1;
-    pointer-events: all;
-}
-
-.shutdown-content {
-    background: rgba(30, 30, 30, 0.95);
-    backdrop-filter: blur(10px);
-    padding: 30px;
-    border-radius: 12px;
-    color: white;
-    min-width: 400px;
-    transform: scale(0.9);
-    transition: transform 0.3s;
-}
-
-.shutdown-dialog.active .shutdown-content {
-    transform: scale(1);
-}
-
-.shutdown-content h3 {
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.shutdown-options {
-    display: flex;
-    justify-content: space-around;
-    margin: 30px 0;
-}
-
-.shutdown-option {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-    padding: 15px;
-    border-radius: 8px;
-    transition: all 0.2s;
-}
-
-.shutdown-option:hover {
-    background: rgba(255,255,255,0.1);
-}
-
-.shutdown-option i {
-    font-size: 32px;
-}
-
-.shutdown-content button {
-    background: #0078d7;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    width: 100%;
-    font-size: 16px;
-    transition: all 0.2s;
-}
-
-.shutdown-content button:hover {
-    background: #005a9e;
-}
-
-/* Notification */
-.notification {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    background: rgba(0,0,0,0.8);
-    color: white;
-    padding: 12px 24px;
-    border-radius: 5px;
-    border-left: 4px solid #0078d7;
-    transform: translateX(120%);
-    transition: transform 0.3s;
-    z-index: 150;
-}
-
-.notification.show {
-    transform: translateX(0);
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .tiles-container {
-        grid-template-columns: repeat(4, 1fr);
-    }
-    
-    .tile-wide {
-        grid-column: span 4;
-    }
-    
-    .desktop-icons {
-        display: none;
-    }
-    
-    .taskbar-date {
-        display: none;
-    }
-}
-
-/* App Opening Animation */
-@keyframes appOpen {
-    0% {
-        opacity: 1;
-        transform: scale(1);
-    }
-    50% {
-        opacity: 0;
-        transform: scale(1.5);
-    }
-    100% {
-        opacity: 0;
-        transform: scale(1.5);
-    }
-}
-
-.tile.opening {
-    animation: appOpen 0.3s ease-out;
-    pointer-events: none;
-} 
-
-/* Live Photos Tile */
-.live-photos-tile {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-}
-
-.photo-strip {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    display: flex;
-    animation: slidePhotos 12s infinite ease-in-out;
-}
-
-@keyframes slidePhotos {
-    0%, 25% {
-        transform: translateX(0);
-    }
-    33%, 58% {
-        transform: translateX(-33.33%);
-    }
-    66%, 91% {
-        transform: translateX(-66.66%);
-    }
-    100% {
-        transform: translateX(0);
-    }
-}
-
-.strip-photo {
-    min-width: 100%;
-    height: 100%;
-    object-fit: cover;
-    opacity: 0.7;
-}
-
-.tile-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.6) 100%);
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 12px;
-    color: white;
-    z-index: 2;
-    pointer-events: none;
-}
-
-.tile-overlay i {
-    font-size: 28px;
-    align-self: flex-start;
-}
-
-.tile-overlay span {
-    font-size: 14px;
-    font-weight: 600;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-    align-self: flex-start;
-}
-
-/* Pause animation on hover */
-#photosTile:hover .photo-strip {
-    animation-play-state: paused;
-}
-
-#photosTile:hover .tile-overlay {
-    background: linear-gradient(135deg, rgba(0,120,215,0.5) 0%, rgba(0,0,0,0.7) 100%);
-}
+/* bios.css overrides html/body background to #000 and overflow:hidden —
+   that's fine since the BIOS runs first and Windows takes over after */
