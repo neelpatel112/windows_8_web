@@ -118,15 +118,25 @@
 
 <!-- LOCK SCREEN -->
 <div id="lockScreen">
-  <div class="lock-time" id="lockTime">12:00</div>
-  <div class="lock-date" id="lockDate">Friday, March 20</div>
+  <!-- Two background layers for smooth crossfade between wallpapers -->
+  <div class="lock-bg-a" id="lockBgA"></div>
+  <div class="lock-bg-b" id="lockBgB"></div>
+
+  <!-- Time — large, bottom-left, weight 100 -->
+  <div class="lock-time" id="lockTime">0:48</div>
+  <!-- Date — below time, same left edge -->
+  <div class="lock-date" id="lockDate">Thursday, April 23</div>
+
+  <!-- Swipe-up arrow at bottom center -->
   <div class="lock-arrow" id="lockArrow">
-    <span style="font-size:22px">&#x2303;</span>
-    <span>Click to unlock</span>
+    <span>&#x2303;</span>
+    <span>Slide up to unlock</span>
   </div>
+
+  <!-- Status icons bottom-right -->
   <div class="lock-status">
-    <span style="font-size:16px">&#x1F4F6;</span>
-    <span style="font-size:16px">&#x1F50B;</span>
+    <span>&#x1F4F6;</span>
+    <span>&#x1F50B;</span>
   </div>
 
   <!-- Password panel — slides up on click -->
@@ -923,4 +933,3 @@ window.addEventListener('bios:complete', function onBiosComplete() {
 </script>
 </body>
 </html>
- 
