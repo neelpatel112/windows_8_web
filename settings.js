@@ -436,10 +436,12 @@ function applyWallpaper(file, target, thumbEl, stripId) {
   if (target === 'lock') {
     state.lockWallpaper = file;
 
-    /* update lock screen background */
-    const lock = document.getElementById('lockScreen');
-    if (lock) {
-      lock.style.backgroundImage = `url('${file}')`;
+    /* update lock screen background via layer system */
+    if (typeof setLockWallpaperOverride === 'function') {
+      setLockWallpaperOverride(file);
+    } else {
+      const lock = document.getElementById('lockScreen');
+      if (lock) lock.style.backgroundImage = `url('${file}')`;
     }
 
     /* update preview */
@@ -716,4 +718,3 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 });
- 
