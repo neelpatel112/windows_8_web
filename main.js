@@ -4,11 +4,74 @@ let startOpen  = false;
 let toastTimer = null;
 let charmsTimer= null;
 
+/* ════════════════════════════════════════════════════════════
+   LOCK SCREEN WALLPAPER SLIDESHOW
+   Wallpapers: assets/81.jpg → assets/90.jpg
+   Crossfades every 5 seconds using two background layers (A/B)
+   ════════════════════════════════════════════════════════════ */
+const LOCK_WALLPAPERS = [
+  'assets/81.jpg','assets/82.jpg','assets/83.jpg','assets/84.jpg','assets/85.jpg',
+  'assets/86.jpg','assets/87.jpg','assets/88.jpg','assets/89.jpg','assets/90.jpg',
+];
+let lockWpIndex  = 0;
+let lockWpLayerA = true; /* true = layer A is front */
+
+function lockInitWallpaper() {
+  const bgA = document.getElementById('lockBgA');
+  const bgB = document.getElementById('lockBgB');
+  if (!bgA || !bgB) return;
+
+  /* layer A = first wallpaper, fully visible */
+  bgA.style.backgroundImage = `url('${LOCK_WALLPAPERS[0]}')`;
+  bgA.style.opacity  = '1';
+  bgB.style.opacity  = '0';
+  lockWpLayerA = true;
+
+  /* cycle every 5 seconds */
+  setInterval(lockNextWallpaper, 5000);
+}
+
+function lockNextWallpaper() {
+  const bgA = document.getElementById('lockBgA');
+  const bgB = document.getElementById('lockBgB');
+  if (!bgA || !bgB) return;
+
+  lockWpIndex = (lockWpIndex + 1) % LOCK_WALLPAPERS.length;
+  const nextUrl = `url('${LOCK_WALLPAPERS[lockWpIndex]}')`;
+
+  if (lockWpLayerA) {
+    /* load next onto B, crossfade B in, hide A */
+    bgB.style.backgroundImage = nextUrl;
+    bgB.style.opacity = '1';
+    bgA.style.opacity = '0';
+    lockWpLayerA = false;
+  } else {
+    /* load onto A, crossfade A in, hide B */
+    bgA.style.backgroundImage = nextUrl;
+    bgA.style.opacity = '1';
+    bgB.style.opacity = '0';
+    lockWpLayerA = true;
+  }
+}
+
+/* called from settings when user picks a lock screen wallpaper */
+function setLockWallpaperOverride(url) {
+  const bgA = document.getElementById('lockBgA');
+  const bgB = document.getElementById('lockBgB');
+  if (!bgA || !bgB) return;
+  bgA.style.backgroundImage = `url('${url}')`;
+  bgA.style.opacity = '1';
+  bgB.style.opacity = '0';
+  lockWpLayerA = true;
+}
+
 /* ── WINDOWS BOOT (runs AFTER bios:complete) ── */
 function runWindowsBoot() {
   const boot = document.getElementById('bootScreen');
   if (!boot) return;
-  /* boot screen is already visible inside win8OS — let it run for 2.6s then fade */
+  /* kick off the lock screen wallpaper slideshow immediately */
+  lockInitWallpaper();
+  /* boot screen runs for 2.6s then fades out */
   setTimeout(() => {
     boot.style.transition = 'opacity .5s ease';
     boot.style.opacity    = '0';
@@ -65,9 +128,8 @@ function applyLoadedState(data) {
     }
     if (data.lockWallpaper) {
       state.lockWallpaper = data.lockWallpaper;
-      const lock = document.getElementById('lockScreen');
-      if (lock && data.lockWallpaper !== '67.jpg') {
-        lock.style.backgroundImage = `url('${data.lockWallpaper}')`;
+      if (data.lockWallpaper !== '67.jpg' && typeof setLockWallpaperOverride === 'function') {
+        setLockWallpaperOverride(data.lockWallpaper);
       }
     }
     if (data.accentColour) {
@@ -843,4 +905,3 @@ window.addEventListener('load', () => {
     if (saved && typeof applyLoadedState === 'function') applyLoadedState(saved);
   }, 300);
 });
- 
