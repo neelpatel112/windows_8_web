@@ -39,25 +39,101 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
 /* ── LOCK SCREEN ── */
 #lockScreen {
   position: fixed; inset: 0; z-index: 9999;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  display: flex; flex-direction: column;
+  /* content anchored bottom-left — exactly like Win8 screenshot */
+  align-items: flex-start;
+  justify-content: flex-end;
   cursor: pointer; overflow: hidden;
-  background: url('67.jpg') center/cover no-repeat #0d1b2a;
+  /* background is now driven by JS wallpaper slideshow */
+  background: #0d1b2a;
 }
+
+/* Two background layers for crossfade transition */
+#lockScreen .lock-bg-a,
+#lockScreen .lock-bg-b {
+  position: absolute; inset: 0; z-index: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: opacity 1.2s ease;
+}
+
+/* subtle dark gradient — heavier at bottom-left where text sits */
 #lockScreen::before {
-  content: ''; position: absolute; inset: 0; z-index: 0;
-  background: linear-gradient(to bottom, rgba(0,0,0,.32) 0%, rgba(0,0,0,.18) 50%, rgba(0,0,0,.58) 100%);
+  content: ''; position: absolute; inset: 0; z-index: 1;
+  background:
+    linear-gradient(to top,   rgba(0,0,0,.55) 0%, rgba(0,0,0,.0) 45%),
+    linear-gradient(to right, rgba(0,0,0,.35) 0%, rgba(0,0,0,.0) 50%);
+  pointer-events: none;
 }
-#lockScreen > * { position: relative; z-index: 1; }
+
+#lockScreen > * { position: relative; z-index: 2; }
+
+/* slide-up animations */
 #lockScreen         { transform: translateY(0); transition: none; }
 #lockScreen.touched { transform: translateY(-20px); transition: transform .22s cubic-bezier(.4,0,.6,1); }
 #lockScreen.unlock  { transform: translateY(-100%); transition: transform .9s cubic-bezier(.32,0,.18,1); pointer-events: none; }
-.lock-time { font-size: 100px; font-weight: 100; color: #fff; letter-spacing: -3px; line-height: 1; text-shadow: 0 4px 32px rgba(0,0,0,.5); }
-.lock-date { font-size: 22px; font-weight: 300; color: rgba(255,255,255,.88); margin-top: 12px; letter-spacing: 1px; text-shadow: 0 2px 10px rgba(0,0,0,.5); }
-.lock-arrow { position: absolute; bottom: 50px; display: flex; flex-direction: column; align-items: center; gap: 6px; color: rgba(255,255,255,.6); animation: arrowF 2s infinite ease-in-out; }
-.lock-arrow i   { font-size: 22px; }
-.lock-arrow span { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; }
-@keyframes arrowF { 0%,100% { transform:translateY(0); opacity:.5 } 50% { transform:translateY(-7px); opacity:1 } }
-.lock-status { position: absolute; bottom: 18px; right: 22px; display: flex; gap: 14px; color: #fff; font-size: 16px; opacity: .8; }
+
+/* ── TIME — giant, bottom-left, weight 100 ── */
+.lock-time {
+  font-size: clamp(72px, 10vw, 120px);
+  font-weight: 100;
+  color: #fff;
+  letter-spacing: -2px;
+  line-height: 1;
+  margin: 0 0 0 52px;
+  text-shadow: 0 2px 16px rgba(0,0,0,.4);
+  font-family: 'Segoe UI', 'Segoe WP', Tahoma, sans-serif;
+}
+
+/* ── DATE — below time, same left margin ── */
+.lock-date {
+  font-size: clamp(16px, 2.2vw, 26px);
+  font-weight: 300;
+  color: rgba(255,255,255,.92);
+  margin: 8px 0 48px 52px;
+  letter-spacing: .3px;
+  text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  font-family: 'Segoe UI', 'Segoe WP', Tahoma, sans-serif;
+}
+
+/* ── ARROW — bottom-center, subtle bounce ── */
+.lock-arrow {
+  position: absolute; bottom: 22px; left: 50%;
+  transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  color: rgba(255,255,255,.5);
+  animation: arrowF 2.2s infinite ease-in-out;
+  z-index: 3;
+}
+.lock-arrow span:first-child { font-size: 18px; line-height: 1; }
+.lock-arrow span:last-child  { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; }
+@keyframes arrowF { 0%,100%{transform:translateX(-50%) translateY(0);opacity:.4} 50%{transform:translateX(-50%) translateY(-6px);opacity:.85} }
+
+/* ── STATUS — bottom-right (wifi + battery) ── */
+.lock-status {
+  position: absolute; bottom: 18px; right: 24px;
+  display: flex; gap: 14px; color: rgba(255,255,255,.75);
+  font-size: 15px; z-index: 3;
+}
+
+/* ── pass-mode: time/date slide up slightly when password panel shows ── */
+#lockScreen.pass-mode .lock-time,
+#lockScreen.pass-mode .lock-date {
+  opacity: .28;
+  transform: translateY(-24px);
+  transition: all .4s cubic-bezier(.4,0,.2,1);
+}
+#lockScreen.pass-mode .lock-arrow {
+  opacity: 0; pointer-events: none;
+  transition: opacity .2s;
+}
+
+/* responsive */
+@media (max-width: 700px) {
+  .lock-time { font-size: 64px; margin-left: 28px; }
+  .lock-date { font-size: 16px; margin-left: 28px; }
+}
 
 /* ── DESKTOP ── */
 #desktop {
@@ -884,4 +960,3 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
 
 /* bios.css overrides html/body background to #000 and overflow:hidden —
    that's fine since the BIOS runs first and Windows takes over after */
- 
