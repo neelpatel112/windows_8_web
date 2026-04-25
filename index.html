@@ -158,45 +158,74 @@
   </div>
 </div>
 
-<!-- DESKTOP — only icons here, NO start tiles -->
+<!-- DESKTOP — draggable icons, rubber-band select -->
 <div id="desktop" oncontextmenu="showDesktopCtx(event)">
-  <div class="desktop-icons">
-    <div class="d-icon" ondblclick="openThisPC()"
-         oncontextmenu="showIconCtx(event,'thispc')">
+  <div class="desktop-icons" id="desktopIconsContainer">
+
+    <div class="d-icon" id="dicon-thispc"
+         data-col="0" data-row="0"
+         data-action="openThisPC()"
+         data-ctx="thispc"
+         ondblclick="openThisPC()">
       <img src="icons/computer.png" alt="This PC"><span>This PC</span>
     </div>
-    <div class="d-icon" ondblclick="notify('Opening Documents…','File Explorer')"
-         oncontextmenu="showIconCtx(event,'generic')">
+
+    <div class="d-icon" id="dicon-documents"
+         data-col="0" data-row="1"
+         data-ctx="generic"
+         ondblclick="notify('Opening Documents…','File Explorer')">
       <img src="icons/folder.png" alt="Documents"><span>Documents</span>
     </div>
-    <div class="d-icon" ondblclick="notify('Recycle Bin is empty.','Recycle Bin')"
-         oncontextmenu="showIconCtx(event,'generic')">
+
+    <div class="d-icon" id="dicon-recycle"
+         data-col="0" data-row="2"
+         data-ctx="generic"
+         ondblclick="notify('Recycle Bin is empty.','Recycle Bin')">
       <img src="icons/recycle.png" alt="Recycle Bin"><span>Recycle Bin</span>
     </div>
-    <div class="d-icon" ondblclick="openIE()"
-         oncontextmenu="showIconCtx(event,'ie')">
+
+    <div class="d-icon" id="dicon-ie"
+         data-col="0" data-row="3"
+         data-ctx="ie"
+         ondblclick="openIE()">
       <img src="icons/ie.png" alt="Internet Explorer"><span>Internet Explorer</span>
     </div>
-    <div class="d-icon" ondblclick="openNotepad()"
-         oncontextmenu="showIconCtx(event,'notepad')">
+
+    <div class="d-icon" id="dicon-notepad"
+         data-col="0" data-row="4"
+         data-ctx="notepad"
+         ondblclick="openNotepad()">
       <img src="icons/notepad.png" alt="Notepad"><span>Notepad</span>
     </div>
-    <div class="d-icon" ondblclick="openTerminal()"
-         oncontextmenu="showIconCtx(event,'terminal')">
+
+    <div class="d-icon" id="dicon-terminal"
+         data-col="0" data-row="5"
+         data-ctx="terminal"
+         ondblclick="openTerminal()">
       <img src="icons/terminal.png" alt="Command Prompt"
            onerror="this.style.display='none'"><span>Command Prompt</span>
     </div>
-    <div class="d-icon" ondblclick="openWeather()"
-         oncontextmenu="showIconCtx(event,'weather')">
+
+    <div class="d-icon" id="dicon-weather"
+         data-col="1" data-row="0"
+         data-ctx="weather"
+         ondblclick="openWeather()">
       <img src="icons/weather.png" alt="Weather"
-           onerror="this.outerHTML='<span style=font-size:28px>⛅</span>'"><span>Weather</span>
+           onerror="this.outerHTML='<div class=d-icon-emoji>⛅</div>'"><span>Weather</span>
     </div>
-    <div class="d-icon" ondblclick="openMaps()"
-         oncontextmenu="showIconCtx(event,'maps')">
+
+    <div class="d-icon" id="dicon-maps"
+         data-col="1" data-row="1"
+         data-ctx="maps"
+         ondblclick="openMaps()">
       <img src="icons/maps.png" alt="Maps"
-           onerror="this.outerHTML='<span style=font-size:28px>🗺</span>'"><span>Maps</span>
+           onerror="this.outerHTML='<div class=d-icon-emoji>🗺</div>'"><span>Maps</span>
     </div>
+
   </div>
+
+  <!-- Rubber band selection rectangle -->
+  <div id="desktopRubberBand"></div>
 </div>
 
 <!-- START SCREEN — only shows when Windows button clicked -->
@@ -629,9 +658,45 @@
      ══════════════════════════════════════════════════════ -->
 <div id="desktopCtx" class="ctx-menu">
   <div class="ctx-group">
-    <div class="ctx-item" onclick="desktopCtxView()">
+    <!-- View submenu -->
+    <div class="ctx-item ctx-has-sub">
       <span class="ctx-icon">&#x22A6;&#x22A6;</span>View
       <span class="ctx-arrow">&#x276F;</span>
+      <div class="ctx-submenu">
+        <div class="ctx-item" onclick="diSetIconSize('large');hideAllCtx()">
+          <span class="ctx-icon" id="viewCheckLarge">&#x25CF;</span>Large icons
+        </div>
+        <div class="ctx-item" onclick="diSetIconSize('medium');hideAllCtx()">
+          <span class="ctx-icon" id="viewCheckMedium"></span>Medium icons
+        </div>
+        <div class="ctx-item" onclick="diSetIconSize('small');hideAllCtx()">
+          <span class="ctx-icon" id="viewCheckSmall"></span>Small icons
+        </div>
+        <div class="ctx-sep"></div>
+        <div class="ctx-item" onclick="diAutoArrange();hideAllCtx()">
+          <span class="ctx-icon">&#x2630;</span>Auto arrange icons
+        </div>
+        <div class="ctx-item" onclick="diAlignToGrid();hideAllCtx()">
+          <span class="ctx-icon">&#x22A6;</span>Align icons to grid
+        </div>
+        <div class="ctx-sep"></div>
+        <div class="ctx-item" onclick="diToggleIconVisibility();hideAllCtx()">
+          <span class="ctx-icon" id="viewCheckShow">&#x25CF;</span>Show desktop icons
+        </div>
+      </div>
+    </div>
+    <!-- Sort by submenu -->
+    <div class="ctx-item ctx-has-sub">
+      <span class="ctx-icon">&#x21F5;</span>Sort by
+      <span class="ctx-arrow">&#x276F;</span>
+      <div class="ctx-submenu">
+        <div class="ctx-item" onclick="diSortBy('name');hideAllCtx()">
+          <span class="ctx-icon">A</span>Name
+        </div>
+        <div class="ctx-item" onclick="diSortBy('type');hideAllCtx()">
+          <span class="ctx-icon">&#x1F4C4;</span>Item type
+        </div>
+      </div>
     </div>
     <div class="ctx-item" onclick="desktopRefresh()">
       <span class="ctx-icon">&#x21BA;</span>Refresh
@@ -642,17 +707,16 @@
     <div class="ctx-item ctx-has-sub" id="desktopNewBtn">
       <span class="ctx-icon">&#x2795;</span>New
       <span class="ctx-arrow">&#x276F;</span>
-      <!-- New submenu -->
       <div class="ctx-submenu" id="desktopNewSub">
         <div class="ctx-item" onclick="desktopNewFolder()">
           <img src="icons/folder.png" class="ctx-img" alt="">Folder
         </div>
         <div class="ctx-sep"></div>
+        <div class="ctx-item" onclick="desktopNewTextFile()">
+          <span class="ctx-icon">&#x1F4C4;</span>Text Document
+        </div>
         <div class="ctx-item" onclick="notify('New shortcut…','Desktop')">
           <span class="ctx-icon">&#x25A1;</span>Shortcut
-        </div>
-        <div class="ctx-item" onclick="notify('New text document created','Desktop')">
-          <span class="ctx-icon">&#x1F4C4;</span>Text Document
         </div>
       </div>
     </div>
