@@ -720,21 +720,6 @@ function showDesktopCtx(e) {
   openCtx('desktopCtx', e.clientX, e.clientY);
 }
 
-function desktopCtxView() {
-  hideAllCtx();
-  notify('Large icons selected', 'View');
-}
-
-function desktopRefresh() {
-  hideAllCtx();
-  /* quick flash to simulate refresh */
-  const d = document.getElementById('desktop');
-  d.style.transition = 'opacity .15s';
-  d.style.opacity = '0.6';
-  setTimeout(() => { d.style.opacity = '1'; }, 200);
-  notify('Refreshed', 'Desktop');
-}
-
 function desktopNewFolder() {
   hideAllCtx();
   notify('New folder created on Desktop', 'Desktop');
@@ -905,3 +890,601 @@ window.addEventListener('load', () => {
     if (saved && typeof applyLoadedState === 'function') applyLoadedState(saved);
   }, 300);
 });
+
+/* ════════════════════════════════════════════════════════════
+   DESKTOP ICON SYSTEM
+   • Snap-to-grid positioning
+   • Drag to reposition (single or multi)
+   • Rubber-band multi-select
+   • Click to select / Ctrl+click multi-select
+   • Double-click to open
+   • Right-click context menu
+   • F2 rename
+   • Delete key
+   • Positions saved to localStorage
+   ════════════════════════════════════════════════════════════ */
+
+const DI = {
+  CELL_W   : 90,    /* grid cell width  (icon 80px + 10px gap) */
+  CELL_H   : 96,    /* grid cell height (icon ~86px + 10px gap) */
+  PAD_TOP  : 8,     /* top padding from desktop edge */
+  PAD_LEFT : 8,     /* left padding */
+  PAD_BOT  : 54,    /* bottom: leave room for taskbar */
+  selected : new Set(),   /* Set of icon element ids */
+  dragging : false,
+  dragTarget: null,
+  dragGroup : [],   /* [{el, startX, startY}] for multi-drag */
+  dragOriginX: 0, dragOriginY: 0,
+  hasMoved  : false,
+  rubber    : { active:false, x0:0, y0:0 },
+  positions : {},   /* { id: {col, row} } saved positions */
+  STORE_KEY : 'win8web_desktop_icons',
+};
+
+/* ── INITIALISE ── */
+function diInit() {
+  diLoadPositions();
+  diLayoutAll();
+  diAttachAll();
+  diAttachDesktop();
+}
+
+/* ── GRID HELPERS ── */
+function diColRowToXY(col, row) {
+  return {
+    x: DI.PAD_LEFT + col * DI.CELL_W,
+    y: DI.PAD_TOP  + row * DI.CELL_H,
+  };
+}
+
+function diXYToColRow(x, y) {
+  const desktop = document.getElementById('desktop');
+  const dh = (desktop ? desktop.offsetHeight : window.innerHeight) - DI.PAD_BOT;
+  const maxRows = Math.floor((dh - DI.PAD_TOP) / DI.CELL_H);
+  const col = Math.max(0, Math.round((x - DI.PAD_LEFT) / DI.CELL_W));
+  const row = Math.max(0, Math.min(maxRows - 1, Math.round((y - DI.PAD_TOP) / DI.CELL_H)));
+  return { col, row };
+}
+
+function diIsOccupied(col, row, excludeId) {
+  return Object.entries(DI.positions).some(([id, pos]) =>
+    id !== excludeId && pos.col === col && pos.row === row
+  );
+}
+
+function diFindFreeCell(preferCol, preferRow, excludeId) {
+  /* spiral search from preferred cell */
+  const desktop = document.getElementById('desktop');
+  const dh = (desktop ? desktop.offsetHeight : window.innerHeight) - DI.PAD_BOT;
+  const maxRows = Math.floor((dh - DI.PAD_TOP) / DI.CELL_H);
+  const maxCols = 20;
+
+  for (let radius = 0; radius < 20; radius++) {
+    for (let dc = -radius; dc <= radius; dc++) {
+      for (let dr = -radius; dr <= radius; dr++) {
+        if (Math.abs(dc) !== radius && Math.abs(dr) !== radius) continue;
+        const col = preferCol + dc;
+        const row = preferRow + dr;
+        if (col >= 0 && row >= 0 && row < maxRows && col < maxCols) {
+          if (!diIsOccupied(col, row, excludeId)) return { col, row };
+        }
+      }
+    }
+  }
+  return { col: preferCol, row: preferRow };
+}
+
+/* ── LAYOUT ICONS ── */
+function diLayoutAll() {
+  document.querySelectorAll('.d-icon').forEach(el => {
+    const id  = el.id;
+    let pos   = DI.positions[id];
+    if (!pos) {
+      /* use data-col / data-row as default */
+      const dc = parseInt(el.dataset.col) || 0;
+      const dr = parseInt(el.dataset.row) || 0;
+      pos = diFindFreeCell(dc, dr, id);
+      DI.positions[id] = pos;
+    }
+    diPlaceIcon(el, pos.col, pos.row);
+  });
+}
+
+function diPlaceIcon(el, col, row, animate) {
+  const { x, y } = diColRowToXY(col, row);
+  if (animate) {
+    el.style.transition = 'left .15s ease, top .15s ease';
+    setTimeout(() => { el.style.transition = ''; }, 160);
+  }
+  el.style.left = x + 'px';
+  el.style.top  = y + 'px';
+  DI.positions[el.id] = { col, row };
+}
+
+/* ── ATTACH HANDLERS TO ALL ICONS ── */
+function diAttachAll() {
+  document.querySelectorAll('.d-icon').forEach(el => diAttachIcon(el));
+}
+
+function diAttachIcon(el) {
+  if (el._diAttached) return;
+  el._diAttached = true;
+
+  let clickTimer = null;
+  let downX = 0, downY = 0;
+
+  el.addEventListener('mousedown', e => {
+    if (e.button !== 0) return;
+    e.stopPropagation();
+
+    downX = e.clientX; downY = e.clientY;
+
+    /* selection logic */
+    if (e.ctrlKey || e.metaKey) {
+      /* ctrl+click toggles this icon in selection */
+      if (DI.selected.has(el.id)) {
+        DI.selected.delete(el.id);
+        el.classList.remove('selected');
+      } else {
+        DI.selected.add(el.id);
+        el.classList.add('selected');
+      }
+    } else if (!DI.selected.has(el.id)) {
+      /* click on unselected — clear others, select this */
+      diClearSelection();
+      DI.selected.add(el.id);
+      el.classList.add('selected');
+    }
+    /* if already selected and no ctrl — keep group, may drag */
+
+    /* prepare drag */
+    DI.dragging    = false;
+    DI.dragTarget  = el;
+    DI.hasMoved    = false;
+    DI.dragOriginX = e.clientX;
+    DI.dragOriginY = e.clientY;
+
+    /* record start positions for all selected icons */
+    DI.dragGroup = [];
+    DI.selected.forEach(id => {
+      const icon = document.getElementById(id);
+      if (!icon) return;
+      DI.dragGroup.push({
+        el,
+        icon,
+        startLeft: parseInt(icon.style.left) || 0,
+        startTop : parseInt(icon.style.top)  || 0,
+      });
+    });
+  });
+
+  el.addEventListener('dblclick', e => {
+    e.stopPropagation();
+    /* dblclick is handled by inline ondblclick — nothing extra needed */
+  });
+
+  el.addEventListener('contextmenu', e => {
+    e.preventDefault(); e.stopPropagation();
+    /* select this icon if not already in selection */
+    if (!DI.selected.has(el.id)) {
+      diClearSelection();
+      DI.selected.add(el.id);
+      el.classList.add('selected');
+    }
+    const ctx = el.dataset.ctx || 'generic';
+    showIconCtx(e, ctx);
+  });
+}
+
+/* ── MOUSE MOVE — drag ── */
+document.addEventListener('mousemove', e => {
+  if (!DI.dragTarget) return;
+  const dx = e.clientX - DI.dragOriginX;
+  const dy = e.clientY - DI.dragOriginY;
+
+  if (!DI.dragging && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
+    DI.dragging = true;
+    DI.hasMoved = true;
+    DI.dragGroup.forEach(g => g.icon.classList.add('dragging'));
+  }
+
+  if (DI.dragging) {
+    DI.dragGroup.forEach(g => {
+      const x = g.startLeft + dx;
+      const y = g.startTop  + dy;
+      const desktop = document.getElementById('desktop');
+      const dw = desktop ? desktop.offsetWidth  : window.innerWidth;
+      const dh = desktop ? desktop.offsetHeight - DI.PAD_BOT : window.innerHeight - DI.PAD_BOT;
+      g.icon.style.left = Math.max(0, Math.min(dw - 80, x)) + 'px';
+      g.icon.style.top  = Math.max(0, Math.min(dh - 86, y)) + 'px';
+    });
+  }
+});
+
+/* ── MOUSE UP — snap to grid ── */
+document.addEventListener('mouseup', e => {
+  if (!DI.dragTarget) return;
+
+  if (DI.dragging) {
+    /* snap all dragged icons to nearest grid cells */
+    const occupied = new Set();
+
+    DI.dragGroup.forEach(g => {
+      g.icon.classList.remove('dragging');
+      const x   = parseInt(g.icon.style.left) || 0;
+      const y   = parseInt(g.icon.style.top)  || 0;
+      let { col, row } = diXYToColRow(x + 40, y + 40); /* snap from centre */
+
+      /* avoid collision with non-dragged icons */
+      const excludeIds = new Set(DI.selected);
+      let attempts = 0;
+      while ((diIsOccupied(col, row, g.icon.id) || occupied.has(`${col},${row}`)) && attempts < 50) {
+        const found = diFindFreeCell(col, row, g.icon.id);
+        col = found.col; row = found.row;
+        attempts++;
+      }
+      occupied.add(`${col},${row}`);
+      diPlaceIcon(g.icon, col, row, true);
+    });
+
+    diSavePositions();
+  } else if (!DI.hasMoved && e.button === 0) {
+    /* it was a plain click — selection already handled in mousedown */
+  }
+
+  DI.dragging   = false;
+  DI.dragTarget = null;
+  DI.dragGroup  = [];
+  DI.hasMoved   = false;
+});
+
+/* ── ATTACH DESKTOP HANDLERS ── */
+function diAttachDesktop() {
+  const desktop = document.getElementById('desktop');
+  if (!desktop) return;
+
+  desktop.addEventListener('mousedown', e => {
+    if (e.button !== 0) return;
+    if (e.target.closest('.d-icon')) return; /* clicking an icon */
+
+    /* start rubber band */
+    DI.rubber.active = true;
+    DI.rubber.x0 = e.clientX;
+    DI.rubber.y0 = e.clientY;
+
+    const band = document.getElementById('desktopRubberBand');
+    if (band) {
+      band.style.left   = e.clientX + 'px';
+      band.style.top    = e.clientY + 'px';
+      band.style.width  = '0px';
+      band.style.height = '0px';
+      band.classList.add('active');
+    }
+
+    /* clear selection unless ctrl */
+    if (!e.ctrlKey) diClearSelection();
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!DI.rubber.active) return;
+
+    const x0 = DI.rubber.x0, y0 = DI.rubber.y0;
+    const x1 = e.clientX,    y1 = e.clientY;
+
+    const left   = Math.min(x0, x1);
+    const top    = Math.min(y0, y1);
+    const width  = Math.abs(x1 - x0);
+    const height = Math.abs(y1 - y0);
+
+    const band = document.getElementById('desktopRubberBand');
+    if (band) {
+      band.style.left   = left   + 'px';
+      band.style.top    = top    + 'px';
+      band.style.width  = width  + 'px';
+      band.style.height = height + 'px';
+    }
+
+    /* select all icons whose rect intersects the rubber band */
+    const selRect = { left, top, right: left+width, bottom: top+height };
+    document.querySelectorAll('.d-icon').forEach(icon => {
+      const r = icon.getBoundingClientRect();
+      const hit = r.left < selRect.right  && r.right  > selRect.left &&
+                  r.top  < selRect.bottom && r.bottom > selRect.top;
+      if (hit) {
+        DI.selected.add(icon.id);
+        icon.classList.add('selected');
+      } else if (!e.ctrlKey) {
+        DI.selected.delete(icon.id);
+        icon.classList.remove('selected');
+      }
+    });
+  });
+
+  document.addEventListener('mouseup', e => {
+    if (!DI.rubber.active) return;
+    DI.rubber.active = false;
+    const band = document.getElementById('desktopRubberBand');
+    if (band) band.classList.remove('active');
+  });
+
+  /* click on empty desktop — clear selection */
+  desktop.addEventListener('click', e => {
+    if (!e.target.closest('.d-icon')) diClearSelection();
+  });
+}
+
+/* ── SELECTION HELPERS ── */
+function diClearSelection() {
+  DI.selected.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('selected');
+  });
+  DI.selected.clear();
+}
+
+/* ── KEYBOARD SHORTCUTS ── */
+document.addEventListener('keydown', e => {
+  /* only on desktop, not when typing in an input */
+  if (document.activeElement && ['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) return;
+  if (!startOpen && DI.selected.size > 0) {
+    /* F2 — rename selected icon */
+    if (e.key === 'F2' && DI.selected.size === 1) {
+      const id = [...DI.selected][0];
+      const el = document.getElementById(id);
+      if (el) diStartRename(el);
+      e.preventDefault();
+    }
+    /* Delete — remove selected desktop icon(s) */
+    if (e.key === 'Delete') {
+      DI.selected.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          delete DI.positions[id];
+          el.remove();
+        }
+      });
+      DI.selected.clear();
+      diSavePositions();
+    }
+    /* Escape — clear selection */
+    if (e.key === 'Escape') diClearSelection();
+  }
+  /* Ctrl+A — select all desktop icons */
+  if ((e.ctrlKey || e.metaKey) && e.key === 'a' && !startOpen) {
+    if (!document.activeElement || !['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) {
+      document.querySelectorAll('.d-icon').forEach(icon => {
+        DI.selected.add(icon.id);
+        icon.classList.add('selected');
+      });
+      e.preventDefault();
+    }
+  }
+});
+
+/* ── RENAME ── */
+function diStartRename(el) {
+  const spanEl = el.querySelector('span');
+  if (!spanEl) return;
+  const oldName = spanEl.textContent;
+
+  const input = document.createElement('input');
+  input.className = 'd-rename-input';
+  input.value     = oldName;
+  spanEl.replaceWith(input);
+  input.focus(); input.select();
+
+  function commit() {
+    const newName = input.value.trim() || oldName;
+    const newSpan = document.createElement('span');
+    newSpan.textContent = newName;
+    input.replaceWith(newSpan);
+  }
+  input.addEventListener('blur', commit);
+  input.addEventListener('keydown', e2 => {
+    if (e2.key === 'Enter')  { e2.preventDefault(); input.blur(); }
+    if (e2.key === 'Escape') { input.value = oldName; input.blur(); }
+    e2.stopPropagation();
+  });
+  input.addEventListener('click', e2 => e2.stopPropagation());
+  input.addEventListener('mousedown', e2 => e2.stopPropagation());
+}
+
+/* ── NEW FOLDER on desktop ── */
+function desktopNewFolder() {
+  hideAllCtx();
+  const container = document.getElementById('desktopIconsContainer');
+  if (!container) return;
+
+  /* find a free cell */
+  const { col, row } = diFindFreeCell(2, 0, 'dicon-newfolder-' + Date.now());
+  const id = 'dicon-nf-' + Date.now();
+
+  const el = document.createElement('div');
+  el.className = 'd-icon';
+  el.id        = id;
+  el.dataset.ctx = 'generic';
+  el.innerHTML = `<img src="icons/folder.png" alt="New Folder" onerror="this.style.display='none'"><span>New Folder</span>`;
+  container.appendChild(el);
+
+  DI.positions[id] = { col, row };
+  diPlaceIcon(el, col, row);
+  diAttachIcon(el);
+  diSavePositions();
+
+  /* immediately start rename */
+  DI.selected.clear();
+  DI.selected.add(id);
+  el.classList.add('selected');
+  requestAnimationFrame(() => diStartRename(el));
+}
+
+/* patch desktopNewFolder into the context menu action */
+/* (already referenced in index.html desktopCtx) */
+
+/* ── DESKTOP AUTO-ARRANGE ── */
+function diAutoArrange() {
+  hideAllCtx();
+  const icons = Array.from(document.querySelectorAll('.d-icon'));
+  const desktop = document.getElementById('desktop');
+  const dh = (desktop ? desktop.offsetHeight - DI.PAD_BOT : window.innerHeight - DI.PAD_BOT);
+  const maxRows = Math.floor((dh - DI.PAD_TOP) / DI.CELL_H);
+
+  DI.positions = {};
+  icons.forEach((icon, i) => {
+    const col = Math.floor(i / maxRows);
+    const row = i % maxRows;
+    DI.positions[icon.id] = { col, row };
+    diPlaceIcon(icon, col, row, true);
+  });
+  diSavePositions();
+}
+
+/* ── PERSISTENCE ── */
+function diSavePositions() {
+  try { localStorage.setItem(DI.STORE_KEY, JSON.stringify(DI.positions)); } catch(e) {}
+}
+
+function diLoadPositions() {
+  try {
+    const raw = localStorage.getItem(DI.STORE_KEY);
+    if (raw) DI.positions = JSON.parse(raw);
+  } catch(e) { DI.positions = {}; }
+}
+
+/* ── BOOT: init after desktop is visible ── */
+window.addEventListener('bios:complete', () => setTimeout(diInit, 100));
+/* fallback if no BIOS */
+window.addEventListener('load', () => {
+  if (!document.getElementById('phase-black')) diInit();
+});
+
+/* ════════════════════════════════════════════════════════════
+   DESKTOP ICON EXTRA FEATURES
+   ════════════════════════════════════════════════════════════ */
+
+/* ── ICON SIZE ── */
+let diIconSize = 'large'; /* large | medium | small */
+const diSizeMap = { large:{ img:40, cell_w:90, cell_h:96, font:11 }, medium:{ img:32, cell_w:80, cell_h:84, font:11 }, small:{ img:24, cell_w:68, cell_h:70, font:10 } };
+
+function diSetIconSize(size) {
+  diIconSize = size;
+  const cfg = diSizeMap[size] || diSizeMap.large;
+  DI.CELL_W = cfg.cell_w;
+  DI.CELL_H = cfg.cell_h;
+
+  /* update CSS for all icons */
+  document.querySelectorAll('.d-icon').forEach(el => {
+    el.style.width = (cfg.cell_w - 10) + 'px';
+    const img = el.querySelector('img');
+    if (img) { img.style.width = cfg.img + 'px'; img.style.height = cfg.img + 'px'; }
+    const span = el.querySelector('span');
+    if (span) span.style.fontSize = cfg.font + 'px';
+  });
+
+  /* update check marks */
+  ['Large','Medium','Small'].forEach(s => {
+    const el = document.getElementById('viewCheck' + s);
+    if (el) el.textContent = size === s.toLowerCase() ? '●' : '';
+  });
+
+  diLayoutAll();
+}
+
+/* ── SORT BY ── */
+function diSortBy(field) {
+  const container = document.getElementById('desktopIconsContainer');
+  if (!container) return;
+  const icons = Array.from(container.querySelectorAll('.d-icon'));
+
+  icons.sort((a, b) => {
+    const nameA = (a.querySelector('span')?.textContent || a.id).toLowerCase();
+    const nameB = (b.querySelector('span')?.textContent || b.id).toLowerCase();
+    if (field === 'type') {
+      const imgA = a.querySelector('img')?.src || '';
+      const imgB = b.querySelector('img')?.src || '';
+      return imgA.localeCompare(imgB) || nameA.localeCompare(nameB);
+    }
+    return nameA.localeCompare(nameB);
+  });
+
+  /* re-layout sorted icons */
+  const desktop = document.getElementById('desktop');
+  const dh = (desktop ? desktop.offsetHeight - DI.PAD_BOT : window.innerHeight - DI.PAD_BOT);
+  const maxRows = Math.floor((dh - DI.PAD_TOP) / DI.CELL_H);
+  DI.positions = {};
+
+  icons.forEach((icon, i) => {
+    const col = Math.floor(i / maxRows);
+    const row = i % maxRows;
+    DI.positions[icon.id] = { col, row };
+    diPlaceIcon(icon, col, row, true);
+  });
+
+  diSavePositions();
+  if (typeof notify === 'function') notify(`Icons sorted by ${field}`, 'Desktop');
+}
+
+/* ── ALIGN TO GRID (snap in place without rearranging) ── */
+function diAlignToGrid() {
+  document.querySelectorAll('.d-icon').forEach(el => {
+    const x = parseInt(el.style.left) || 0;
+    const y = parseInt(el.style.top)  || 0;
+    const { col, row } = diXYToColRow(x + 40, y + 40);
+    const free = diFindFreeCell(col, row, el.id);
+    DI.positions[el.id] = free;
+    diPlaceIcon(el, free.col, free.row, true);
+  });
+  diSavePositions();
+}
+
+/* ── SHOW / HIDE DESKTOP ICONS ── */
+let diIconsVisible = true;
+function diToggleIconVisibility() {
+  diIconsVisible = !diIconsVisible;
+  const container = document.getElementById('desktopIconsContainer');
+  if (container) container.style.visibility = diIconsVisible ? 'visible' : 'hidden';
+  const checkEl = document.getElementById('viewCheckShow');
+  if (checkEl) checkEl.textContent = diIconsVisible ? '●' : '';
+}
+
+/* ── NEW TEXT FILE on desktop ── */
+function desktopNewTextFile() {
+  hideAllCtx();
+  const container = document.getElementById('desktopIconsContainer');
+  if (!container) return;
+
+  const { col, row } = diFindFreeCell(2, 0, 'dicon-ntf-' + Date.now());
+  const id = 'dicon-ntf-' + Date.now();
+
+  const el = document.createElement('div');
+  el.className   = 'd-icon';
+  el.id          = id;
+  el.dataset.ctx = 'generic';
+  el.ondblclick  = () => openNotepad(el.querySelector('span')?.textContent || 'New Text Document.txt', '');
+  el.innerHTML   = `<img src="icons/file-text.png" alt="Text" onerror="this.style.display='none'"><span>New Text Document.txt</span>`;
+  container.appendChild(el);
+
+  DI.positions[id] = { col, row };
+  diPlaceIcon(el, col, row);
+  diAttachIcon(el);
+  diSavePositions();
+
+  DI.selected.clear();
+  DI.selected.add(id);
+  el.classList.add('selected');
+  requestAnimationFrame(() => diStartRename(el));
+}
+
+/* ── REFRESH ── */
+function desktopRefresh() {
+  hideAllCtx();
+  diClearSelection();
+  /* quick blink animation */
+  const container = document.getElementById('desktopIconsContainer');
+  if (container) {
+    container.style.transition = 'opacity .15s';
+    container.style.opacity    = '0.5';
+    setTimeout(() => { container.style.opacity = '1'; }, 180);
+  }
+  if (typeof notify === 'function') notify('Desktop refreshed', 'Desktop');
+}
