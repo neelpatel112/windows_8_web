@@ -129,10 +129,13 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
   transition: opacity .2s;
 }
 
-/* responsive */
-@media (max-width: 700px) {
-  .lock-time { font-size: 64px; margin-left: 28px; }
-  .lock-date { font-size: 16px; margin-left: 28px; }
+/* Icons container — full desktop area, just a positioning surface */
+.desktop-icons {
+  position: absolute;
+  inset: 0;
+  bottom: 44px;
+  z-index: 10;
+  pointer-events: none;
 }
 
 /* ── DESKTOP ── */
@@ -158,7 +161,107 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
 .d-icon img { width: 40px; height: 40px; object-fit: contain; margin-bottom: 5px; filter: drop-shadow(0 2px 5px rgba(0,0,0,.6)); }
 .d-icon span { font-size: 11px; text-align: center; text-shadow: 0 1px 3px rgba(0,0,0,.8); line-height: 1.3; }
 
-/* ── TASKBAR ── */
+/* ════════════════════════════════════════════════════════════
+   DESKTOP ICON SYSTEM
+   Free-position draggable icons with snap-to-grid
+   ════════════════════════════════════════════════════════════ */
+
+/* Desktop is the drop surface */
+#desktop {
+  position: fixed; inset: 0;
+  background: url('67.jpg') center/cover no-repeat #012456;
+  overflow: hidden;
+  /* bottom padding for taskbar */
+  padding-bottom: 44px;
+}
+#desktop::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,.42) 100%);
+  z-index: 0;
+}
+
+/* Icons container — full desktop area */
+.desktop-icons {
+  position: absolute;
+  inset: 0;
+  bottom: 44px;   /* above taskbar */
+  z-index: 10;
+  pointer-events: none; /* container doesn't block clicks */
+}
+
+/* Individual icon — absolutely positioned, draggable */
+.d-icon {
+  position: absolute;
+  display: flex; flex-direction: column; align-items: center;
+  width: 80px;
+  color: #fff;
+  cursor: default;
+  padding: 6px 4px 5px;
+  transition: background .12s, box-shadow .12s;
+  pointer-events: all;
+  user-select: none; -webkit-user-select: none;
+  border: 1px solid transparent;
+  border-radius: 2px;
+}
+
+/* hover */
+.d-icon:hover { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.18); }
+
+/* selected state */
+.d-icon.selected {
+  background: rgba(0,120,215,.35);
+  border-color: rgba(0,120,215,.7);
+  box-shadow: 0 0 0 1px rgba(0,120,215,.5) inset;
+}
+
+/* dragging state */
+.d-icon.dragging {
+  opacity: .7;
+  cursor: grabbing;
+  z-index: 200;
+  box-shadow: 0 6px 24px rgba(0,0,0,.5);
+}
+
+.d-icon img {
+  width: 40px; height: 40px; object-fit: contain;
+  margin-bottom: 5px;
+  filter: drop-shadow(0 2px 5px rgba(0,0,0,.6));
+  pointer-events: none;
+}
+.d-icon .d-icon-emoji {
+  font-size: 36px; margin-bottom: 5px; pointer-events: none;
+  filter: drop-shadow(0 2px 5px rgba(0,0,0,.6));
+}
+.d-icon span {
+  font-size: 11px; text-align: center;
+  text-shadow: 0 1px 4px rgba(0,0,0,.9), 0 0 8px rgba(0,0,0,.7);
+  line-height: 1.3; pointer-events: none;
+  word-break: break-word; max-width: 76px;
+  display: -webkit-box; -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical; overflow: hidden;
+}
+
+/* rename input inside icon */
+.d-icon .d-rename-input {
+  width: 72px; font-size: 11px; text-align: center;
+  background: rgba(0,0,60,.85); color: #fff;
+  border: 1px solid #0078d7; outline: none;
+  padding: 1px 3px; border-radius: 1px;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  user-select: text; -webkit-user-select: text;
+  caret-color: #fff;
+}
+
+/* ── RUBBER BAND SELECTION ── */
+#desktopRubberBand {
+  position: fixed;
+  border: 1px solid #4fc3f7;
+  background: rgba(0,120,215,.15);
+  pointer-events: none;
+  z-index: 9000;
+  display: none;
+}
+#desktopRubberBand.active { display: block; }
 #taskbar {
   position: fixed; bottom: 0; left: 0; right: 0; height: 44px; z-index: 300;
   background: rgba(14,14,14,.98); border-top: 1px solid rgba(255,255,255,.07);
@@ -960,3 +1063,9 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
 
 /* bios.css overrides html/body background to #000 and overflow:hidden —
    that's fine since the BIOS runs first and Windows takes over after */
+
+/* responsive lock screen */
+@media (max-width: 700px) {
+  .lock-time { font-size: 64px; margin-left: 28px; }
+  .lock-date { font-size: 16px; margin-left: 28px; }
+}
