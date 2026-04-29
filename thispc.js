@@ -24,9 +24,10 @@ const FS = {
   'Documents': [
     { type:'folder', name:'Work' },
     { type:'folder', name:'Personal' },
-    { type:'file',   name:'resume.docx',   icon:'icons/file-word.png'  },
-    { type:'file',   name:'budget.xlsx',   icon:'icons/file-excel.png' },
-    { type:'file',   name:'notes.txt',     icon:'icons/file-text.png'  },
+    { type:'file',   name:'resume.pdf',   icon:'icons/file-pdf.png', path:'resume.pdf' },
+    { type:'file',   name:'resume.docx',  icon:'icons/file-word.png'  },
+    { type:'file',   name:'budget.xlsx',  icon:'icons/file-excel.png' },
+    { type:'file',   name:'notes.txt',    icon:'icons/file-text.png'  },
   ],
   'Downloads': [
     { type:'file', name:'setup.exe',       icon:'icons/file-exe.png'   },
@@ -683,14 +684,44 @@ function newFolder() {
 }
 
 function openFile(item) {
-  /* open .txt files in Notepad */
-  if (item.name && item.name.endsWith('.txt')) {
-    if (typeof openNotepad === 'function') {
-      openNotepad(item.name, item.content || '');
+  const name = item.name || '';
+  const ext  = name.split('.').pop().toLowerCase();
+
+  /* ── PDF ── */
+  if (ext === 'pdf') {
+    if (typeof openPDFViewer === 'function') {
+      /* use item.path if set (points to real file), else use filename */
+      openPDFViewer(name, item.path || name, null);
       return;
     }
   }
-  if (typeof notify === 'function') notify('Opening ' + item.name + '…', item.name);
+
+  /* ── Text / code files → Notepad ── */
+  if (['txt','java','js','py','html','css','xml','json','md','log','ts','c','cpp','h'].includes(ext)) {
+    if (typeof openNotepad === 'function') {
+      openNotepad(name, item.content || '');
+      return;
+    }
+  }
+
+  /* ── Images → notify for now (Photos app future) ── */
+  if (['jpg','jpeg','png','gif','webp','bmp','svg'].includes(ext)) {
+    if (typeof notify === 'function') notify('Photos app coming soon — ' + name, 'Photos');
+    return;
+  }
+
+  /* ── Audio / Video → notify ── */
+  if (['mp3','wav','ogg','flac'].includes(ext)) {
+    if (typeof notify === 'function') notify('Opening ' + name + ' in Media Player…', 'Media Player');
+    return;
+  }
+  if (['mp4','mkv','avi','mov','webm'].includes(ext)) {
+    if (typeof notify === 'function') notify('Opening ' + name + ' in Media Player…', 'Media Player');
+    return;
+  }
+
+  /* fallback */
+  if (typeof notify === 'function') notify('Opening ' + name + '…', name);
 }
 
 function deleteSelected() {
@@ -856,4 +887,3 @@ function openThisPC() {
   isMaximised  = false;
   initThisPC();
 }
- 
