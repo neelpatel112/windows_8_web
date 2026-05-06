@@ -224,6 +224,14 @@
            onerror="this.outerHTML='<div class=d-icon-emoji>🗺</div>'"><span>Maps</span>
     </div>
 
+    <div class="d-icon" id="dicon-store"
+         data-col="1" data-row="2"
+         data-ctx="store"
+         ondblclick="openStore()">
+      <img src="icons/store.png" alt="Store"
+           onerror="this.outerHTML='<div class=d-icon-emoji>🛒</div>'"><span>Store</span>
+    </div>
+
   </div>
 
   <!-- Rubber band selection rectangle -->
@@ -358,7 +366,7 @@
           </div>
         </div>
 
-        <div class="tile tc-green" onclick="tileOpen(this,'Store')" style="grid-column:3/5;grid-row:1/3">
+        <div class="tile tc-green" onclick="openStore();if(startOpen)setTimeout(toggleStart,200);" style="grid-column:3/5;grid-row:1/3">
           <div class="tile-icon"><img src="icons/store.png" alt="Store"></div>
           <span class="tile-label">Store</span>
         </div>
@@ -472,24 +480,36 @@
     <img class="start-logo-img" src="logo.png" alt="Start">
   </div>
 
-  <!-- Pinned apps -->
-  <div class="tb-left">
-    <div class="tb-app running" title="Internet Explorer"
-         onclick="notify('Internet Explorer','Internet Explorer')"
-         oncontextmenu="showTaskbarAppCtx(event,'Internet Explorer',false)">
+  <!-- Pinned apps (always visible, actually launch apps) -->
+  <div class="tb-pinned">
+    <div class="tb-app" id="tbPinIE" title="Internet Explorer"
+         onclick="openIE()"
+         oncontextmenu="showTaskbarAppCtx(event,'Internet Explorer',true)">
       <img src="icons/ie.png" alt="IE">
     </div>
-    <div class="tb-app running" title="File Explorer"
-         onclick="notify('File Explorer','File Explorer')"
-         oncontextmenu="showTaskbarAppCtx(event,'File Explorer',false)">
+    <div class="tb-app" id="tbPinExplorer" title="This PC"
+         onclick="openThisPC()"
+         oncontextmenu="showTaskbarAppCtx(event,'This PC',true)">
       <img src="icons/explorer.png" alt="Explorer">
     </div>
-    <div class="tb-app" title="Windows Media Player"
-         onclick="notify('Windows Media Player','Media Player')"
-         oncontextmenu="showTaskbarAppCtx(event,'Windows Media Player',true)">
-      <img src="icons/mediaplayer.png" alt="Media Player">
+    <div class="tb-app" id="tbPinNotepad" title="Notepad"
+         onclick="openNotepad()"
+         oncontextmenu="showTaskbarAppCtx(event,'Notepad',true)">
+      <img src="icons/notepad.png" alt="Notepad">
+    </div>
+    <div class="tb-app" id="tbPinTerminal" title="Command Prompt"
+         onclick="openTerminal()"
+         oncontextmenu="showTaskbarAppCtx(event,'Command Prompt',true)">
+      <img src="icons/terminal.png" alt="CMD"
+           onerror="this.style.display='none'">
     </div>
   </div>
+
+  <!-- Divider between pinned and running -->
+  <div class="tb-divider"></div>
+
+  <!-- Running app entries — dynamically injected by each app -->
+  <div class="tb-left" id="tbRunning"></div>
 
   <!-- System tray — right side -->
   <div class="tb-right">
@@ -796,6 +816,32 @@
 <!-- ══════════════════════════════════════════════════════
      MAPS ICON RIGHT-CLICK CONTEXT MENU
      ══════════════════════════════════════════════════════ -->
+<!-- ══════════════════════════════════════════════════════
+     STORE ICON RIGHT-CLICK CONTEXT MENU
+     ══════════════════════════════════════════════════════ -->
+<div id="storeIconCtx" class="ctx-menu">
+  <div class="ctx-item" onclick="openStore(); hideAllCtx()">
+    <span class="ctx-icon" style="font-weight:700">&#x25B7;</span><b>Open</b>
+  </div>
+  <div class="ctx-item" onclick="openStore(); hideAllCtx()">
+    <span class="ctx-icon">&#x1F6D2;</span>Browse apps
+  </div>
+  <div class="ctx-item" onclick="window.open('https://ulquiorra-cifer-4.github.io/win-8-store/','_blank'); hideAllCtx()">
+    <span class="ctx-icon">&#x2197;</span>Open in browser
+  </div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item ctx-disabled">
+    <span class="ctx-icon">&#x2702;</span>Delete
+  </div>
+  <div class="ctx-item ctx-disabled">
+    <span class="ctx-icon">&#x270F;</span>Rename
+  </div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="notify('Windows Store — by nx4real','Properties'); hideAllCtx()">
+    <span class="ctx-icon">&#x2139;</span>Properties
+  </div>
+</div>
+
 <div id="mapsIconCtx" class="ctx-menu">
   <div class="ctx-item" onclick="openMaps(); hideAllCtx()">
     <span class="ctx-icon" style="font-weight:700">&#x25B7;</span><b>Open</b>
@@ -968,6 +1014,7 @@
 <script src="weather.js"></script>
 <script src="maps.js"></script>
 <script src="pdfviewer.js"></script>
+<script src="store.js"></script>
 
 <script>
 /* ── BIOS → Windows handoff ──────────────────────────────
