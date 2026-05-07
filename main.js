@@ -741,6 +741,17 @@ function showIconCtx(e, type) {
   else if (type === 'weather')   openCtx('weatherIconCtx',   e.clientX, e.clientY);
   else if (type === 'maps')      openCtx('mapsIconCtx',       e.clientX, e.clientY);
   else if (type === 'store')     openCtx('storeIconCtx',      e.clientX, e.clientY);
+  else if (type === 'store-app') {
+    /* right-click on a store-installed icon */
+    var el2 = e.target.closest('.d-icon');
+    if (el2) {
+      window._storeAppCtxId = el2.dataset.appId;
+      var nameEl2 = el2.querySelector('span');
+      var openEl  = document.getElementById('storeAppCtxOpen');
+      if (openEl && nameEl2) openEl.querySelector('b').textContent = 'Open ' + nameEl2.textContent;
+    }
+    openCtx('storeAppIconCtx', e.clientX, e.clientY);
+  }
   /* other icons — suppress browser default */
 }
 
@@ -1493,4 +1504,31 @@ function desktopRefresh() {
     setTimeout(() => { container.style.opacity = '1'; }, 180);
   }
   if (typeof notify === 'function') notify('Desktop refreshed', 'Desktop');
+}
+
+/* ── STORE-APP ICON CONTEXT MENU ACTIONS ── */
+function storeAppCtxDoOpen() {
+  var appId = window._storeAppCtxId;
+  if (!appId) return;
+  var app = OS_INSTALLED_APPS ? OS_INSTALLED_APPS[appId] : null;
+  if (!app) { notify('Opening app…', 'Store'); return; }
+  var action = buildOpenAction(app);
+  try { (new Function(action))(); } catch(e) { notify('Opening ' + (app.name || 'app') + '…', 'Store'); }
+}
+
+function storeAppCtxDoUninstall() {
+  var appId = window._storeAppCtxId;
+  if (!appId) return;
+  var app = OS_INSTALLED_APPS ? OS_INSTALLED_APPS[appId] : null;
+  var name = app ? app.name : 'this app';
+
+  // fire uninstall into the store iframe so its state stays in sync
+  var storeFrame = document.getElementById('storeIframe');
+  if (storeFrame && storeFrame.contentWindow) {
+    storeFrame.contentWindow.postMessage({
+      type: 'store-uninstall-app', appId: appId
+    }, '*');
+  }
+  // also call osUninstallApp directly in case store isn't loaded
+  if (typeof osUninstallApp === 'function') osUninstallApp({ id: appId, name: name });
 }
