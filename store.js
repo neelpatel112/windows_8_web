@@ -4,7 +4,7 @@
    ═══════════════════════════════════════════════════════════ */
 'use strict';
 
-const STORE_URL = 'https://ulquiorra-cifer-4.github.io/win-8-store/';
+const STORE_URL = 'https://sovietdoom.vercel.app/';
 
 const ST = {
   isMin  : false,
