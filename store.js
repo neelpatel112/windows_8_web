@@ -4,7 +4,7 @@
    ═══════════════════════════════════════════════════════════ */
 'use strict';
 
-const STORE_URL = 'https://sovietdoom.vercel.app/';
+const STORE_URL = 'https://macostahoeweb.vercel.app/';
 
 const ST = {
   isMin  : false,
