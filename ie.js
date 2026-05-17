@@ -632,10 +632,12 @@ function ieToggleFromTaskbar() {
 }
 
 function ieInjectTaskbar() {
-  const tbLeft = document.querySelector('.tb-left');
+  const tbLeft = document.getElementById('tbRunning');
   if (!tbLeft || document.getElementById('tbIE')) return;
   const el  = document.createElement('div');
   el.id     = 'tbIE';
+  el.className = 'tb-win-entry';
+  el.className = 'tb-win-entry';
   el.title  = 'Internet Explorer';
   el.innerHTML = `<img src="icons/ie.png" onerror="this.style.display='none'" alt="IE">
                   <span>Internet Explorer</span>`;
