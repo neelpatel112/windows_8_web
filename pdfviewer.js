@@ -761,4 +761,3 @@ function pdfSetupResize() {
   });
   document.addEventListener('mouseup', () => { PDF.resize.on = false; });
 }
- 
