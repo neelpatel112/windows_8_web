@@ -2100,4 +2100,3 @@ function termHideAllCtx() {
 function termTcRestore() { termHideAllCtx(); if(TERM.isMax) termMaximise(); }
 function termTcMax()     { termHideAllCtx(); if(!TERM.isMax) termMaximise(); }
 document.addEventListener('click', () => termHideAllCtx());
- 
