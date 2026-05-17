@@ -793,4 +793,3 @@ function ieCtxViewSource() {
 }
 function ieTcRestore() { ieHideAllCtx(); if(IE.isMax) ieMaximise(); }
 function ieTcMax()     { ieHideAllCtx(); if(!IE.isMax) ieMaximise(); }
- 
