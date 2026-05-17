@@ -276,18 +276,76 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
 .start-logo-img { width: 24px; height: 24px; object-fit: contain; opacity: .88; transition: opacity .15s, filter .15s; }
 #startBtn:hover  .start-logo-img { opacity: 1; filter: brightness(1.15); }
 #startBtn.active .start-logo-img { opacity: 1; filter: brightness(1.3) drop-shadow(0 0 4px rgba(0,180,255,.5)); }
-.tb-left { display: flex; align-items: center; height: 100%; flex: 1; }
+/* ── TASKBAR ── */
+#taskbar {
+  position: fixed; bottom: 0; left: 0; right: 0; height: 44px; z-index: 300;
+  background: rgba(14,14,14,.98); border-top: 1px solid rgba(255,255,255,.07);
+  display: flex; align-items: center; overflow: hidden;
+}
+
+/* ── PINNED APPS — always visible, open app on click ── */
+.tb-pinned {
+  display: flex; align-items: center; height: 100%;
+  border-right: 1px solid rgba(255,255,255,.07);
+  flex-shrink: 0;
+}
+
+/* ── DIVIDER between pinned and running ── */
+.tb-divider {
+  width: 1px; height: 28px;
+  background: rgba(255,255,255,.1);
+  flex-shrink: 0; margin: 0 2px;
+}
+
+/* ── RUNNING APPS — injected dynamically ── */
+.tb-left {
+  display: flex; align-items: center; height: 100%;
+  flex: 1; overflow: hidden; gap: 0;
+}
+
+/* ── GENERIC APP BUTTON (both pinned + running) ── */
 .tb-app {
-  width: 46px; height: 100%; display: flex; align-items: center; justify-content: center;
-  cursor: pointer; position: relative; transition: background .15s;
+  width: 44px; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; position: relative;
+  transition: background .15s; flex-shrink: 0;
 }
 .tb-app:hover { background: rgba(255,255,255,.09); }
-.tb-app img { width: 22px; height: 22px; object-fit: contain; filter: brightness(.85); transition: filter .15s; }
+.tb-app img {
+  width: 22px; height: 22px; object-fit: contain;
+  filter: brightness(.82); transition: filter .15s;
+}
 .tb-app:hover img { filter: brightness(1); }
+
+/* blue underline = running */
 .tb-app.running::after {
-  content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+  content: ''; position: absolute; bottom: 0; left: 50%;
+  transform: translateX(-50%);
   width: 20px; height: 2px; background: #0078d7;
 }
+
+/* ── RUNNING APP ENTRIES (wider, show label) ── */
+.tb-win-entry {
+  height: 100%; display: flex; align-items: center;
+  gap: 6px; padding: 0 10px; cursor: pointer;
+  transition: background .15s; position: relative;
+  min-width: 100px; max-width: 160px; flex-shrink: 0;
+  border-right: 1px solid rgba(255,255,255,.04);
+}
+.tb-win-entry:hover { background: rgba(255,255,255,.09); }
+.tb-win-entry img  { width: 16px; height: 16px; object-fit: contain; flex-shrink: 0; }
+.tb-win-entry span {
+  font-size: 12px; color: rgba(255,255,255,.82);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+}
+.tb-win-entry::after {
+  content: ''; position: absolute; bottom: 0; left: 8%;
+  width: 84%; height: 2px; background: #0078d7;
+}
+.tb-win-entry.minimised { background: rgba(255,255,255,.04); }
+.tb-win-entry.minimised::after { background: rgba(255,255,255,.25); }
+.tb-win-entry.minimised span  { color: rgba(255,255,255,.45); }
 .tb-right {
   display: flex; align-items: center; height: 100%;
   gap: 2px; padding: 0 0 0 4px;
@@ -1069,3 +1127,39 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
   .lock-time { font-size: 64px; margin-left: 28px; }
   .lock-date { font-size: 16px; margin-left: 28px; }
 }
+
+/* ── PINNED APP BUTTONS — running indicator ── */
+.tb-pinned .tb-app.running::after {
+  content: ''; position: absolute; bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 20px; height: 2px; background: #0078d7;
+}
+.tb-pinned .tb-app {
+  position: relative;
+}
+
+/* ── TB-WIN-ENTRY — running app label entries ── */
+.tb-win-entry {
+  height: 100%; display: flex; align-items: center;
+  gap: 6px; padding: 0 10px; cursor: pointer;
+  transition: background .15s; position: relative;
+  min-width: 100px; max-width: 160px; flex-shrink: 0;
+  border-right: 1px solid rgba(255,255,255,.04);
+}
+.tb-win-entry:hover { background: rgba(255,255,255,.09); }
+.tb-win-entry img {
+  width: 16px; height: 16px; object-fit: contain; flex-shrink: 0;
+}
+.tb-win-entry span {
+  font-size: 12px; color: rgba(255,255,255,.82);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+}
+.tb-win-entry::after {
+  content: ''; position: absolute; bottom: 0; left: 8%;
+  width: 84%; height: 2px; background: #0078d7;
+}
+.tb-win-entry.minimised { background: rgba(255,255,255,.04); }
+.tb-win-entry.minimised span { color: rgba(255,255,255,.45); }
+.tb-win-entry.minimised::after { background: rgba(255,255,255,.25); }
+ 
