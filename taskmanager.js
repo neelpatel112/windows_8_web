@@ -1090,4 +1090,3 @@ function hideTaskbarCtx() {
   const menu = document.getElementById('taskbarEmptyCtx');
   if (menu) menu.style.display = 'none';
 }
- 
