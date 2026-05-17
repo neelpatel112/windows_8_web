@@ -741,17 +741,6 @@ function showIconCtx(e, type) {
   else if (type === 'weather')   openCtx('weatherIconCtx',   e.clientX, e.clientY);
   else if (type === 'maps')      openCtx('mapsIconCtx',       e.clientX, e.clientY);
   else if (type === 'store')     openCtx('storeIconCtx',      e.clientX, e.clientY);
-  else if (type === 'store-app') {
-    /* right-click on a store-installed icon */
-    var el2 = e.target.closest('.d-icon');
-    if (el2) {
-      window._storeAppCtxId = el2.dataset.appId;
-      var nameEl2 = el2.querySelector('span');
-      var openEl  = document.getElementById('storeAppCtxOpen');
-      if (openEl && nameEl2) openEl.querySelector('b').textContent = 'Open ' + nameEl2.textContent;
-    }
-    openCtx('storeAppIconCtx', e.clientX, e.clientY);
-  }
   /* other icons — suppress browser default */
 }
 
@@ -1506,29 +1495,105 @@ function desktopRefresh() {
   if (typeof notify === 'function') notify('Desktop refreshed', 'Desktop');
 }
 
-/* ── STORE-APP ICON CONTEXT MENU ACTIONS ── */
-function storeAppCtxDoOpen() {
-  var appId = window._storeAppCtxId;
-  if (!appId) return;
-  var app = OS_INSTALLED_APPS ? OS_INSTALLED_APPS[appId] : null;
-  if (!app) { notify('Opening app…', 'Store'); return; }
-  var action = buildOpenAction(app);
-  try { (new Function(action))(); } catch(e) { notify('Opening ' + (app.name || 'app') + '…', 'Store'); }
+/* ════════════════════════════════════════════════════════════
+   TASKBAR PINNED APP RUNNING INDICATORS
+   Polls every second — adds .running class to pinned buttons
+   when their corresponding app window is open
+   ════════════════════════════════════════════════════════════ */
+function tbUpdatePinnedIndicators() {
+  const checks = [
+    ['tbPinIE',       () => !!document.getElementById('ieWindow')],
+    ['tbPinExplorer', () => !!document.getElementById('thispcWindow')],
+    ['tbPinNotepad',  () => !!document.getElementById('notepadWindow')],
+    ['tbPinTerminal', () => !!document.getElementById('termWindow')],
+  ];
+  checks.forEach(([id, fn]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const isOpen = fn();
+    el.classList.toggle('running', isOpen);
+  });
 }
+setInterval(tbUpdatePinnedIndicators, 1000);
 
-function storeAppCtxDoUninstall() {
-  var appId = window._storeAppCtxId;
-  if (!appId) return;
-  var app = OS_INSTALLED_APPS ? OS_INSTALLED_APPS[appId] : null;
-  var name = app ? app.name : 'this app';
+/* ════════════════════════════════════════════════════════════
+   TASKBAR APP CONTEXT MENU — fixed to handle both
+   pinned (pinned=true) and running entries
+   ════════════════════════════════════════════════════════════ */
+let _taskbarCtxTarget  = null;
+let _taskbarCtxPinned  = false;
 
-  // fire uninstall into the store iframe so its state stays in sync
-  var storeFrame = document.getElementById('storeIframe');
-  if (storeFrame && storeFrame.contentWindow) {
-    storeFrame.contentWindow.postMessage({
-      type: 'store-uninstall-app', appId: appId
-    }, '*');
+function showTaskbarAppCtx(e, appName, pinned) {
+  e.preventDefault();
+  e.stopPropagation();
+  _taskbarCtxTarget = appName;
+  _taskbarCtxPinned = !!pinned;
+
+  const menu   = document.getElementById('taskbarAppCtx');
+  const pinBtn = document.getElementById('tbarCtxPin');
+  if (!menu) return;
+
+  if (pinBtn) {
+    pinBtn.innerHTML = pinned
+      ? '<span class="ctx-icon">&#x1F4CC;</span>Unpin from taskbar'
+      : '<span class="ctx-icon">&#x1F4CC;</span>Pin to taskbar';
   }
-  // also call osUninstallApp directly in case store isn't loaded
-  if (typeof osUninstallApp === 'function') osUninstallApp({ id: appId, name: name });
+
+  hideAllCtx();
+  menu.style.display = 'block';
+  menu.style.left    = e.clientX + 'px';
+  menu.style.bottom  = '50px';
+  menu.style.top     = 'auto';
+  _activeCtx = 'taskbarAppCtx';
+
+  requestAnimationFrame(() => {
+    const r = menu.getBoundingClientRect();
+    if (r.right > window.innerWidth) menu.style.left = (e.clientX - r.width) + 'px';
+  });
 }
+
+function taskbarCtxPin() {
+  hideAllCtx();
+  const action = _taskbarCtxPinned ? 'unpinned from' : 'pinned to';
+  notify(`"${_taskbarCtxTarget}" ${action} taskbar`, 'Taskbar');
+}
+
+function taskbarCtxClose() {
+  hideAllCtx();
+  /* actually close the app */
+  const map = {
+    'This PC'           : () => typeof closePC       === 'function' && closePC(),
+    'Notepad'           : () => typeof npClose       === 'function' && npClose(),
+    'Command Prompt'    : () => typeof termClose     === 'function' && termClose(),
+    'Internet Explorer' : () => typeof ieClose       === 'function' && ieClose(),
+    'PC Settings'       : () => typeof closeSettings === 'function' && closeSettings(),
+    'Weather'           : () => typeof wxClose       === 'function' && wxClose(),
+    'Maps'              : () => typeof mpClose       === 'function' && mpClose(),
+    'PDF Viewer'        : () => typeof pdfClose      === 'function' && pdfClose(),
+    'Task Manager'      : () => typeof tmClose       === 'function' && tmClose(),
+    'Windows Store'     : () => typeof stClose       === 'function' && stClose(),
+  };
+  const fn = map[_taskbarCtxTarget];
+  if (fn) fn();
+  else notify(_taskbarCtxTarget + ' closed', _taskbarCtxTarget);
+}
+
+/* close ALL open app windows at once */
+function taskbarCtxCloseAll() {
+  hideAllCtx();
+  const closers = [
+    () => typeof closePC       === 'function' && document.getElementById('thispcWindow')  && closePC(),
+    () => typeof npClose       === 'function' && document.getElementById('notepadWindow') && npClose(),
+    () => typeof termClose     === 'function' && document.getElementById('termWindow')    && termClose(),
+    () => typeof ieClose       === 'function' && document.getElementById('ieWindow')      && ieClose(),
+    () => typeof closeSettings === 'function' && document.getElementById('settingsWindow')?.classList.contains('open') && closeSettings(),
+    () => typeof wxClose       === 'function' && document.getElementById('weatherWindow') && wxClose(),
+    () => typeof mpClose       === 'function' && document.getElementById('mapsWindow')    && mpClose(),
+    () => typeof pdfClose      === 'function' && document.getElementById('pdfWindow')     && pdfClose(),
+    () => typeof stClose       === 'function' && document.getElementById('storeWindow')   && stClose(),
+    () => typeof tmClose       === 'function' && document.getElementById('tmWindow')      && tmClose(),
+  ];
+  closers.forEach(fn => { try { fn(); } catch(e) {} });
+  notify('All windows closed', 'Taskbar');
+}
+ 
