@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<link rel="icon" href="logo.png" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Windows 8 Web</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap">
@@ -18,7 +17,6 @@
 <link rel="stylesheet" href="weather.css">
 <link rel="stylesheet" href="maps.css">
 <link rel="stylesheet" href="pdfviewer.css">
-<link rel="stylesheet" href="calculator.css">
 </head>
 <body>
 
@@ -827,7 +825,7 @@
   <div class="ctx-item" onclick="openStore(); hideAllCtx()">
     <span class="ctx-icon">&#x1F6D2;</span>Browse apps
   </div>
-  <div class="ctx-item" onclick="window.open('https://ulquiorra-cifer-4.github.io/win-8-store/','_blank'); hideAllCtx()">
+  <div class="ctx-item" onclick="window.open('https://win8store.vercel.app/','_blank'); hideAllCtx()">
     <span class="ctx-icon">&#x2197;</span>Open in browser
   </div>
   <div class="ctx-sep"></div>
@@ -840,21 +838,6 @@
   <div class="ctx-sep"></div>
   <div class="ctx-item" onclick="notify('Windows Store — by nx4real','Properties'); hideAllCtx()">
     <span class="ctx-icon">&#x2139;</span>Properties
-  </div>
-</div>
-
-<!-- Store-installed app icon context menu (dynamic) -->
-<div id="storeAppIconCtx" class="ctx-menu">
-  <div class="ctx-item" id="storeAppCtxOpen" onclick="storeAppCtxDoOpen(); hideAllCtx()">
-    <span class="ctx-icon" style="font-weight:700">&#x25B7;</span><b>Open</b>
-  </div>
-  <div class="ctx-sep"></div>
-  <div class="ctx-item" id="storeAppCtxUninstall" onclick="storeAppCtxDoUninstall(); hideAllCtx()">
-    <span class="ctx-icon" style="color:#ff6b6b">&#x1F5D1;</span>Uninstall
-  </div>
-  <div class="ctx-sep"></div>
-  <div class="ctx-item" onclick="notify('View in Store','Store'); hideAllCtx()">
-    <span class="ctx-icon">&#x1F6D2;</span>View in Store
   </div>
 </div>
 
@@ -962,6 +945,9 @@
   <div class="ctx-item" onclick="taskbarCtxClose()">
     <span class="ctx-icon">&#x2715;</span>Close window
   </div>
+  <div class="ctx-item" onclick="taskbarCtxCloseAll()">
+    <span class="ctx-icon">&#x2716;</span>Close all windows
+  </div>
 </div>
 
 <!-- ══════════════════════════════════════════════════════
@@ -1018,102 +1004,6 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════
-     CALCULATOR PRO — installed from Store
-     ══════════════════════════════════════════════════════ -->
-<div id="calcWindow" style="display:none">
-
-  <!-- Title Bar -->
-  <div class="calc-titlebar" id="calcTitleBar">
-    <span class="calc-titlebar-icon">🧮</span>
-    <span class="calc-titlebar-text">Calculator</span>
-    <div class="calc-win-controls">
-      <button class="calc-wc-btn" onclick="minimizeCalculator()" title="Minimise">&#x2014;</button>
-      <button class="calc-wc-btn close" onclick="closeCalculator()" title="Close">&#x2715;</button>
-    </div>
-  </div>
-
-  <!-- Mode Tabs -->
-  <div class="calc-mode-tabs">
-    <button class="calc-mode-tab active" data-mode="standard"   onclick="Calc.setMode('standard')">Standard</button>
-    <button class="calc-mode-tab"        data-mode="scientific" onclick="Calc.setMode('scientific')">Scientific</button>
-  </div>
-
-  <!-- Display -->
-  <div class="calc-display">
-    <div class="calc-expression" id="calcExpression"></div>
-    <div class="calc-result"     id="calcResult">0</div>
-  </div>
-
-  <!-- Scientific buttons (hidden in standard mode) -->
-  <div class="calc-sci-buttons" id="calcSciButtons" style="display:none">
-    <button class="calc-btn fn" id="calcDegBtn"  onclick="Calc.toggleDeg()">DEG</button>
-    <button class="calc-btn fn" onclick="Calc.sciFunc('sin')">sin</button>
-    <button class="calc-btn fn" onclick="Calc.sciFunc('cos')">cos</button>
-    <button class="calc-btn fn" onclick="Calc.sciFunc('tan')">tan</button>
-    <button class="calc-btn fn" onclick="Calc.sciFunc('pi')">π</button>
-
-    <button class="calc-btn fn" onclick="Calc.sciFunc('log')">log</button>
-    <button class="calc-btn fn" onclick="Calc.sciFunc('ln')">ln</button>
-    <button class="calc-btn fn" onclick="Calc.sciFunc('sqrt')">√</button>
-    <button class="calc-btn fn" onclick="Calc.sciFunc('sq')">x²</button>
-    <button class="calc-btn fn" onclick="Calc.sciFunc('e')">e</button>
-
-    <button class="calc-btn fn" onclick="Calc.sciFunc('inv')">1/x</button>
-    <button class="calc-btn fn" onclick="Calc.sciFunc('abs')">|x|</button>
-    <button class="calc-btn fn" onclick="Calc.sciFunc('exp')">eˣ</button>
-    <button class="calc-btn fn" onclick="Calc.sciFunc('fact')">n!</button>
-    <button class="calc-btn fn" onclick="Calc.sciFunc('pow10')">10ˣ</button>
-
-    <button class="calc-btn mem" onclick="Calc.memClear()">MC</button>
-    <button class="calc-btn mem" onclick="Calc.memRecall()">MR</button>
-    <button class="calc-btn mem" onclick="Calc.memStore()">MS</button>
-    <button class="calc-btn mem" onclick="Calc.memAdd()">M+</button>
-    <button class="calc-btn fn"  onclick="Calc.sciFunc('cube')">x³</button>
-  </div>
-
-  <!-- Standard buttons (always visible) -->
-  <div class="calc-buttons">
-    <button class="calc-btn clr"  onclick="Calc.clear()">C</button>
-    <button class="calc-btn fn"   onclick="Calc.clearEntry()">⌫</button>
-    <button class="calc-btn fn"   onclick="Calc.percent()">%</button>
-    <button class="calc-btn op"   onclick="Calc.op('/')">÷</button>
-
-    <button class="calc-btn" onclick="Calc.digit('7')">7</button>
-    <button class="calc-btn" onclick="Calc.digit('8')">8</button>
-    <button class="calc-btn" onclick="Calc.digit('9')">9</button>
-    <button class="calc-btn op"  onclick="Calc.op('*')">×</button>
-
-    <button class="calc-btn" onclick="Calc.digit('4')">4</button>
-    <button class="calc-btn" onclick="Calc.digit('5')">5</button>
-    <button class="calc-btn" onclick="Calc.digit('6')">6</button>
-    <button class="calc-btn op"  onclick="Calc.op('-')">−</button>
-
-    <button class="calc-btn" onclick="Calc.digit('1')">1</button>
-    <button class="calc-btn" onclick="Calc.digit('2')">2</button>
-    <button class="calc-btn" onclick="Calc.digit('3')">3</button>
-    <button class="calc-btn op"  onclick="Calc.op('+')">+</button>
-
-    <button class="calc-btn fn"  onclick="Calc.toggleSign()">+/−</button>
-    <button class="calc-btn" onclick="Calc.digit('0')">0</button>
-    <button class="calc-btn" onclick="Calc.digit('.')">.</button>
-    <button class="calc-btn eq"  onclick="Calc.equals()">=</button>
-  </div>
-
-  <!-- History toggle -->
-  <button class="calc-hist-toggle" id="calcHistToggle" onclick="Calc.toggleHistory()">▼ History</button>
-
-  <!-- History panel -->
-  <div class="calc-history" id="calcHistoryPanel">
-    <div class="calc-history-header">
-      <span>Calculation History</span>
-      <button class="calc-history-clear" onclick="Calc.clearHistory()">Clear all</button>
-    </div>
-    <div class="calc-history-list" id="calcHistoryList"></div>
-  </div>
-
-</div>
-
 </div><!-- /win8OS -->
 
 <script src="main.js"></script>
@@ -1127,168 +1017,6 @@
 <script src="maps.js"></script>
 <script src="pdfviewer.js"></script>
 <script src="store.js"></script>
-<script src="calculator.js"></script>
-
-<script>
-/* ══════════════════════════════════════════════════════════
-   STORE → OS  postMessage bridge
-   Listens for messages from the Store iframe and wires
-   real app installation into the desktop icon system.
-   ══════════════════════════════════════════════════════════ */
-window.addEventListener('message', function(e) {
-  var data = e.data;
-  if (!data || data.source !== 'win8-store') return;
-
-  switch (data.type) {
-
-    /* ── Store is ready — request list of already-installed apps ── */
-    case 'store-ready':
-      var storeFrame = document.getElementById('storeIframe');
-      if (storeFrame && storeFrame.contentWindow) {
-        storeFrame.contentWindow.postMessage({ type: 'store-query-installed' }, '*');
-      }
-      break;
-
-    /* ── One app just got installed ── */
-    case 'app-installed':
-      osInstallApp(data.app);
-      break;
-
-    /* ── One app was uninstalled ── */
-    case 'app-uninstalled':
-      osUninstallApp(data.app);
-      break;
-
-    /* ── Full installed list on initial load ── */
-    case 'installed-list':
-      (data.apps || []).forEach(function(app) { osInstallApp(app, true); });
-      break;
-  }
-});
-
-/* ─────────────────────────────────────────────────────────
-   osInstallApp(app, silent)
-   Called when store says an app was installed.
-   1. Adds a desktop icon
-   2. Shows OS-level toast
-   ───────────────────────────────────────────────────────── */
-var OS_INSTALLED_APPS = {};  // track what we've added to desktop
-
-function osInstallApp(app, silent) {
-  if (!app || !app.id) return;
-  if (OS_INSTALLED_APPS[app.id]) return;   // already added
-  OS_INSTALLED_APPS[app.id] = app;
-
-  // ── Add desktop icon ──
-  addInstalledAppIcon(app);
-
-  // ── OS notification ──
-  if (!silent) {
-    notify('\u2713 ' + app.name + ' installed \u2014 icon added to desktop', 'Store');
-  }
-}
-
-function osUninstallApp(app) {
-  if (!app || !app.id) return;
-  delete OS_INSTALLED_APPS[app.id];
-
-  // remove desktop icon
-  var iconId = 'dicon-store-' + app.id;
-  var el = document.getElementById(iconId);
-  if (el) {
-    el.style.transition = 'opacity 0.2s, transform 0.2s';
-    el.style.opacity    = '0';
-    el.style.transform  = 'scale(0.7)';
-    setTimeout(function() {
-      if (el.parentNode) el.parentNode.removeChild(el);
-      delete DI.positions[iconId];
-      diSavePositions();
-    }, 220);
-  }
-
-  notify(app.name + ' was uninstalled', 'Store');
-}
-
-/* ─────────────────────────────────────────────────────────
-   addInstalledAppIcon(app)
-   Creates a real draggable desktop icon exactly like the
-   built-in ones, wired to the correct open function.
-   ───────────────────────────────────────────────────────── */
-function addInstalledAppIcon(app) {
-  var container = document.getElementById('desktopIconsContainer');
-  if (!container) return;
-
-  var iconId = 'dicon-store-' + app.id;
-  if (document.getElementById(iconId)) return;  // already on desktop
-
-  // find a free grid cell (start at col 2 to avoid built-in icons)
-  var freeCell = diFindFreeCell(2, 0, iconId);
-
-  var el = document.createElement('div');
-  el.className    = 'd-icon';
-  el.id           = iconId;
-  el.dataset.ctx  = 'store-app';
-  el.dataset.appId= app.id;
-
-  // build the open action
-  var openAction = buildOpenAction(app);
-  el.ondblclick = new Function(openAction);
-
-  // icon: prefer emoji, fallback to generic image
-  var iconHtml = '<span style="font-size:28px;line-height:1">' + (app.icon || '📦') + '</span>';
-
-  el.innerHTML = iconHtml + '<span>' + app.name + '</span>';
-
-  container.appendChild(el);
-
-  // register in DI grid
-  DI.positions[iconId] = freeCell;
-  diPlaceIcon(el, freeCell.col, freeCell.row);
-  diAttachIcon(el);
-  diSavePositions();
-
-  // entrance animation
-  el.style.opacity   = '0';
-  el.style.transform = 'scale(0.6)';
-  setTimeout(function() {
-    el.style.transition = 'opacity 0.25s ease, transform 0.25s cubic-bezier(0.34,1.56,0.64,1)';
-    el.style.opacity    = '1';
-    el.style.transform  = 'scale(1)';
-    setTimeout(function() { el.style.transition = ''; }, 300);
-  }, 50);
-}
-
-/* ─────────────────────────────────────────────────────────
-   buildOpenAction(app)
-   Returns a JS expression string for ondblclick.
-   ───────────────────────────────────────────────────────── */
-function buildOpenAction(app) {
-  // If the app has a named function in the OS, call it
-  if (app.openFn && typeof window[app.openFn] === 'function') {
-    return app.openFn + '()';
-  }
-  // If it has a URL, open it in an IE window
-  if (app.appUrl) {
-    return 'openIE(' + JSON.stringify(app.appUrl) + ')';
-  }
-  // Fallback: map known IDs to OS functions
-  var fnMap = {
-    'calc-pro'    : 'openCalculator',
-    'task-manager': 'openTaskManager',
-    'pdf-reader'  : 'openPdfViewer',
-    'music-player': function() { notify('Groove Music — coming soon!', 'Store'); },
-    'mail-app'    : function() { notify('Mail — coming soon!', 'Store'); },
-  };
-  var mapped = fnMap[app.id];
-  if (typeof mapped === 'string') return mapped + '()';
-  if (typeof mapped === 'function') {
-    window['_storeOpenFn_' + app.id] = mapped;
-    return '_storeOpenFn_' + app.id + '()';
-  }
-  // Default: friendly toast
-  return 'notify("' + app.name + ' — opening\u2026", "' + app.name + '")';
-}
-</script>
 
 <script>
 /* ── BIOS → Windows handoff ──────────────────────────────
@@ -1321,3 +1049,4 @@ window.addEventListener('bios:complete', function onBiosComplete() {
 </script>
 </body>
 </html>
+ 
