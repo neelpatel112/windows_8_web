@@ -4,7 +4,7 @@
    ═══════════════════════════════════════════════════════════ */
 'use strict';
 
-const STORE_URL = 'https://macostahoeweb.vercel.app/';
+const STORE_URL = 'https://win8store.vercel.app/';
 
 const ST = {
   isMin  : false,
@@ -314,10 +314,12 @@ function stMaximise() {
 function stToggleFromTaskbar() { if (ST.isMin) stRestore(); else stMinimise(); }
 
 function stInjectTaskbar() {
-  const tbLeft = document.querySelector('.tb-left');
+  const tbLeft = document.getElementById('tbRunning');
   if (!tbLeft || document.getElementById('tbStore')) return;
   const el = document.createElement('div');
   el.id    = 'tbStore';
+  el.className = 'tb-win-entry';
+  el.className = 'tb-win-entry';
   el.title = 'Windows Store';
   el.style.cssText = `
     height:100%; display:flex; align-items:center;
@@ -397,3 +399,4 @@ function stSetupResize() {
   });
   document.addEventListener('mouseup', () => { ST.resize.on = false; });
 }
+ 
