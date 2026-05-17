@@ -205,10 +205,12 @@ function tmMaximise() {
 function tmToggleFromTaskbar() { if (TM.isMin) tmRestore(); else tmMinimise(); }
 
 function tmInjectTaskbar() {
-  const tbLeft = document.querySelector('.tb-left');
+  const tbLeft = document.getElementById('tbRunning');
   if (!tbLeft || document.getElementById('tbTaskMgr')) return;
   const el = document.createElement('div');
-  el.id = 'tbTaskMgr'; el.title = 'Task Manager';
+  el.id = 'tbTaskMgr';
+  el.className = 'tb-win-entry';
+  el.className = 'tb-win-entry'; el.title = 'Task Manager';
   el.innerHTML = `<span>⚙ Task Manager</span>`;
   el.onclick = tmToggleFromTaskbar;
   el.oncontextmenu = e => {
@@ -1088,3 +1090,4 @@ function hideTaskbarCtx() {
   const menu = document.getElementById('taskbarEmptyCtx');
   if (menu) menu.style.display = 'none';
 }
+ 
