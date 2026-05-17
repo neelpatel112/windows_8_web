@@ -887,4 +887,3 @@ function openThisPC() {
   isMaximised  = false;
   initThisPC();
 }
- 
