@@ -1946,10 +1946,12 @@ function termMaximise() {
 }
 function termToggleFromTaskbar() { if(TERM.isMin) termRestore(); else termMinimise(); }
 function termInjectTaskbar() {
-  const tbLeft = document.querySelector('.tb-left');
+  const tbLeft = document.getElementById('tbRunning');
   if (!tbLeft || document.getElementById('tbTerminal')) return;
   const el = document.createElement('div');
   el.id    = 'tbTerminal';
+  el.className = 'tb-win-entry';
+  el.className = 'tb-win-entry';
   el.title = 'Command Prompt';
   el.innerHTML = `<img src="icons/terminal.png" onerror="this.style.display='none'" alt="">
                   <span>Command Prompt</span>`;
