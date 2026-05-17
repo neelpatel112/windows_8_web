@@ -831,4 +831,3 @@ document.addEventListener('click', e => {
     mpCloseSuggestions();
   }
 });
- 
