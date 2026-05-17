@@ -693,10 +693,12 @@ function pdfMaximise() {
 function pdfToggleFromTaskbar() { if (PDF.isMin) pdfRestore(); else pdfMinimise(); }
 
 function pdfInjectTaskbar() {
-  const tbLeft = document.querySelector('.tb-left');
+  const tbLeft = document.getElementById('tbRunning');
   if (!tbLeft || document.getElementById('tbPDF')) return;
   const el = document.createElement('div');
   el.id    = 'tbPDF';
+  el.className = 'tb-win-entry';
+  el.className = 'tb-win-entry';
   el.title = 'PDF Viewer';
   el.innerHTML = `<span>📄 ${PDF.fileName}</span>`;
   el.onclick = pdfToggleFromTaskbar;
@@ -759,3 +761,4 @@ function pdfSetupResize() {
   });
   document.addEventListener('mouseup', () => { PDF.resize.on = false; });
 }
+ 
