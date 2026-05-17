@@ -4,7 +4,7 @@
    ═══════════════════════════════════════════════════════════ */
 'use strict';
 
-const STORE_URL = 'https://win8store.vercel.app/';
+const STORE_URL = 'https://macostahoeweb.vercel.app/';
 
 const ST = {
   isMin  : false,
@@ -399,4 +399,3 @@ function stSetupResize() {
   });
   document.addEventListener('mouseup', () => { ST.resize.on = false; });
 }
- 
