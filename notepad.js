@@ -1225,4 +1225,3 @@ openNotepad = function(fileName, fileContent) {
   /* attach after DOM is built — tiny delay for safety */
   setTimeout(npAttachContextMenus, 50);
 };
- 
