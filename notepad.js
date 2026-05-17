@@ -847,10 +847,12 @@ function npToggleFromTaskbar() {
 }
 
 function npInjectTaskbar() {
-  const tbLeft = document.querySelector('.tb-left');
+  const tbLeft = document.getElementById('tbRunning');
   if (!tbLeft || document.getElementById('tbNotepad')) return;
   const el  = document.createElement('div');
   el.id     = 'tbNotepad';
+  el.className = 'tb-win-entry';
+  el.className = 'tb-win-entry';
   el.title  = 'Notepad';
   el.innerHTML = `<img src="icons/notepad.png" onerror="this.style.display='none'" alt="Notepad">
                   <span id="tbNotepadLabel">Notepad</span>`;
