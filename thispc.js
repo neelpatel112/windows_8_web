@@ -218,7 +218,7 @@ function injectWindow() {
    TASKBAR ENTRY
    ════════════════════════════════════════════════════════════ */
 function injectTaskbarEntry() {
-  const tbLeft = document.querySelector('.tb-left');
+  const tbLeft = document.getElementById('tbRunning');
   if (!tbLeft) return;
   const entry = document.createElement('div');
   entry.className = 'tb-win-entry';
@@ -887,3 +887,4 @@ function openThisPC() {
   isMaximised  = false;
   initThisPC();
 }
+ 
