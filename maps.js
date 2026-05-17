@@ -751,10 +751,12 @@ function mpMaximise() {
 function mpToggleFromTaskbar() { if (MP.isMin) mpRestore(); else mpMinimise(); }
 
 function mpInjectTaskbar() {
-  const tbLeft = document.querySelector('.tb-left');
+  const tbLeft = document.getElementById('tbRunning');
   if (!tbLeft || document.getElementById('tbMaps')) return;
   const el = document.createElement('div');
   el.id    = 'tbMaps';
+  el.className = 'tb-win-entry';
+  el.className = 'tb-win-entry';
   el.title = 'Maps';
   el.innerHTML = `<span>🗺 Maps</span>`;
   el.onclick = mpToggleFromTaskbar;
