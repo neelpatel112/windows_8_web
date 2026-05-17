@@ -1,6 +1,8 @@
 /* ═══════════════════════════════════════════════════════════
    Weather App  ·  weather.js
-   Windows 8 Bing Weather — vanilla JS conversion of WeatherApp.tsx   ═══════════════════════════════════════════════════════════ */
+   Windows 8 Bing Weather — vanilla JS conversion of WeatherApp.tsx
+   OpenWeather API: bc2ac4aba65cc65356b7047ffacc1b83
+   ═══════════════════════════════════════════════════════════ */
 'use strict';
 
 const WX_API_KEY = 'bc2ac4aba65cc65356b7047ffacc1b83';
@@ -443,10 +445,12 @@ function wxMaximise() {
 function wxToggleFromTaskbar() { if (WX.isMin) wxRestore(); else wxMinimise(); }
 
 function wxInjectTaskbar() {
-  const tbLeft = document.querySelector('.tb-left');
+  const tbLeft = document.getElementById('tbRunning');
   if (!tbLeft || document.getElementById('tbWeather')) return;
   const el = document.createElement('div');
   el.id    = 'tbWeather';
+  el.className = 'tb-win-entry';
+  el.className = 'tb-win-entry';
   el.title = 'Weather';
   el.innerHTML = `<span>⛅ Weather</span>`;
   el.onclick = wxToggleFromTaskbar;
@@ -509,4 +513,3 @@ function wxSetupResize() {
   });
   document.addEventListener('mouseup', () => { WX.resize.on = false; });
 }
- 
