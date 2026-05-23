@@ -237,12 +237,29 @@
   <div id="desktopRubberBand"></div>
 </div>
 
-<!-- START SCREEN — only shows when Windows button clicked -->
+<!-- START SCREEN v2 — Enhanced Metro UI -->
 <div id="startScreen">
 
-  <!-- Header bar -->
+  <!-- Wallpaper layers (crossfade) -->
+  <div id="ssBgA"></div>
+  <div id="ssBgB"></div>
+
+  <!-- Scroll arrows -->
+  <button class="ss-scroll-btn" id="ssScrollLeft"  onclick="ssScroll(-1)" aria-label="Scroll left">&#8249;</button>
+  <button class="ss-scroll-btn" id="ssScrollRight" onclick="ssScroll(1)"  aria-label="Scroll right">&#8250;</button>
+
+  <!-- Header -->
   <div class="ss-info">
     <div class="ss-title">Start</div>
+
+    <!-- Search box -->
+    <div class="ss-search">
+      <div class="ss-search-icon"><i class="fas fa-search"></i></div>
+      <input type="text" id="ssSearchInput" placeholder="Search apps, settings…"
+             oninput="ssSearchFilter(this.value)"
+             onkeydown="if(event.key==='Escape'){this.value='';ssSearchFilter('');}" />
+    </div>
+
     <div class="ss-user" onclick="togglePowerMenu(event)">
       <div class="ss-user-text">
         <div class="ss-user-name">User</div>
@@ -262,23 +279,18 @@
     </div>
   </div>
 
-  <!-- Tile scroll area — horizontal scroll, columns side by side -->
+  <!-- Tile scroll area -->
   <div class="ss-metro" id="ssMetro">
 
-    <!--
-    ══════════════════════════════════════════════
-    JS will set tile sizes dynamically.
-    Each .tg is one column group.
-    Each .tg-grid is a CSS grid of tiles.
-    Tile sizes (.ts-1, .ts-2, .ts-4) are set by JS.
-    ══════════════════════════════════════════════
-    -->
-
     <!-- COL A: Mail 2x2 -->
-    <div class="tg" data-col="0">
-      <span class="tg-label">&nbsp;</span>
+    <div class="tg" data-col="0" data-label="">
+      <span class="tg-label" ondblclick="ssRenameGroup(this)">&nbsp;</span>
       <div class="tg-grid" id="gridA">
-        <div class="tile tc-teal" id="tMailWrap" onclick="tileOpen(this,'Mail')" style="grid-column:span 2;grid-row:span 2">
+        <div class="tile tc-teal" id="tMailWrap" onclick="tileOpen(this,'Mail')"
+             oncontextmenu="showTileCtx(event,this)"
+             data-app="Mail" data-size="2x2"
+             style="grid-column:span 2;grid-row:span 2">
+          <div class="tile-size-badge">2×2</div>
           <div class="tile-flip-wrap" id="mailFlip">
             <div class="tf-front">
               <div class="tile-icon"><img src="icons/mail.png" alt="Mail"></div>
@@ -294,11 +306,15 @@
     </div>
 
     <!-- COL B: Calendar · News · People · Finance · Messaging · Desktop -->
-    <div class="tg" data-col="1">
-      <span class="tg-label">&nbsp;</span>
+    <div class="tg" data-col="1" data-label="Social">
+      <span class="tg-label" ondblclick="ssRenameGroup(this)">Social</span>
       <div class="tg-grid" id="gridB">
 
-        <div class="tile tc-purple" onclick="tileOpen(this,'Calendar')" style="grid-column:1/3;grid-row:1">
+        <div class="tile tc-purple" onclick="tileOpen(this,'Calendar')"
+             oncontextmenu="showTileCtx(event,this)"
+             data-app="Calendar" data-size="2x1"
+             style="grid-column:1/3;grid-row:1">
+          <div class="tile-size-badge">2×1</div>
           <div class="tile-flip-wrap" id="calFlip">
             <div class="tf-front">
               <div class="tile-icon"><img src="icons/calendar.png" alt="Calendar"></div>
@@ -311,7 +327,11 @@
           </div>
         </div>
 
-        <div class="tile tc-red" onclick="tileOpen(this,'News')" style="grid-column:3/5;grid-row:1">
+        <div class="tile tc-red" onclick="tileOpen(this,'News')"
+             oncontextmenu="showTileCtx(event,this)"
+             data-app="News" data-size="2x1"
+             style="grid-column:3/5;grid-row:1">
+          <div class="tile-size-badge">2×1</div>
           <div class="tile-flip-wrap" id="newsFlip">
             <div class="tf-front">
               <div class="tile-icon"><img src="icons/news.png" alt="News"></div>
@@ -324,22 +344,38 @@
           </div>
         </div>
 
-        <div class="tile tc-pink" onclick="tileOpen(this,'People')" style="grid-column:1/3;grid-row:2/4">
+        <div class="tile tc-pink" onclick="tileOpen(this,'People')"
+             oncontextmenu="showTileCtx(event,this)"
+             data-app="People" data-size="2x2"
+             style="grid-column:1/3;grid-row:2/4">
+          <div class="tile-size-badge">2×2</div>
           <div class="tile-icon"><img src="icons/people.png" alt="People"></div>
           <span class="tile-label">People</span>
         </div>
 
-        <div class="tile tc-lGreen" onclick="tileOpen(this,'Finance')" style="grid-column:3/5;grid-row:2/4">
+        <div class="tile tc-lGreen" onclick="tileOpen(this,'Finance')"
+             oncontextmenu="showTileCtx(event,this)"
+             data-app="Finance" data-size="2x2"
+             style="grid-column:3/5;grid-row:2/4">
+          <div class="tile-size-badge">2×2</div>
           <div class="tile-icon"><img src="icons/finance.png" alt="Finance"></div>
           <span class="tile-label">Finance</span>
         </div>
 
-        <div class="tile tc-charcoal" onclick="tileOpen(this,'Messaging')" style="grid-column:1/3;grid-row:4">
+        <div class="tile tc-charcoal" onclick="tileOpen(this,'Messaging')"
+             oncontextmenu="showTileCtx(event,this)"
+             data-app="Messaging" data-size="2x1"
+             style="grid-column:1/3;grid-row:4">
+          <div class="tile-size-badge">2×1</div>
           <div class="tile-icon"><img src="icons/messaging.png" alt="Messaging"></div>
           <span class="tile-label">Messaging</span>
         </div>
 
-        <div class="tile tc-dkteal" onclick="tileOpen(this,'Desktop')" style="grid-column:3/5;grid-row:4">
+        <div class="tile tc-dkteal" onclick="tileOpen(this,'Desktop')"
+             oncontextmenu="showTileCtx(event,this)"
+             data-app="Desktop" data-size="2x1"
+             style="grid-column:3/5;grid-row:4">
+          <div class="tile-size-badge">2×1</div>
           <div class="tile-icon"><img src="icons/explorer.png" alt="Desktop"></div>
           <span class="tile-label">Desktop</span>
         </div>
@@ -348,11 +384,15 @@
     </div>
 
     <!-- COL C: Weather · Store · IE · Maps · SkyDrive · Skype -->
-    <div class="tg" data-col="2">
-      <span class="tg-label">&nbsp;</span>
+    <div class="tg" data-col="2" data-label="Internet">
+      <span class="tg-label" ondblclick="ssRenameGroup(this)">Internet</span>
       <div class="tg-grid" id="gridC">
 
-        <div class="tile tc-sky" onclick="openWeather();if(startOpen)setTimeout(toggleStart,200);" style="grid-column:1/3;grid-row:1/3">
+        <div class="tile tc-sky" onclick="openWeather();if(startOpen)setTimeout(toggleStart,200);"
+             oncontextmenu="showTileCtx(event,this)"
+             data-app="Weather" data-size="2x2"
+             style="grid-column:1/3;grid-row:1/3">
+          <div class="tile-size-badge">2×2</div>
           <div class="tile-flip-wrap" id="wxFlip">
             <div class="tf-front">
               <div class="tile-icon"><img src="icons/weather.png" alt="Weather" id="wxIcon"></div>
@@ -365,27 +405,47 @@
           </div>
         </div>
 
-        <div class="tile tc-green" onclick="openStore();if(startOpen)setTimeout(toggleStart,200);" style="grid-column:3/5;grid-row:1/3">
+        <div class="tile tc-green" onclick="openStore();if(startOpen)setTimeout(toggleStart,200);"
+             oncontextmenu="showTileCtx(event,this)"
+             data-app="Store" data-size="2x2"
+             style="grid-column:3/5;grid-row:1/3">
+          <div class="tile-size-badge">2×2</div>
           <div class="tile-icon"><img src="icons/store.png" alt="Store"></div>
           <span class="tile-label">Store</span>
         </div>
 
-        <div class="tile tc-blue" onclick="openIE();if(startOpen)setTimeout(toggleStart,200);" style="grid-column:1/3;grid-row:3">
+        <div class="tile tc-blue" onclick="openIE();if(startOpen)setTimeout(toggleStart,200);"
+             oncontextmenu="showTileCtx(event,this)"
+             data-app="Internet Explorer" data-size="2x1"
+             style="grid-column:1/3;grid-row:3">
+          <div class="tile-size-badge">2×1</div>
           <div class="tile-icon"><img src="icons/ie.png" alt="IE"></div>
           <span class="tile-label">Internet Explorer</span>
         </div>
 
-        <div class="tile tc-orange" onclick="openMaps();if(startOpen)setTimeout(toggleStart,200);" style="grid-column:3/5;grid-row:3">
+        <div class="tile tc-orange" onclick="openMaps();if(startOpen)setTimeout(toggleStart,200);"
+             oncontextmenu="showTileCtx(event,this)"
+             data-app="Maps" data-size="2x1"
+             style="grid-column:3/5;grid-row:3">
+          <div class="tile-size-badge">2×1</div>
           <div class="tile-icon"><img src="icons/maps.png" alt="Maps"></div>
           <span class="tile-label">Maps</span>
         </div>
 
-        <div class="tile tc-lBlue" onclick="tileOpen(this,'SkyDrive')" style="grid-column:1/3;grid-row:4">
+        <div class="tile tc-lBlue" onclick="tileOpen(this,'SkyDrive')"
+             oncontextmenu="showTileCtx(event,this)"
+             data-app="SkyDrive" data-size="2x1"
+             style="grid-column:1/3;grid-row:4">
+          <div class="tile-size-badge">2×1</div>
           <div class="tile-icon"><img src="icons/skydrive.png" alt="SkyDrive"></div>
           <span class="tile-label">SkyDrive</span>
         </div>
 
-        <div class="tile tc-dkblue" onclick="tileOpen(this,'Skype')" style="grid-column:3/5;grid-row:4">
+        <div class="tile tc-dkblue" onclick="tileOpen(this,'Skype')"
+             oncontextmenu="showTileCtx(event,this)"
+             data-app="Skype" data-size="2x1"
+             style="grid-column:3/5;grid-row:4">
+          <div class="tile-size-badge">2×1</div>
           <div class="tile-icon"><img src="icons/skype.png" alt="Skype"></div>
           <span class="tile-label">Skype</span>
         </div>
@@ -394,16 +454,24 @@
     </div>
 
     <!-- COL D: Travel · Bing · Games -->
-    <div class="tg" data-col="3">
-      <span class="tg-label">&nbsp;</span>
+    <div class="tg" data-col="3" data-label="Explore">
+      <span class="tg-label" ondblclick="ssRenameGroup(this)">Explore</span>
       <div class="tg-grid" id="gridD">
 
-        <div class="tile tc-teal" onclick="tileOpen(this,'Travel')" style="grid-column:1/3;grid-row:1">
+        <div class="tile tc-teal" onclick="tileOpen(this,'Travel')"
+             oncontextmenu="showTileCtx(event,this)"
+             data-app="Travel" data-size="2x1"
+             style="grid-column:1/3;grid-row:1">
+          <div class="tile-size-badge">2×1</div>
           <div class="tile-icon"><img src="icons/travel.png" alt="Travel"></div>
           <span class="tile-label">Travel</span>
         </div>
 
-        <div class="tile tc-dkblue" onclick="tileOpen(this,'Bing')" style="grid-column:1/3;grid-row:2/4">
+        <div class="tile tc-dkblue" onclick="tileOpen(this,'Bing')"
+             oncontextmenu="showTileCtx(event,this)"
+             data-app="Bing" data-size="2x2"
+             style="grid-column:1/3;grid-row:2/4">
+          <div class="tile-size-badge">2×2</div>
           <div class="tile-flip-wrap" id="bingFlip">
             <div class="tf-front">
               <div class="tile-icon"><img src="icons/bing.png" alt="Bing" id="bingIcon"></div>
@@ -416,7 +484,11 @@
           </div>
         </div>
 
-        <div class="tile tc-charcoal" onclick="tileOpen(this,'Games')" style="grid-column:1/3;grid-row:4">
+        <div class="tile tc-charcoal" onclick="tileOpen(this,'Games')"
+             oncontextmenu="showTileCtx(event,this)"
+             data-app="Games" data-size="2x1"
+             style="grid-column:1/3;grid-row:4">
+          <div class="tile-size-badge">2×1</div>
           <div class="tile-icon"><img src="icons/games.png" alt="Games"></div>
           <span class="tile-label">Games</span>
         </div>
@@ -425,21 +497,33 @@
     </div>
 
     <!-- COL E: Camera · Photos · Music · Video · Settings · OneNote -->
-    <div class="tg" data-col="4">
-      <span class="tg-label">&nbsp;</span>
+    <div class="tg" data-col="4" data-label="Media">
+      <span class="tg-label" ondblclick="ssRenameGroup(this)">Media</span>
       <div class="tg-grid" id="gridE">
 
-        <div class="tile tc-purple" onclick="tileOpen(this,'Camera')" style="grid-column:1;grid-row:1">
+        <div class="tile tc-purple" onclick="tileOpen(this,'Camera')"
+             oncontextmenu="showTileCtx(event,this)"
+             data-app="Camera" data-size="1x1"
+             style="grid-column:1;grid-row:1">
+          <div class="tile-size-badge">1×1</div>
           <div class="tile-icon"><img src="icons/camera.png" alt="Camera"></div>
           <span class="tile-label">Camera</span>
         </div>
 
-        <div class="tile tc-orange" onclick="tileOpen(this,'Photos')" style="grid-column:2;grid-row:1">
+        <div class="tile tc-orange" onclick="tileOpen(this,'Photos')"
+             oncontextmenu="showTileCtx(event,this)"
+             data-app="Photos" data-size="1x1"
+             style="grid-column:2;grid-row:1">
+          <div class="tile-size-badge">1×1</div>
           <div class="tile-icon"><img src="icons/photos.png" alt="Photos"></div>
           <span class="tile-label">Photos</span>
         </div>
 
-        <div class="tile tc-red" onclick="tileOpen(this,'Music')" style="grid-column:1/3;grid-row:2">
+        <div class="tile tc-red" onclick="tileOpen(this,'Music')"
+             oncontextmenu="showTileCtx(event,this)"
+             data-app="Music" data-size="2x1"
+             style="grid-column:1/3;grid-row:2">
+          <div class="tile-size-badge">2×1</div>
           <div class="tile-flip-wrap" id="musicFlip">
             <div class="tf-front">
               <div class="tile-icon"><img src="icons/music.png" alt="Music"></div>
@@ -452,17 +536,29 @@
           </div>
         </div>
 
-        <div class="tile tc-red" onclick="tileOpen(this,'Video')" style="grid-column:1;grid-row:3;filter:brightness(.82)">
+        <div class="tile tc-red" onclick="tileOpen(this,'Video')"
+             oncontextmenu="showTileCtx(event,this)"
+             data-app="Video" data-size="1x1"
+             style="grid-column:1;grid-row:3;filter:brightness(.82)">
+          <div class="tile-size-badge">1×1</div>
           <div class="tile-icon"><img src="icons/video.png" alt="Video"></div>
           <span class="tile-label">Video</span>
         </div>
 
-        <div class="tile tc-grey" onclick="openSettings('personalise');if(startOpen)toggleStart();" style="grid-column:2;grid-row:3">
+        <div class="tile tc-grey" onclick="openSettings('personalise');if(startOpen)toggleStart();"
+             oncontextmenu="showTileCtx(event,this)"
+             data-app="Settings" data-size="1x1"
+             style="grid-column:2;grid-row:3">
+          <div class="tile-size-badge">1×1</div>
           <div class="tile-icon"><img src="icons/settings.png" alt="Settings"></div>
           <span class="tile-label">Settings</span>
         </div>
 
-        <div class="tile tc-lPurple" onclick="tileOpen(this,'OneNote')" style="grid-column:1/3;grid-row:4">
+        <div class="tile tc-lPurple" onclick="tileOpen(this,'OneNote')"
+             oncontextmenu="showTileCtx(event,this)"
+             data-app="OneNote" data-size="2x1"
+             style="grid-column:1/3;grid-row:4">
+          <div class="tile-size-badge">2×1</div>
           <div class="tile-icon"><img src="icons/onenote.png" alt="OneNote"></div>
           <span class="tile-label">OneNote</span>
         </div>
@@ -471,7 +567,65 @@
     </div>
 
   </div><!-- /ss-metro -->
+
+  <!-- Wallpaper picker -->
+  <div id="ssWpPicker">
+    <span class="ss-wp-label">Background</span>
+    <!-- swatches injected by JS -->
+  </div>
+  <div class="ss-wp-toggle" id="ssWpToggle" onclick="toggleSsWpPicker()" title="Change background">
+    <i class="fas fa-image"></i>
+  </div>
+
+  <!-- Tile right-click context menu -->
+  <div id="tileCtxMenu">
+    <div class="tc-item" id="tcOpen" onclick="tileCtxAction('open')">
+      <span class="tc-icon"><i class="fas fa-external-link-alt"></i></span> Open
+    </div>
+    <div class="tc-sep"></div>
+    <div class="tc-item" onclick="tileCtxAction('pin')" id="tcPinItem">
+      <span class="tc-icon"><i class="fas fa-thumbtack"></i></span>
+      <span id="tcPinLabel">Unpin from Start</span>
+    </div>
+    <div class="tc-sep"></div>
+    <div style="padding:6px 14px 4px; font-size:10px; color:rgba(255,255,255,.35); text-transform:uppercase; letter-spacing:1.5px;">Resize</div>
+    <div class="tc-resize-sub" id="tcResizeSub">
+      <div class="tc-size-btn" data-sz="1x1" onclick="tileCtxResize('1x1')">
+        <div class="tc-size-visual" style="grid-template-columns:1fr;grid-template-rows:1fr;width:16px;height:16px;">
+          <div class="tc-sz-cell"></div>
+        </div>
+        Small
+      </div>
+      <div class="tc-size-btn" data-sz="2x1" onclick="tileCtxResize('2x1')">
+        <div class="tc-size-visual" style="grid-template-columns:1fr 1fr;grid-template-rows:1fr;width:28px;height:14px;">
+          <div class="tc-sz-cell"></div><div class="tc-sz-cell"></div>
+        </div>
+        Medium
+      </div>
+      <div class="tc-size-btn" data-sz="2x2" onclick="tileCtxResize('2x2')">
+        <div class="tc-size-visual" style="grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;width:22px;height:22px;">
+          <div class="tc-sz-cell"></div><div class="tc-sz-cell"></div>
+          <div class="tc-sz-cell"></div><div class="tc-sz-cell"></div>
+        </div>
+        Wide
+      </div>
+      <div class="tc-size-btn" data-sz="4x2" onclick="tileCtxResize('4x2')">
+        <div class="tc-size-visual" style="grid-template-columns:1fr 1fr 1fr 1fr;grid-template-rows:1fr 1fr;width:36px;height:18px;">
+          <div class="tc-sz-cell"></div><div class="tc-sz-cell"></div><div class="tc-sz-cell"></div><div class="tc-sz-cell"></div>
+          <div class="tc-sz-cell"></div><div class="tc-sz-cell"></div><div class="tc-sz-cell"></div><div class="tc-sz-cell"></div>
+        </div>
+        Large
+      </div>
+    </div>
+    <div class="tc-sep"></div>
+    <div class="tc-item" id="tcLiveToggle" onclick="tileCtxAction('live')">
+      <span class="tc-icon"><i class="fas fa-satellite-dish"></i></span>
+      <span id="tcLiveLabel">Turn live tile off</span>
+    </div>
+  </div>
+
 </div><!-- /startScreen -->
+
 
 <!-- TASKBAR -->
 <div id="taskbar" oncontextmenu="showTaskbarEmptyCtx(event)">
