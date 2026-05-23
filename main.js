@@ -719,6 +719,7 @@ function showDesktopBtn() {
 
 let _activeCtx = null;        // currently open menu id
 let _taskbarCtxTarget = null; // which app was right-clicked
+let _taskbarCtxPinned = false; // was the right-clicked app pinned?
 
 /* close every context menu */
 function hideAllCtx() {
@@ -772,50 +773,7 @@ function showIconCtx(e, type) {
   /* other icons — suppress browser default */
 }
 
-/* ── TASKBAR APP RIGHT-CLICK ── */
-function showTaskbarAppCtx(e, appName, pinned) {
-  e.preventDefault();
-  e.stopPropagation();
-  _taskbarCtxTarget = appName;
-
-  const pinBtn = document.getElementById('tbarCtxPin');
-  if (pinBtn) pinBtn.textContent = pinned
-    ? '📌 Unpin from taskbar'
-    : '📌 Pin to taskbar';
-
-  /* open ABOVE the taskbar */
-  const menu = document.getElementById('taskbarAppCtx');
-  if (!menu) return;
-  hideAllCtx();
-  menu.style.left   = e.clientX + 'px';
-  menu.style.top    = 'auto';
-  menu.style.bottom = '50px';
-  menu.classList.add('open');
-  _activeCtx = 'taskbarAppCtx';
-
-  /* clamp horizontally */
-  requestAnimationFrame(() => {
-    const r = menu.getBoundingClientRect();
-    if (r.right > window.innerWidth) {
-      menu.style.left = (e.clientX - r.width) + 'px';
-    }
-  });
-}
-
-function taskbarCtxPin() {
-  hideAllCtx();
-  notify(_taskbarCtxTarget + ' pinned to taskbar', 'Taskbar');
-}
-
-function taskbarCtxClose() {
-  hideAllCtx();
-  /* if it's the This PC window, actually close it */
-  if (_taskbarCtxTarget === 'This PC' && typeof closePC === 'function') {
-    closePC();
-  } else {
-    notify(_taskbarCtxTarget + ' closed', _taskbarCtxTarget);
-  }
-}
+/* ── TASKBAR APP RIGHT-CLICK — implemented below in full version ── */
 
 /* ════════════════════════════════════════════════════════
    SYSTEM PROPERTIES WINDOW
@@ -1545,11 +1503,8 @@ function tbUpdatePinnedIndicators() {
 setInterval(tbUpdatePinnedIndicators, 1000);
 
 /* ════════════════════════════════════════════════════════════
-   TASKBAR APP CONTEXT MENU — fixed to handle both
-   pinned (pinned=true) and running entries
+   TASKBAR APP CONTEXT MENU — handles both pinned and running
    ════════════════════════════════════════════════════════════ */
-let _taskbarCtxTarget  = null;
-let _taskbarCtxPinned  = false;
 
 function showTaskbarAppCtx(e, appName, pinned) {
   e.preventDefault();
@@ -1624,4 +1579,4 @@ function taskbarCtxCloseAll() {
   closers.forEach(fn => { try { fn(); } catch(e) {} });
   notify('All windows closed', 'Taskbar');
 }
- 
+  
