@@ -68,15 +68,43 @@ function setLockWallpaperOverride(url) {
 /* ── WINDOWS BOOT (runs AFTER bios:complete) ── */
 function runWindowsBoot() {
   const boot = document.getElementById('bootScreen');
-  if (!boot) return;
-  /* kick off the lock screen wallpaper slideshow immediately */
+  const lock = document.getElementById('lockScreen');
+
+  /* ensure lock screen is visible and properly styled */
+  if (lock) {
+    lock.style.display    = '';
+    lock.style.opacity    = '1';
+    lock.style.transform  = 'translateY(0)';
+    lock.style.transition = 'none';
+    lock.classList.remove('unlock', 'touched', 'pass-mode');
+  }
+
+  /* kick off the wallpaper slideshow */
   lockInitWallpaper();
-  /* boot screen runs for 2.6s then fades out */
+
+  if (!boot) {
+    /* no boot screen — just show lock directly */
+    return;
+  }
+
+  /* re-trigger the boot animation in case it already fired while hidden */
+  boot.style.animation = 'none';
+  void boot.offsetWidth; /* force reflow */
+  boot.style.animation = '';
+
+  /* boot screen runs for 2.8s then fades out → reveals lock screen */
   setTimeout(() => {
-    boot.style.transition = 'opacity .5s ease';
+    boot.style.transition = 'opacity .6s ease';
     boot.style.opacity    = '0';
-    setTimeout(() => boot.remove(), 600);
-  }, 2600);
+    setTimeout(() => {
+      boot.remove();
+      /* make sure lock screen is on top now */
+      if (lock) {
+        lock.style.zIndex = '9999';
+        lock.style.display = '';
+      }
+    }, 650);
+  }, 2800);
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -1596,3 +1624,4 @@ function taskbarCtxCloseAll() {
   closers.forEach(fn => { try { fn(); } catch(e) {} });
   notify('All windows closed', 'Taskbar');
 }
+ 
