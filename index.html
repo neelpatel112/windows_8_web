@@ -1030,22 +1030,78 @@ window.addEventListener('bios:complete', function onBiosComplete() {
   const os = document.getElementById('win8OS');
   if (!os) return;
 
-  /* show Windows OS instantly — no fade, just black first frame
-     then the bootScreen takes over immediately */
-  os.style.display  = 'block';
-  os.style.opacity  = '1';
+  /* show win8OS instantly */
+  os.style.display    = 'block';
+  os.style.opacity    = '1';
   os.style.transition = 'none';
 
-  /* hide all BIOS phase divs — Windows boot screen is now showing */
+  /* hide all BIOS phases */
   ['phase-black','phase-post','phase-summary','phase-handoff',
    'setup-overlay','bootmenu-overlay'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = 'none';
   });
 
-  /* now trigger the Windows boot sequence */
+  /* re-trigger boot screen animation — it may have already
+     played while win8OS was display:none */
+  const boot = document.getElementById('bootScreen');
+  if (boot) {
+    boot.style.opacity   = '1';
+    boot.style.animation = 'none';
+    void boot.offsetWidth; /* force reflow */
+    boot.style.animation = '';
+    /* re-trigger child animations */
+    const logo    = boot.querySelector('.boot-logo-img');
+    const spinner = boot.querySelector('.boot-spinner');
+    if (logo)    { logo.style.animation    = 'none'; void logo.offsetWidth;    logo.style.animation    = ''; }
+    if (spinner) { spinner.style.animation = 'none'; void spinner.offsetWidth; spinner.style.animation = ''; }
+  }
+
+  /* run Windows boot sequence */
   if (typeof runWindowsBoot === 'function') runWindowsBoot();
 });
+
+/* ── FALLBACK: if BIOS never fires (no internet / script error) ──
+   Show Windows directly after 8 seconds */
+setTimeout(() => {
+  const os = document.getElementById('win8OS');
+  if (os && os.style.display === 'none') {
+    console.warn('[Win8Web] BIOS did not fire — showing Windows directly');
+    os.style.display    = 'block';
+    os.style.opacity    = '1';
+    os.style.transition = 'none';
+    ['phase-black','phase-post','phase-summary','phase-handoff',
+     'setup-overlay','bootmenu-overlay'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+    if (typeof runWindowsBoot === 'function') runWindowsBoot();
+  }
+}, 8000);
+
+/* ── EMERGENCY FALLBACK: if boot screen never removes itself ──
+   After 15s total, force lock screen to show no matter what */
+setTimeout(() => {
+  const boot = document.getElementById('bootScreen');
+  const lock = document.getElementById('lockScreen');
+  const os   = document.getElementById('win8OS');
+  /* show win8OS if still hidden */
+  if (os && os.style.display === 'none') {
+    os.style.display = 'block';
+    os.style.opacity = '1';
+  }
+  /* remove boot screen if still present */
+  if (boot) boot.remove();
+  /* ensure lock screen is visible */
+  if (lock) {
+    lock.style.display   = '';
+    lock.style.opacity   = '1';
+    lock.style.transform = 'translateY(0)';
+    lock.classList.remove('unlock');
+  }
+  if (typeof lockInitWallpaper === 'function') lockInitWallpaper();
+}, 15000);
 </script>
 </body>
 </html>
+ 
