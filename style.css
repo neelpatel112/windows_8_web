@@ -561,30 +561,37 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
 .lang-active span:first-child { color: #3a96dd; }
 
 /* ══════════════════════════════════════════════════════════
-   START SCREEN
+   START SCREEN  v2  —  Enhanced Metro UI
    ══════════════════════════════════════════════════════════ */
+
+/* ── WALLPAPER LAYERS (same crossfade trick as lock screen) ── */
+#ssBgA, #ssBgB {
+  position: absolute; inset: 0; z-index: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: opacity 1.4s ease;
+  pointer-events: none;
+}
+
 #startScreen {
   position: fixed;
-  /* sits above taskbar, covers full screen */
   top: 0; left: 0; right: 0; bottom: 44px;
   z-index: 200;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background:
-    linear-gradient(to bottom, rgba(20,26,30,.92), rgba(18,22,26,.90)),
-    url('67.jpg') center/cover no-repeat;
-  background-color: #1a1e22;
+  background-color: #0f1318;
 
-  /* HIDDEN STATE — pushed fully below viewport, invisible, non-interactive */
+  /* HIDDEN — slide from bottom */
   transform: translateY(100%);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
   transition:
-    transform   .42s cubic-bezier(.32,0,.18,1),
-    opacity     .30s ease,
-    visibility  0s   .45s;     /* hide visibility only after slide finishes */
+    transform   .48s cubic-bezier(.22,1,.36,1),
+    opacity     .28s ease,
+    visibility  0s   .52s;
 }
 #startScreen.active {
   transform: translateY(0);
@@ -592,59 +599,112 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
   visibility: visible;
   pointer-events: all;
   transition:
-    transform .42s cubic-bezier(.32,0,.18,1),
-    opacity   .30s ease;       /* no delay on open */
+    transform .48s cubic-bezier(.22,1,.36,1),
+    opacity   .28s ease;
 }
 
-/* ── header ── */
+/* dark frosted overlay over wallpaper */
+#startScreen::before {
+  content: '';
+  position: absolute; inset: 0; z-index: 1;
+  background:
+    linear-gradient(to bottom, rgba(8,10,14,.82) 0%, rgba(10,13,18,.70) 60%, rgba(8,10,14,.88) 100%);
+  pointer-events: none;
+}
+#startScreen > * { position: relative; z-index: 2; }
+
+/* ── HEADER ── */
 .ss-info {
   flex-shrink: 0;
   display: flex; align-items: center; justify-content: space-between;
-  padding: 16px 28px 12px 32px;
+  padding: 18px 32px 14px 36px;
+  border-bottom: 1px solid rgba(255,255,255,.055);
+  backdrop-filter: blur(2px);
 }
-.ss-title { font-size: 36px; font-weight: 100; color: #fff; letter-spacing: .5px; }
+.ss-title {
+  font-size: 32px; font-weight: 100; color: #fff;
+  letter-spacing: 1px;
+  text-shadow: 0 1px 12px rgba(0,0,0,.4);
+}
+
+/* search box in header */
+.ss-search {
+  display: flex; align-items: center; gap: 0;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.13);
+  height: 34px;
+  transition: background .2s, border-color .2s;
+  flex: 0 0 260px;
+}
+.ss-search:focus-within {
+  background: rgba(255,255,255,.14);
+  border-color: rgba(255,255,255,.32);
+}
+.ss-search-icon {
+  width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
+  color: rgba(255,255,255,.45); font-size: 13px; flex-shrink: 0;
+}
+.ss-search input {
+  flex: 1; background: none; border: none; outline: none;
+  color: #fff; font-size: 13px;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  padding: 0 10px 0 0;
+  caret-color: #fff;
+  user-select: text; -webkit-user-select: text;
+}
+.ss-search input::placeholder { color: rgba(255,255,255,.32); }
 
 .ss-user {
   position: relative; display: flex; align-items: center; gap: 10px;
-  color: #fff; cursor: pointer; padding: 6px 12px; transition: background .2s;
+  color: #fff; cursor: pointer; padding: 6px 12px;
+  transition: background .2s;
 }
-.ss-user:hover { background: rgba(255,255,255,.09); }
+.ss-user:hover { background: rgba(255,255,255,.08); }
 .ss-user-text { text-align: right; }
-.ss-user-name { font-size: 14px; font-weight: 400; line-height: 1.2; }
-.ss-user-sub  { font-size: 11px; opacity: .55; }
+.ss-user-name { font-size: 13px; font-weight: 400; line-height: 1.2; }
+.ss-user-sub  { font-size: 10px; opacity: .45; }
 .ss-avatar {
-  width: 36px; height: 36px; border-radius: 2px; background: #0078d7;
+  width: 34px; height: 34px; border-radius: 2px; background: #0078d7;
   display: flex; align-items: center; justify-content: center;
-  font-size: 16px; color: #fff; overflow: hidden; flex-shrink: 0;
+  font-size: 15px; color: #fff; overflow: hidden; flex-shrink: 0;
+  border: 1px solid rgba(255,255,255,.18);
 }
 .ss-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
-/* power dropdown — slides down, white bg */
+/* power dropdown */
 .ss-power-menu {
   position: absolute; top: calc(100% + 4px); right: 0;
-  background: #fff; color: #111; list-style: none;
-  min-width: 190px; padding: 6px 0; z-index: 20;
-  box-shadow: 0 8px 32px rgba(0,0,0,.55);
-  opacity: 0; pointer-events: none; transform: translateY(-10px);
-  transition: opacity .4s ease, transform .55s cubic-bezier(.16,1,.3,1);
+  background: rgba(20,20,22,.98); color: #fff; list-style: none;
+  min-width: 200px; padding: 6px 0; z-index: 20;
+  box-shadow: 0 12px 40px rgba(0,0,0,.7);
+  border: 1px solid rgba(255,255,255,.1);
+  opacity: 0; pointer-events: none; transform: translateY(-8px);
+  transition: opacity .3s ease, transform .4s cubic-bezier(.16,1,.3,1);
 }
 .ss-power-menu.open { opacity: 1; pointer-events: all; transform: translateY(0); }
 .pm-item {
   display: flex; align-items: center; gap: 12px;
-  padding: 10px 36px 10px 16px; font-size: 13px; font-weight: 600;
-  color: #111; cursor: pointer; white-space: nowrap; transition: background .2s;
+  padding: 10px 24px 10px 16px; font-size: 13px; font-weight: 400;
+  color: rgba(255,255,255,.88); cursor: pointer; white-space: nowrap;
+  transition: background .15s;
 }
-.pm-item i { font-size: 14px; opacity: .6; width: 16px; text-align: center; color: #333; }
-.pm-item:hover { background: rgba(0,0,0,.08); }
+.pm-item i { font-size: 13px; opacity: .55; width: 16px; text-align: center; }
+.pm-item:hover { background: rgba(255,255,255,.1); }
 .pm-item:hover i { opacity: 1; }
-.pm-item.disabled { color: #aaa; cursor: default; }
-.pm-item.disabled:hover { background: transparent; }
+.pm-item.disabled { color: rgba(255,255,255,.25); cursor: default; pointer-events: none; }
 
-/* ── TILE SCROLL AREA ──
-   flex:1 = fills exact remaining height after header.
-   overflow-x:auto + no-wrap = horizontal scroll only.
-   flex-direction:row = columns sit side by side.
-*/
+/* ── GROUP LABEL BAR ── */
+.ss-groups-bar {
+  flex-shrink: 0;
+  display: flex; align-items: center;
+  padding: 8px 36px 0;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.ss-groups-bar::-webkit-scrollbar { display: none; }
+
+/* ── METRO AREA ── */
 .ss-metro {
   flex: 1;
   display: flex;
@@ -652,40 +712,47 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
   align-items: flex-start;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 10px 32px 16px;
-  gap: 20px;
-  /* prevent any vertical scrollbar */
+  padding: 14px 36px 20px;
+  gap: 24px;
   min-height: 0;
   scrollbar-width: thin;
-  scrollbar-color: rgba(255,255,255,.2) transparent;
+  scrollbar-color: rgba(255,255,255,.15) transparent;
 }
-.ss-metro::-webkit-scrollbar { height: 5px; }
-.ss-metro::-webkit-scrollbar-thumb { background: rgba(255,255,255,.2); border-radius: 3px; }
+.ss-metro::-webkit-scrollbar { height: 4px; }
+.ss-metro::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,.15); border-radius: 2px;
+}
 
-/* ── TILE COLUMN GROUP ──
-   Each column is a flex column, shrinks to its content width.
-   The stagger animation slides it in from right.
-*/
+/* ── TILE GROUP ── */
 .tg {
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   gap: 0;
   opacity: 0;
-  transform: translateX(70px) scale(.82);
-  transition: opacity .55s ease, transform .55s cubic-bezier(.16,1,.3,1);
+  transform: translateX(56px) scale(.88);
+  transition: opacity .5s ease, transform .5s cubic-bezier(.22,1,.36,1);
+  will-change: transform, opacity;
 }
 .tg.tg-in { opacity: 1; transform: translateX(0) scale(1); }
 
 .tg-label {
-  font-size: 10px; font-weight: 300; color: rgba(255,255,255,.3);
-  text-transform: uppercase; letter-spacing: 2px;
-  margin-bottom: 7px; white-space: nowrap;
+  font-size: 10px; font-weight: 400; color: rgba(255,255,255,.35);
+  text-transform: uppercase; letter-spacing: 2.5px;
+  margin-bottom: 8px; white-space: nowrap;
+  padding: 0 2px;
+  cursor: pointer;
+  transition: color .2s;
+}
+.tg-label:hover { color: rgba(255,255,255,.7); }
+.tg-label.editing {
+  background: rgba(255,255,255,.1);
+  outline: none;
+  color: #fff;
+  padding: 2px 6px;
+  border-bottom: 1px solid rgba(255,255,255,.5);
 }
 
-/* Grid inside each column.
-   grid-template-columns and rows are set via inline style using px values
-   that JS calculates from the available height. */
 .tg-grid {
   display: grid;
   gap: 5px;
@@ -693,38 +760,105 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
 }
 
 /* ══════════════════════════════════════════════════════════
-   TILES
-   Sizes are set by JS calculating --sz from available height.
-   CSS classes just reference that variable.
+   TILES  v2 — pixel-sharp, shimmer on hover, ripple on press
    ══════════════════════════════════════════════════════════ */
 .tile {
   position: relative; overflow: hidden; cursor: pointer; color: #fff;
   display: flex; flex-direction: column; justify-content: flex-end;
-  padding: 7px 9px;
+  padding: 8px 10px;
+  /* sharp edges — authentic Metro */
   outline: 1px solid transparent;
-  transition: outline-color .12s, filter .12s, transform .10s;
+  /* GPU-composited hover */
+  transition:
+    outline-color .14s,
+    filter        .14s,
+    transform     .12s cubic-bezier(.2,0,.38,1);
+  will-change: transform;
+  user-select: none;
 }
-.tile:hover  { outline-color: rgba(200,200,200,.65); filter: brightness(1.1); }
-.tile:active { outline-color: rgba(220,220,220,.9); outline-width: 2px; transform: scale(.96); filter: brightness(.88); }
+
+/* shimmer overlay — only visible on hover */
+.tile::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,.08) 50%,
+    rgba(255,255,255,0) 100%
+  );
+  opacity: 0;
+  transition: opacity .2s;
+  pointer-events: none;
+  z-index: 3;
+}
+.tile:hover::before { opacity: 1; }
+
+/* top-edge highlight — subtle 1px white line */
+.tile::after {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: rgba(255,255,255,.18);
+  pointer-events: none; z-index: 4;
+}
+
+.tile:hover {
+  outline-color: rgba(255,255,255,.55);
+  filter: brightness(1.12);
+  transform: scale(1.012);
+}
+.tile:active {
+  transform: scale(.955);
+  filter: brightness(.82);
+  transition: transform .06s, filter .06s;
+}
+
+/* selected state (for resize context) */
+.tile.tile-selected {
+  outline: 2px solid rgba(255,255,255,.9) !important;
+  outline-offset: -1px;
+}
 
 /* tile icon — bottom right */
 .tile-icon {
-  position: absolute; bottom: 8px; right: 10px;
+  position: absolute; bottom: 9px; right: 11px;
   display: flex; align-items: center; justify-content: center;
+  z-index: 2;
 }
-.tile-icon img { object-fit: contain; filter: brightness(0) invert(1); opacity: .92; }
+.tile-icon img {
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+  opacity: .88;
+  transition: opacity .15s;
+}
+.tile:hover .tile-icon img { opacity: 1; }
 
-/* tile name label — bottom left */
+/* tile name — bottom left */
 .tile-label {
   position: relative; z-index: 2;
-  font-size: 11px; font-weight: 400; line-height: 1.2;
-  text-shadow: 0 1px 3px rgba(0,0,0,.3);
+  font-size: 11px; font-weight: 400; line-height: 1.25;
+  text-shadow: 0 1px 4px rgba(0,0,0,.45);
+  letter-spacing: .1px;
 }
 
 /* big live number */
-.tile-big { font-size: 28px; font-weight: 100; line-height: 1; margin-bottom: 2px; position: relative; z-index: 2; }
+.tile-big {
+  font-size: 30px; font-weight: 100; line-height: 1;
+  margin-bottom: 2px; position: relative; z-index: 2;
+  letter-spacing: -1px;
+}
 
-/* colours */
+/* ── TILE SIZE BADGE (shows during resize mode) ── */
+.tile-size-badge {
+  position: absolute; top: 5px; left: 5px;
+  background: rgba(0,0,0,.55); color: rgba(255,255,255,.7);
+  font-size: 9px; padding: 1px 4px; letter-spacing: .5px;
+  pointer-events: none; z-index: 10;
+  opacity: 0; transition: opacity .2s;
+}
+.start-resize-mode .tile-size-badge { opacity: 1; }
+
+/* ── COLOURS — same palette, kept identical ── */
 .tc-teal    { background: #008299; }
 .tc-dkteal  { background: #006672; }
 .tc-blue    { background: #0078d7; }
@@ -743,20 +877,139 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
 .tc-charcoal{ background: #2d2d30; }
 .tc-brown   { background: #7e5c3e; }
 
-/* live tile flip */
+/* ── LIVE TILE FLIP ── */
 .tile-flip-wrap {
   position: absolute; inset: 0;
   transform-style: preserve-3d;
-  transition: transform .65s cubic-bezier(.4,0,.2,1);
+  transition: transform .7s cubic-bezier(.4,0,.2,1);
 }
 .tf-front, .tf-back {
   position: absolute; inset: 0; backface-visibility: hidden;
-  display: flex; flex-direction: column; justify-content: flex-end; padding: 7px 9px;
+  display: flex; flex-direction: column; justify-content: flex-end; padding: 8px 10px;
 }
 .tf-back { transform: rotateX(180deg); }
 .tile.flipped .tile-flip-wrap { transform: rotateX(180deg); }
-.live-txt { font-size: 11px; color: rgba(255,255,255,.9); line-height: 1.5; position: relative; z-index: 2; }
-.live-txt strong { font-size: 22px; font-weight: 100; display: block; margin-bottom: 2px; }
+.live-txt {
+  font-size: 11px; color: rgba(255,255,255,.92); line-height: 1.55;
+  position: relative; z-index: 2;
+}
+.live-txt strong { font-size: 22px; font-weight: 100; display: block; margin-bottom: 2px; letter-spacing: -0.5px; }
+
+/* ── TILE RIGHT-CLICK CONTEXT MENU ── */
+#tileCtxMenu {
+  position: fixed;
+  z-index: 9500;
+  background: rgba(18,20,24,.98);
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow: 0 16px 48px rgba(0,0,0,.7), 0 2px 8px rgba(0,0,0,.4);
+  min-width: 220px;
+  padding: 6px 0;
+  display: none;
+  animation: tileCtxPop .14s cubic-bezier(.16,1,.3,1) both;
+}
+@keyframes tileCtxPop {
+  from { opacity:0; transform: scale(.94) translateY(-4px); }
+  to   { opacity:1; transform: scale(1)   translateY(0); }
+}
+#tileCtxMenu.open { display: block; }
+
+.tc-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 20px 9px 14px;
+  font-size: 13px; color: rgba(255,255,255,.88);
+  cursor: pointer; white-space: nowrap;
+  transition: background .12s;
+}
+.tc-item:hover { background: rgba(255,255,255,.1); }
+.tc-item .tc-icon {
+  width: 18px; text-align: center; flex-shrink: 0;
+  font-size: 14px; color: rgba(255,255,255,.5);
+}
+.tc-item:hover .tc-icon { color: rgba(255,255,255,.9); }
+.tc-sep { height: 1px; background: rgba(255,255,255,.08); margin: 4px 0; }
+.tc-disabled { color: rgba(255,255,255,.25) !important; cursor: default !important; pointer-events: none; }
+
+/* Resize submenu */
+.tc-resize-sub {
+  padding: 8px 14px 10px;
+  display: flex; gap: 8px; align-items: center;
+  flex-wrap: wrap;
+}
+.tc-size-btn {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px; cursor: pointer; padding: 6px 10px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.1);
+  color: rgba(255,255,255,.7); font-size: 10px; letter-spacing: .3px;
+  transition: background .15s, border-color .15s, color .15s;
+  min-width: 52px;
+}
+.tc-size-btn:hover {
+  background: rgba(255,255,255,.15);
+  border-color: rgba(255,255,255,.35);
+  color: #fff;
+}
+.tc-size-btn.active {
+  background: rgba(0,120,215,.4);
+  border-color: #0078d7;
+  color: #fff;
+}
+.tc-size-visual {
+  display: grid; gap: 2px;
+}
+.tc-sz-cell { background: rgba(255,255,255,.55); border-radius: 1px; }
+
+/* ── WALLPAPER TOGGLE BUTTON (bottom-right corner of start screen) ── */
+#ssWpToggle {
+  position: absolute; bottom: 8px; right: 8px; z-index: 10;
+}
+#ssWpPicker {
+  position: absolute; bottom: 8px; right: 46px; z-index: 10;
+  display: flex; gap: 6px; align-items: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity .3s ease;
+}
+#ssWpPicker.visible { opacity: 1; pointer-events: all; }
+.ss-wp-swatch {
+  width: 28px; height: 28px;
+  background-size: cover; background-position: center;
+  border: 2px solid rgba(255,255,255,.2);
+  cursor: pointer;
+  transition: border-color .15s, transform .15s;
+  flex-shrink: 0;
+}
+.ss-wp-swatch:hover { border-color: rgba(255,255,255,.7); transform: scale(1.12); }
+.ss-wp-swatch.active { border-color: #0078d7; }
+.ss-wp-label {
+  font-size: 10px; color: rgba(255,255,255,.35);
+  text-transform: uppercase; letter-spacing: 1.5px;
+  margin-right: 4px;
+}
+.ss-wp-toggle {
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.15);
+  color: rgba(255,255,255,.55); font-size: 14px;
+  cursor: pointer; flex-shrink: 0;
+  transition: background .15s, color .15s;
+}
+.ss-wp-toggle:hover { background: rgba(255,255,255,.16); color: #fff; }
+
+/* ── SCROLL ARROWS ── */
+.ss-scroll-btn {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  z-index: 5; width: 32px; height: 64px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,.35); color: rgba(255,255,255,.55);
+  font-size: 18px; cursor: pointer;
+  opacity: 0; pointer-events: none;
+  transition: opacity .25s, background .15s, color .15s;
+}
+.ss-scroll-btn.visible { opacity: 1; pointer-events: all; }
+.ss-scroll-btn:hover { background: rgba(0,0,0,.6); color: #fff; }
+#ssScrollLeft  { left: 8px; }
+#ssScrollRight { right: 8px; }
 
 /* ── CHARMS ── */
 #charms {
@@ -1162,3 +1415,4 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
 .tb-win-entry.minimised { background: rgba(255,255,255,.04); }
 .tb-win-entry.minimised span { color: rgba(255,255,255,.45); }
 .tb-win-entry.minimised::after { background: rgba(255,255,255,.25); }
+ 
