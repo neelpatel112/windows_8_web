@@ -378,81 +378,314 @@ function notify(msg, title) {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   TILE SIZING
-   Calculates a unit size (sz) from the actual available height
-   of the metro area, then stamps real pixel values onto every
-   grid and tile. No CSS variables, no min(), no calc() tricks.
+   START SCREEN v2 — TILE SIZING, RESIZE, WALLPAPER, SEARCH
    ═══════════════════════════════════════════════════════════ */
+
+/* ── Wallpaper list (same wallpapers available on desktop) ── */
+const SS_WALLPAPERS = [
+  '67.jpg','1.jpg','2.jpg','3.jpg','4.jpg','5.jpg',
+  '6.jpg','7.jpg','8.jpg','9.jpg','10.jpg'
+];
+let _ssWpIndex  = 0;   // current wallpaper index
+let _ssWpActive = 'A'; // which layer is on top
+let _ssWpPickerOpen = false;
+
+function initSsWallpaper() {
+  const a = document.getElementById('ssBgA');
+  const b = document.getElementById('ssBgB');
+  if (!a || !b) return;
+  // Try to match desktop wallpaper
+  const deskBg = document.getElementById('desktop')
+                   ? document.getElementById('desktop').style.backgroundImage : '';
+  const match = SS_WALLPAPERS.findIndex(w => deskBg && deskBg.includes(w));
+  _ssWpIndex = match >= 0 ? match : 0;
+
+  a.style.backgroundImage = `url('${SS_WALLPAPERS[_ssWpIndex]}')`;
+  a.style.opacity = '1';
+  b.style.opacity = '0';
+
+  buildSsWpSwatches();
+}
+
+function buildSsWpSwatches() {
+  const picker = document.getElementById('ssWpPicker');
+  if (!picker) return;
+  // keep label, rebuild swatches
+  const label = picker.querySelector('.ss-wp-label');
+  picker.innerHTML = '';
+  if (label) picker.appendChild(label);
+  SS_WALLPAPERS.forEach((wp, i) => {
+    const s = document.createElement('div');
+    s.className = 'ss-wp-swatch' + (i === _ssWpIndex ? ' active' : '');
+    s.style.backgroundImage = `url('${wp}')`;
+    s.title = wp;
+    s.onclick = () => setSsWallpaper(i);
+    picker.appendChild(s);
+  });
+}
+
+function setSsWallpaper(idx) {
+  if (idx === _ssWpIndex) return;
+  _ssWpIndex = idx;
+  const a = document.getElementById('ssBgA');
+  const b = document.getElementById('ssBgB');
+  if (!a || !b) return;
+  const next = _ssWpActive === 'A' ? b : a;
+  const curr = _ssWpActive === 'A' ? a : b;
+  next.style.backgroundImage = `url('${SS_WALLPAPERS[idx]}')`;
+  next.style.opacity = '1';
+  curr.style.opacity = '0';
+  _ssWpActive = _ssWpActive === 'A' ? 'B' : 'A';
+  buildSsWpSwatches();
+}
+
+function toggleSsWpPicker() {
+  _ssWpPickerOpen = !_ssWpPickerOpen;
+  const p = document.getElementById('ssWpPicker');
+  if (p) p.classList.toggle('visible', _ssWpPickerOpen);
+}
+
+/* ── TILE SIZING ── */
+let _tileUnit = 80; // current tile unit size in px
+
 function sizeTiles() {
   const metro = q('#ssMetro');
   if (!metro) return;
-
-  // available height = metro's own clientHeight
   const avail = metro.clientHeight;
-
-  // 4 rows + 3 gaps of 5px each — divide by 5.2 to get medium sized tiles
   const sz = Math.floor((avail - 3 * 5 - 20) / 5.2);
-  const g  = 5;
+  _tileUnit = sz;
+  const g = 5;
 
-  // stamp sizes on every .tg-grid and its tiles
-  // Grid A: 2 cols × 2 rows → Mail 2x2
-  setGrid('gridA', 2, 2, sz, g);
-  // Grid B: 4 cols × 4 rows
+  // Re-apply all tiles based on their data-size attribute
+  document.querySelectorAll('.tg-grid .tile').forEach(tile => {
+    applyTileSize(tile, tile.dataset.size || '2x1', sz, g);
+  });
+
+  setGrid('gridA', 2, 4, sz, g);
   setGrid('gridB', 4, 4, sz, g);
-  // Grid C: 4 cols × 4 rows
   setGrid('gridC', 4, 4, sz, g);
-  // Grid D: 2 cols × 4 rows
   setGrid('gridD', 2, 4, sz, g);
-  // Grid E: 2 cols × 4 rows
   setGrid('gridE', 2, 4, sz, g);
 
-  // also size the big weather + bing icons
+  // Size icons
   const wxIcon   = document.getElementById('wxIcon');
   const bingIcon = document.getElementById('bingIcon');
-  if (wxIcon)   { wxIcon.style.width   = Math.round(sz * .42) + 'px'; wxIcon.style.height   = wxIcon.style.width; }
-  if (bingIcon) { bingIcon.style.width = Math.round(sz * .42) + 'px'; bingIcon.style.height = bingIcon.style.width; }
+  if (wxIcon)   { const s = Math.round(sz*.42)+'px'; wxIcon.style.width = wxIcon.style.height = s; }
+  if (bingIcon) { const s = Math.round(sz*.42)+'px'; bingIcon.style.width = bingIcon.style.height = s; }
 
-  // size tile-icon images by tile size
   document.querySelectorAll('.tg-grid .tile-icon img').forEach(img => {
     const tile = img.closest('.tile');
     if (!tile) return;
     const w = tile.offsetWidth;
-    const s = Math.round(w > sz * 1.5 ? sz * .42 : sz * .28);
-    img.style.width  = s + 'px';
-    img.style.height = s + 'px';
+    const s = Math.round(w > sz * 1.5 ? sz * .42 : sz * .28) + 'px';
+    img.style.width = img.style.height = s;
   });
+
+  updateScrollArrows();
+}
+
+function applyTileSize(tile, size, sz, g) {
+  sz  = sz  || _tileUnit;
+  g   = g   || 5;
+  const badge = tile.querySelector('.tile-size-badge');
+
+  switch (size) {
+    case '1x1':
+      tile.style.gridColumn = 'span 1';
+      tile.style.gridRow    = 'span 1';
+      if (badge) badge.textContent = '1×1';
+      break;
+    case '2x1':
+      tile.style.gridColumn = 'span 2';
+      tile.style.gridRow    = 'span 1';
+      if (badge) badge.textContent = '2×1';
+      break;
+    case '2x2':
+      tile.style.gridColumn = 'span 2';
+      tile.style.gridRow    = 'span 2';
+      if (badge) badge.textContent = '2×2';
+      break;
+    case '4x2':
+      tile.style.gridColumn = 'span 4';
+      tile.style.gridRow    = 'span 2';
+      if (badge) badge.textContent = '4×2';
+      break;
+  }
+  tile.dataset.size = size;
 }
 
 function setGrid(id, cols, rows, sz, g) {
   const grid = document.getElementById(id);
   if (!grid) return;
-  const colW = sz;
-  const rowH = sz;
-  grid.style.gridTemplateColumns = `repeat(${cols}, ${colW}px)`;
-  grid.style.gridTemplateRows    = `repeat(${rows}, ${rowH}px)`;
+  grid.style.gridTemplateColumns = `repeat(${cols}, ${sz}px)`;
+  grid.style.gridTemplateRows    = `repeat(${rows}, ${sz}px)`;
 }
 
-/* ── START SCREEN ── */
+/* ── SCROLL ARROWS ── */
+function updateScrollArrows() {
+  const metro = q('#ssMetro');
+  const L = q('#ssScrollLeft');
+  const R = q('#ssScrollRight');
+  if (!metro || !L || !R) return;
+  L.classList.toggle('visible', metro.scrollLeft > 10);
+  R.classList.toggle('visible', metro.scrollLeft < metro.scrollWidth - metro.clientWidth - 10);
+}
+
+function ssScroll(dir) {
+  const metro = q('#ssMetro');
+  if (!metro) return;
+  metro.scrollBy({ left: dir * 280, behavior: 'smooth' });
+  setTimeout(updateScrollArrows, 320);
+}
+
+/* ── SEARCH FILTER ── */
+function ssSearchFilter(val) {
+  const v = val.trim().toLowerCase();
+  document.querySelectorAll('.tg-grid .tile').forEach(tile => {
+    const name = (tile.dataset.app || '').toLowerCase();
+    tile.style.opacity  = (!v || name.includes(v)) ? '1' : '0.18';
+    tile.style.pointerEvents = (!v || name.includes(v)) ? '' : 'none';
+  });
+}
+
+/* ── GROUP LABEL RENAME ── */
+function ssRenameGroup(labelEl) {
+  labelEl.contentEditable = 'true';
+  labelEl.classList.add('editing');
+  labelEl.focus();
+  const sel = window.getSelection();
+  const range = document.createRange();
+  range.selectNodeContents(labelEl);
+  sel.removeAllRanges();
+  sel.addRange(range);
+
+  const finish = () => {
+    labelEl.contentEditable = 'false';
+    labelEl.classList.remove('editing');
+    labelEl.removeEventListener('blur', finish);
+    labelEl.removeEventListener('keydown', onKey);
+  };
+  const onKey = e => {
+    if (e.key === 'Enter' || e.key === 'Escape') { e.preventDefault(); finish(); }
+  };
+  labelEl.addEventListener('blur', finish);
+  labelEl.addEventListener('keydown', onKey);
+}
+
+/* ── TILE CONTEXT MENU ── */
+let _tileCtxEl   = null;   // the tile element that was right-clicked
+let _tileCtxLive = true;   // is live tile on for this tile?
+
+function showTileCtx(e, tile) {
+  e.preventDefault();
+  e.stopPropagation();
+  _tileCtxEl   = tile;
+  _tileCtxLive = !tile.classList.contains('live-off');
+
+  // Update live tile label
+  const liveLabel = document.getElementById('tcLiveLabel');
+  if (liveLabel) liveLabel.textContent = _tileCtxLive ? 'Turn live tile off' : 'Turn live tile on';
+
+  // Highlight active size button
+  const curSize = tile.dataset.size || '2x1';
+  document.querySelectorAll('.tc-size-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.sz === curSize);
+  });
+
+  const menu = document.getElementById('tileCtxMenu');
+  if (!menu) return;
+
+  // Position — keep on screen
+  menu.classList.remove('open');
+  menu.style.display = 'block';
+  menu.style.left = e.clientX + 'px';
+  menu.style.top  = e.clientY + 'px';
+  menu.classList.add('open');
+
+  requestAnimationFrame(() => {
+    const r = menu.getBoundingClientRect();
+    const ss = document.getElementById('startScreen');
+    const ssR = ss ? ss.getBoundingClientRect() : { right: window.innerWidth, bottom: window.innerHeight };
+    if (r.right  > ssR.right  - 8) menu.style.left = (e.clientX - r.width  - 4) + 'px';
+    if (r.bottom > ssR.bottom - 8) menu.style.top  = (e.clientY - r.height - 4) + 'px';
+  });
+}
+
+function hideTileCtx() {
+  const menu = document.getElementById('tileCtxMenu');
+  if (menu) { menu.classList.remove('open'); menu.style.display = 'none'; }
+  _tileCtxEl = null;
+}
+
+function tileCtxAction(action) {
+  if (!_tileCtxEl) return;
+  const app = _tileCtxEl.dataset.app || 'App';
+
+  if (action === 'open') {
+    hideTileCtx();
+    _tileCtxEl.click();
+  } else if (action === 'pin') {
+    hideTileCtx();
+    notify(app + ' unpinned from Start', 'Start');
+  } else if (action === 'live') {
+    _tileCtxLive = !_tileCtxLive;
+    _tileCtxEl.classList.toggle('live-off', !_tileCtxLive);
+    const liveLabel = document.getElementById('tcLiveLabel');
+    if (liveLabel) liveLabel.textContent = _tileCtxLive ? 'Turn live tile off' : 'Turn live tile on';
+    hideTileCtx();
+    notify('Live tile ' + (_tileCtxLive ? 'on' : 'off') + ' — ' + app, app);
+  }
+}
+
+function tileCtxResize(size) {
+  if (!_tileCtxEl) return;
+  applyTileSize(_tileCtxEl, size);
+  // Update active button highlight
+  document.querySelectorAll('.tc-size-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.sz === size);
+  });
+  // Re-run icon sizing
+  setTimeout(() => {
+    document.querySelectorAll('.tg-grid .tile-icon img').forEach(img => {
+      const tile = img.closest('.tile');
+      if (!tile) return;
+      const w   = tile.offsetWidth;
+      const sz  = _tileUnit;
+      const s   = Math.round(w > sz * 1.5 ? sz * .42 : sz * .28) + 'px';
+      img.style.width = img.style.height = s;
+    });
+  }, 50);
+  notify(_tileCtxEl.dataset.app + ' resized to ' + size, 'Start');
+}
+
+/* ── TOGGLE START SCREEN ── */
 function toggleStart() {
   startOpen = !startOpen;
   const ss  = q('#startScreen');
   const btn = q('#startBtn');
 
   if (startOpen) {
+    // Clear search
+    const inp = document.getElementById('ssSearchInput');
+    if (inp) { inp.value = ''; ssSearchFilter(''); }
+
     ss.classList.add('active');
     btn && btn.classList.add('active');
     closeAllPanels();
-    // size tiles after the screen is visible
+    hideTileCtx();
+    _ssWpPickerOpen = false;
+    const p = document.getElementById('ssWpPicker');
+    if (p) p.classList.remove('visible');
+
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         sizeTiles();
-        // stagger columns in
-        const cols = ss.querySelectorAll('.tg');
-        cols.forEach((col, i) => {
+        // Stagger columns in with eased delay
+        ss.querySelectorAll('.tg').forEach((col, i) => {
           col.classList.remove('tg-in');
           col.style.transitionDelay = '0ms';
           requestAnimationFrame(() => requestAnimationFrame(() => {
-            col.style.transitionDelay = (i * 80) + 'ms';
+            col.style.transitionDelay = (i * 65) + 'ms';
             col.classList.add('tg-in');
           }));
         });
@@ -462,26 +695,42 @@ function toggleStart() {
     ss.classList.remove('active');
     btn && btn.classList.remove('active');
     closePowerMenu();
-    const cols = ss.querySelectorAll('.tg');
-    cols.forEach(col => {
+    hideTileCtx();
+    ss.querySelectorAll('.tg').forEach(col => {
       col.classList.remove('tg-in');
       col.style.transitionDelay = '0ms';
     });
   }
 }
 
-// resize tiles if window resizes while start screen is open
+// Resize handler
 window.addEventListener('resize', () => { if (startOpen) sizeTiles(); });
 
-// close start on Escape or desktop click
+// Metro scroll → update arrows
+document.addEventListener('DOMContentLoaded', () => {
+  const metro = document.getElementById('ssMetro');
+  if (metro) metro.addEventListener('scroll', updateScrollArrows, { passive: true });
+  initSsWallpaper();
+});
+
+// Close tile ctx on outside click
+document.addEventListener('mousedown', e => {
+  const menu = document.getElementById('tileCtxMenu');
+  if (menu && menu.classList.contains('open') && !menu.contains(e.target)) {
+    hideTileCtx();
+  }
+});
+
+// Keyboard: Escape closes start / ctx menu
 document.addEventListener('keydown', e => {
-  /* Ctrl+Shift+Esc — open Task Manager */
   if (e.ctrlKey && e.shiftKey && e.key === 'Escape') {
     e.preventDefault();
     if (typeof openTaskManager === 'function') openTaskManager();
     return;
   }
   if (e.key === 'Escape') {
+    const menu = document.getElementById('tileCtxMenu');
+    if (menu && menu.classList.contains('open')) { hideTileCtx(); return; }
     if (startOpen) toggleStart();
     hideShutdown();
     hideAllCtx();
@@ -489,6 +738,7 @@ document.addEventListener('keydown', e => {
     if (sw && sw.classList.contains('open')) closeSettings();
   }
 });
+
 document.getElementById('desktop').addEventListener('click', () => {
   if (startOpen) toggleStart();
 });
@@ -773,7 +1023,7 @@ function showIconCtx(e, type) {
   /* other icons — suppress browser default */
 }
 
-/* ── TASKBAR APP RIGHT-CLICK — implemented below in full version ── */
+/* ── TASKBAR APP RIGHT-CLICK — full version below (line ~1800) ── */
 
 /* ════════════════════════════════════════════════════════
    SYSTEM PROPERTIES WINDOW
