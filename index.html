@@ -647,42 +647,40 @@
 
 
 <!-- ═══════════════════════════════════════════════════════
-     RSS NEWS SIDEBAR
+     RSS NEWS SIDEBAR — powered by Vercel RSS API
      ═══════════════════════════════════════════════════════ -->
 
-<!-- Invisible hover trigger strip -->
+<!-- Left-edge invisible trigger -->
 <div id="rssTrigger" onmouseenter="openRssSidebar()"></div>
 
-<!-- Peek tab (visible hint on left edge) -->
+<!-- Peek tab -->
 <div id="rssPeekTab" onclick="openRssSidebar()" title="News Feed">
   <i class="fas fa-rss"></i>
 </div>
 
-<!-- Main sidebar -->
+<!-- Sidebar panel -->
 <div id="rssSidebar" onmouseleave="scheduleRssClose()">
 
-  <!-- Header -->
   <div class="rss-header">
     <div class="rss-header-top">
       <div class="rss-title">
-        <i class="fas fa-rss"></i>
-        News Feed
+        <i class="fas fa-rss"></i> News Feed
       </div>
       <div class="rss-close" onclick="closeRssSidebar()" title="Close">
         <i class="fas fa-times"></i>
       </div>
     </div>
-    <!-- Feed tabs -->
     <div class="rss-tabs" id="rssTabs">
-      <div class="rss-tab active" data-feed="0" onclick="switchRssFeed(0)">Top Stories</div>
-      <div class="rss-tab" data-feed="1" onclick="switchRssFeed(1)">Technology</div>
-      <div class="rss-tab" data-feed="2" onclick="switchRssFeed(2)">Science</div>
-      <div class="rss-tab" data-feed="3" onclick="switchRssFeed(3)">World</div>
-      <div class="rss-tab" data-feed="4" onclick="switchRssFeed(4)">Sports</div>
+      <div class="rss-tab active" onclick="switchRssChannel(0)">Tech</div>
+      <div class="rss-tab"       onclick="switchRssChannel(1)">AI</div>
+      <div class="rss-tab"       onclick="switchRssChannel(2)">Gaming</div>
+      <div class="rss-tab"       onclick="switchRssChannel(3)">Rockstar</div>
+      <div class="rss-tab"       onclick="switchRssChannel(4)">Capcom</div>
+      <div class="rss-tab"       onclick="switchRssChannel(5)">Activision</div>
+      <div class="rss-tab"       onclick="switchRssChannel(6)">CDPR</div>
     </div>
   </div>
 
-  <!-- Feed content (JS fills this) -->
   <div class="rss-feed" id="rssFeedContent">
     <div class="rss-loading">
       <div class="rss-spinner"></div>
@@ -690,11 +688,9 @@
     </div>
   </div>
 
-  <!-- Bottom bar -->
   <div class="rss-refresh-bar">
     <div class="rss-refresh-btn" onclick="refreshRssFeed()">
-      <i class="fas fa-sync-alt" id="rssRefreshIcon"></i>
-      Refresh
+      <i class="fas fa-sync-alt" id="rssRefreshIcon"></i> Refresh
     </div>
     <div class="rss-last-updated" id="rssLastUpdated">—</div>
   </div>
@@ -1160,3 +1156,4 @@ setTimeout(() => {
 </script>
 </body>
 </html>
+  
