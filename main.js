@@ -540,54 +540,33 @@ liveTile('bingFlip',  8000, 11000);
 
 
 /* ════════════════════════════════════════════════════════════
-   RSS NEWS SIDEBAR  — live feed via rss2json.com proxy
+   RSS NEWS SIDEBAR  — powered by your Vercel RSS API
+   https://rss-feed-reader-gamma.vercel.app/api/feeds
    ════════════════════════════════════════════════════════════ */
 
-/* Feed definitions — 5 categories */
-const RSS_FEEDS = [
-  {
-    label : 'Top Stories',
-    url   : 'https://feeds.bbci.co.uk/news/rss.xml',
-    color : '#0078d7',
-    icon  : 'fa-newspaper'
-  },
-  {
-    label : 'Technology',
-    url   : 'https://feeds.arstechnica.com/arstechnica/technology-lab',
-    color : '#00a300',
-    icon  : 'fa-microchip'
-  },
-  {
-    label : 'Science',
-    url   : 'https://www.sciencedaily.com/rss/top/science.xml',
-    color : '#7700cc',
-    icon  : 'fa-flask'
-  },
-  {
-    label : 'World',
-    url   : 'https://feeds.bbci.co.uk/news/world/rss.xml',
-    color : '#e51400',
-    icon  : 'fa-globe'
-  },
-  {
-    label : 'Sports',
-    url   : 'https://feeds.bbci.co.uk/sport/rss.xml',
-    color : '#fa6800',
-    icon  : 'fa-futbol'
-  }
+const RSS_API = 'https://rss-feed-reader-gamma.vercel.app/api/feeds';
+
+/* Channel config — must match the keys in feeds.js */
+const RSS_CHANNELS = [
+  { key: 'tech',       label: 'Tech',       color: '#0078d7', icon: 'fa-microchip'  },
+  { key: 'ai',         label: 'AI',         color: '#7700cc', icon: 'fa-robot'      },
+  { key: 'gaming',     label: 'Gaming',     color: '#00a300', icon: 'fa-gamepad'    },
+  { key: 'rockstar',   label: 'Rockstar',   color: '#e51400', icon: 'fa-star'       },
+  { key: 'capcom',     label: 'Capcom',     color: '#fa6800', icon: 'fa-dragon'     },
+  { key: 'activision', label: 'Activision', color: '#1ba1e2', icon: 'fa-crosshairs' },
+  { key: 'cdpr',       label: 'CDPR',       color: '#99b433', icon: 'fa-gem'        },
 ];
 
 /* State */
-let _rssOpen        = false;
-let _rssCloseTimer  = null;
-let _rssActiveFeed  = 0;
-let _rssFeedCache   = {};   // feedIndex → { items, ts }
-let _rssLoading     = false;
+let _rssOpen       = false;
+let _rssCloseTimer = null;
+let _rssActiveIdx  = 0;          // index into RSS_CHANNELS
+let _rssCache      = {};         // key → { items[], ts }
+let _rssAllItems   = [];         // flat list for 'All' tab
+let _rssAllCache   = null;       // { items[], ts }
+const RSS_CACHE_MS = 5 * 60 * 1000;
 
-const RSS2JSON = 'https://api.rss2json.com/v1/api.json?rss_url=';
-const CACHE_MS  = 5 * 60 * 1000;   // 5-minute cache
-
-/* ── OPEN / CLOSE ── */
+/* ── OPEN / CLOSE ──────────────────────────────────────── */
 function openRssSidebar() {
   clearTimeout(_rssCloseTimer);
   if (_rssOpen) return;
@@ -596,9 +575,7 @@ function openRssSidebar() {
   const pt = document.getElementById('rssPeekTab');
   if (sb) sb.classList.add('rss-open');
   if (pt) pt.style.opacity = '0';
-
-  // Load feed if not cached
-  _loadRssFeed(_rssActiveFeed);
+  _loadRssChannel(_rssActiveIdx);
 }
 
 function closeRssSidebar() {
@@ -606,143 +583,116 @@ function closeRssSidebar() {
   const sb = document.getElementById('rssSidebar');
   const pt = document.getElementById('rssPeekTab');
   if (sb) sb.classList.remove('rss-open');
-  if (pt) pt.style.opacity = '';
+  setTimeout(() => { if (!_rssOpen && pt) pt.style.opacity = ''; }, 440);
 }
 
 function scheduleRssClose() {
   clearTimeout(_rssCloseTimer);
-  _rssCloseTimer = setTimeout(() => {
-    if (_rssOpen) closeRssSidebar();
-  }, 420);
+  _rssCloseTimer = setTimeout(() => { if (_rssOpen) closeRssSidebar(); }, 480);
 }
 
-/* Re-open on re-enter sidebar */
-document.addEventListener('DOMContentLoaded', () => {
-  const sb = document.getElementById('rssSidebar');
-  if (sb) sb.addEventListener('mouseenter', () => {
-    clearTimeout(_rssCloseTimer);
+/* ── CHANNEL TABS ──────────────────────────────────────── */
+function switchRssChannel(idx) {
+  _rssActiveIdx = idx;
+  document.querySelectorAll('.rss-tab').forEach((t, i) => {
+    t.classList.toggle('active', i === idx);
   });
-  const trigger = document.getElementById('rssTrigger');
-  if (trigger) trigger.addEventListener('mouseleave', () => {
-    if (!_rssOpen) return;
-  });
-});
-
-/* ── FEED TABS ── */
-function switchRssFeed(idx) {
-  if (idx === _rssActiveFeed && _rssFeedCache[idx]) return;
-  _rssActiveFeed = idx;
-
-  // Update tab highlight
-  document.querySelectorAll('.rss-tab').forEach((tab, i) => {
-    tab.classList.toggle('active', i === idx);
-  });
-
-  // Update accent color on sidebar
-  const accentColor = RSS_FEEDS[idx].color;
-  const sb = document.getElementById('rssSidebar');
-  if (sb) sb.style.setProperty('--rss-accent', accentColor);
-
-  _loadRssFeed(idx);
+  _loadRssChannel(idx);
 }
 
-/* ── LOAD FEED ── */
-function _loadRssFeed(idx) {
-  const feed = RSS_FEEDS[idx];
-  if (!feed) return;
+/* ── FETCH ─────────────────────────────────────────────── */
+function _loadRssChannel(idx) {
+  const isAll = idx === -1;          // future: we use idx 0-6 for channels
+  const ch    = RSS_CHANNELS[idx];
+  if (!ch) return;
 
-  // Check cache
-  const cached = _rssFeedCache[idx];
-  if (cached && (Date.now() - cached.ts) < CACHE_MS) {
-    _renderFeed(cached.items, idx);
-    _updateLastUpdated(cached.ts);
+  // Cache hit?
+  const cached = _rssCache[ch.key];
+  if (cached && (Date.now() - cached.ts) < RSS_CACHE_MS) {
+    _renderRssItems(cached.items, ch);
+    _rssSetUpdated(cached.ts);
     return;
   }
 
-  _setFeedLoading();
+  _rssShowLoading();
 
-  const apiUrl = RSS2JSON + encodeURIComponent(feed.url) + '&count=20';
-
-  fetch(apiUrl)
+  fetch(`${RSS_API}?channel=${ch.key}`)
     .then(r => {
-      if (!r.ok) throw new Error('HTTP ' + r.status);
+      if (!r.ok) throw new Error('Server returned ' + r.status);
       return r.json();
     })
     .then(data => {
-      if (data.status !== 'ok') throw new Error(data.message || 'Feed error');
-      const items = data.items || [];
-      _rssFeedCache[idx] = { items, ts: Date.now() };
-      _renderFeed(items, idx);
-      _updateLastUpdated(Date.now());
+      // data.feeds = [{source, items:[{title,link,pubDate,summary,thumbnail,author}]}]
+      const items = (data.feeds || []).flatMap(f =>
+        (f.items || []).map(item => ({ ...item, _source: f.source }))
+      );
+      // Sort newest first
+      items.sort((a, b) => new Date(b.pubDate || 0) - new Date(a.pubDate || 0));
+
+      _rssCache[ch.key] = { items, ts: Date.now() };
+      _renderRssItems(items, ch);
+      _rssSetUpdated(Date.now());
     })
     .catch(err => {
-      _setFeedError(err.message, idx);
+      _rssShowError(err.message, ch);
     });
 }
 
-/* ── RENDER ── */
-function _renderFeed(items, idx) {
+/* ── RENDER ────────────────────────────────────────────── */
+function _renderRssItems(items, ch) {
   const container = document.getElementById('rssFeedContent');
   if (!container) return;
-
   if (!items || items.length === 0) {
-    container.innerHTML = '<div class="rss-error"><i class="fas fa-inbox"></i>No articles found.</div>';
+    container.innerHTML = `<div class="rss-error">
+      <i class="fas fa-inbox"></i>No articles found for ${_rssEsc(ch.label)}.
+    </div>`;
     return;
   }
 
-  const feed = RSS_FEEDS[idx];
   let html = '';
-  const accentHex = feed.color;
 
   items.forEach((item, i) => {
-    const title   = _esc(item.title || 'Untitled');
-    const link    = item.link  || '#';
-    const pubDate = _relTime(item.pubDate);
-    const source  = _esc(item.author || _feedDomain(item.link));
-    const img     = _extractImg(item);
-    const cat     = _esc((item.categories && item.categories[0]) || feed.label);
+    const title   = _rssEsc(item.title   || 'Untitled');
+    const link    = _rssEsc(item.link    || '#');
+    const source  = _rssEsc(item.source  || item._source || ch.label);
+    const age     = _rssAge(item.pubDate);
+    const img     = item.thumbnail || null;
+    const delay   = Math.min(i * 22, 300);
 
     if (i === 0 && img) {
-      // Featured card — large image
-      html += `
-        <a class="rss-card rss-card-featured" href="${link}" target="_blank" rel="noopener"
-           style="animation-delay:0ms">
-          <img class="rss-featured-img" src="${img}" alt=""
-               onerror="this.style.display='none';this.nextElementSibling.style.paddingTop='14px'">
-          <div class="rss-featured-body">
-            <div class="rss-featured-badge" style="background:${accentHex}">Top Story</div>
-            <div class="rss-featured-title">${title}</div>
+      // ── FEATURED CARD ──
+      html += `<a class="rss-card rss-card-featured" href="${link}" target="_blank" rel="noopener"
+                  style="animation-delay:0ms">
+        <img class="rss-featured-img" src="${_rssEsc(img)}" alt=""
+             onerror="this.style.display='none'">
+        <div class="rss-featured-body">
+          <div class="rss-featured-badge" style="background:${ch.color}">
+            <i class="fas ${ch.icon}" style="margin-right:4px;font-size:8px"></i>${_rssEsc(ch.label)}
           </div>
-        </a>`;
+          <div class="rss-featured-title">${title}</div>
+          <div class="rss-featured-meta">${source} · ${age}</div>
+        </div>
+      </a>`;
+    } else if (img) {
+      // ── CARD WITH THUMBNAIL ──
+      html += `<a class="rss-card rss-card-has-img" href="${link}" target="_blank" rel="noopener"
+                  style="animation-delay:${delay}ms">
+        <div class="rss-card-cat" style="color:${ch.color}">${source}</div>
+        <img class="rss-card-img" src="${_rssEsc(img)}" alt=""
+             onerror="this.closest('.rss-card-has-img').classList.remove('rss-card-has-img');this.remove()">
+        <div class="rss-card-title">${title}</div>
+        <div class="rss-card-meta">
+          <span>${age}</span>
+        </div>
+      </a>`;
     } else {
-      const delay = Math.min(i * 28, 280);
-      if (img) {
-        html += `
-          <a class="rss-card rss-card-has-img" href="${link}" target="_blank" rel="noopener"
-             style="animation-delay:${delay}ms">
-            <div class="rss-card-cat" style="color:${accentHex}">${cat}</div>
-            <img class="rss-card-img" src="${img}" alt=""
-                 onerror="this.parentElement.classList.remove('rss-card-has-img');this.remove()">
-            <div class="rss-card-title">${title}</div>
-            <div class="rss-card-meta">
-              <span>${source}</span>
-              <span class="rss-card-meta-dot"></span>
-              <span>${pubDate}</span>
-            </div>
-          </a>`;
-      } else {
-        html += `
-          <a class="rss-card" href="${link}" target="_blank" rel="noopener"
-             style="animation-delay:${delay}ms">
-            <div class="rss-card-cat" style="color:${accentHex}">${cat}</div>
-            <div class="rss-card-title">${title}</div>
-            <div class="rss-card-meta">
-              <span>${source}</span>
-              <span class="rss-card-meta-dot"></span>
-              <span>${pubDate}</span>
-            </div>
-          </a>`;
-      }
+      // ── TEXT-ONLY CARD ──
+      html += `<a class="rss-card" href="${link}" target="_blank" rel="noopener"
+                  style="animation-delay:${delay}ms">
+        <div class="rss-card-cat" style="color:${ch.color}">${source}</div>
+        <div class="rss-card-title">${title}</div>
+        <div class="rss-card-meta"><span>${age}</span></div>
+      </a>`;
     }
   });
 
@@ -750,7 +700,7 @@ function _renderFeed(items, idx) {
   container.scrollTop = 0;
 }
 
-function _setFeedLoading() {
+function _rssShowLoading() {
   const c = document.getElementById('rssFeedContent');
   if (c) c.innerHTML = `
     <div class="rss-loading">
@@ -759,75 +709,76 @@ function _setFeedLoading() {
     </div>`;
 }
 
-function _setFeedError(msg, idx) {
-  const feed = RSS_FEEDS[idx];
+function _rssShowError(msg, ch) {
   const c = document.getElementById('rssFeedContent');
-  if (c) c.innerHTML = `
+  if (!c) return;
+  c.innerHTML = `
     <div class="rss-error">
       <i class="fas fa-exclamation-triangle"></i>
-      <strong>Couldn't load ${feed ? feed.label : 'feed'}</strong><br>
-      <span style="font-size:10px;opacity:.6">${_esc(msg)}</span><br><br>
+      <strong>Couldn't load ${ch ? _rssEsc(ch.label) : 'feed'}</strong><br>
+      <small style="opacity:.6">${_rssEsc(msg)}</small><br><br>
       <span style="cursor:pointer;color:rgba(255,255,255,.5);font-size:11px"
             onclick="refreshRssFeed()">↻ Try again</span>
     </div>`;
 }
 
-/* ── REFRESH ── */
-function refreshRssFeed() {
-  delete _rssFeedCache[_rssActiveFeed];
-  const icon = document.getElementById('rssRefreshIcon');
-  if (icon) {
-    icon.style.animation = 'rssSpin .6s linear';
-    setTimeout(() => { icon.style.animation = ''; }, 650);
-  }
-  _loadRssFeed(_rssActiveFeed);
+function _rssSetUpdated(ts) {
+  const el = document.getElementById('rssLastUpdated');
+  if (el) el.textContent = 'Updated ' +
+    new Date(ts).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
 }
 
-/* ── HELPERS ── */
-function _esc(str) {
-  if (!str) return '';
-  return String(str)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+/* ── REFRESH ───────────────────────────────────────────── */
+function refreshRssFeed() {
+  const ch = RSS_CHANNELS[_rssActiveIdx];
+  if (ch) delete _rssCache[ch.key];
+  const icon = document.getElementById('rssRefreshIcon');
+  if (icon) {
+    icon.style.transition = 'none';
+    icon.style.transform  = 'rotate(0deg)';
+    void icon.offsetWidth; // reflow
+    icon.style.transition = 'transform 0.6s linear';
+    icon.style.transform  = 'rotate(360deg)';
+    setTimeout(() => { icon.style.transition=''; icon.style.transform=''; }, 660);
+  }
+  _loadRssChannel(_rssActiveIdx);
+}
+
+/* ── HELPERS ───────────────────────────────────────────── */
+function _rssEsc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;')
     .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-function _relTime(dateStr) {
-  if (!dateStr) return '';
-  const diff = Date.now() - new Date(dateStr).getTime();
-  if (isNaN(diff)) return '';
-  const m = Math.floor(diff / 60000);
-  if (m < 1)  return 'just now';
-  if (m < 60) return m + 'm ago';
-  const h = Math.floor(m / 60);
-  if (h < 24) return h + 'h ago';
-  const d = Math.floor(h / 24);
-  return d + 'd ago';
+function _rssAge(d) {
+  if (!d) return '';
+  const s = (Date.now() - new Date(d)) / 1000;
+  if (isNaN(s) || s < 0) return '';
+  if (s < 60)    return 'just now';
+  if (s < 3600)  return Math.floor(s/60)  + 'm ago';
+  if (s < 86400) return Math.floor(s/3600)+ 'h ago';
+  return Math.floor(s/86400) + 'd ago';
 }
 
-function _feedDomain(url) {
-  if (!url) return 'News';
-  try { return new URL(url).hostname.replace('www.',''); }
-  catch { return 'News'; }
-}
+/* ── DOM READY HOOKS ───────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', () => {
+  /* Re-enter the sidebar cancels the close timer */
+  const sb = document.getElementById('rssSidebar');
+  if (sb) sb.addEventListener('mouseenter', () => clearTimeout(_rssCloseTimer));
 
-function _extractImg(item) {
-  // try thumbnail, then enclosure, then first <img> in description
-  if (item.thumbnail && item.thumbnail.startsWith('http')) return item.thumbnail;
-  if (item.enclosure && item.enclosure.link && /\.(jpg|jpeg|png|webp)/i.test(item.enclosure.link))
-    return item.enclosure.link;
-  if (item.description) {
-    const m = item.description.match(/<img[^>]+src=["']([^"']+)["']/i);
-    if (m && m[1].startsWith('http')) return m[1];
-  }
-  return null;
-}
-
-function _updateLastUpdated(ts) {
-  const el = document.getElementById('rssLastUpdated');
-  if (!el) return;
-  const d = new Date(ts);
-  el.textContent = 'Updated ' + d.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
-}
+  /* Outside mousedown closes sidebar */
+  document.addEventListener('mousedown', e => {
+    if (!_rssOpen) return;
+    const sb = document.getElementById('rssSidebar');
+    const pt = document.getElementById('rssPeekTab');
+    const tr = document.getElementById('rssTrigger');
+    if (sb && !sb.contains(e.target) &&
+        pt && !pt.contains(e.target) &&
+        tr && !tr.contains(e.target)) {
+      closeRssSidebar();
+    }
+  });
+});
 
 /* ── CHARMS ── */
 document.addEventListener('mousemove', e => {
@@ -1010,7 +961,7 @@ function showDesktopBtn() {
 
 let _activeCtx = null;        // currently open menu id
 let _taskbarCtxTarget = null; // which app was right-clicked
-let _taskbarCtxPinned = false; // was the right-clicked app pinned?
+let _taskbarCtxPinned = false;
 
 /* close every context menu */
 function hideAllCtx() {
@@ -1064,7 +1015,7 @@ function showIconCtx(e, type) {
   /* other icons — suppress browser default */
 }
 
-/* ── TASKBAR APP RIGHT-CLICK — full implementation below ── */
+/* ── TASKBAR APP RIGHT-CLICK — full version below ── */
 
 /* ════════════════════════════════════════════════════════
    SYSTEM PROPERTIES WINDOW
@@ -1870,3 +1821,4 @@ function taskbarCtxCloseAll() {
   closers.forEach(fn => { try { fn(); } catch(e) {} });
   notify('All windows closed', 'Taskbar');
 }
+  
