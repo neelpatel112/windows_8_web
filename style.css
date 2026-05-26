@@ -1351,7 +1351,16 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
 #win8OS {
   position: fixed;
   inset: 0;
-  z-index: 1;
+  z-index: 1;        /* raised to 20 by JS once BIOS is done */
+}
+
+/* Once BIOS phases are hidden they must never re-appear above win8OS */
+#phase-black[style*="display: none"],
+#phase-post[style*="display: none"],
+#phase-summary[style*="display: none"],
+#phase-handoff[style*="display: none"] {
+  z-index: -1 !important;
+  pointer-events: none !important;
 }
 
 /* bios.css overrides html/body background to #000 and overflow:hidden —
@@ -1397,4 +1406,3 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
 .tb-win-entry.minimised { background: rgba(255,255,255,.04); }
 .tb-win-entry.minimised span { color: rgba(255,255,255,.45); }
 .tb-win-entry.minimised::after { background: rgba(255,255,255,.25); }
- 
