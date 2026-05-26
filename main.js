@@ -66,45 +66,33 @@ function setLockWallpaperOverride(url) {
 }
 
 /* ── WINDOWS BOOT (runs AFTER bios:complete) ── */
+/* ── WINDOWS BOOT (called by failsafe only — normal flow
+   is handled entirely by the sequence controller in index.html)
+   ──────────────────────────────────────────────────────── */
 function runWindowsBoot() {
+  /* This function is only reached via the 20-second failsafe.
+     The BIOS sequence controller in index.html handles the normal
+     BIOS → boot → lock transition by itself. */
   const boot = document.getElementById('bootScreen');
   const lock = document.getElementById('lockScreen');
 
-  /* ensure lock screen is visible and properly styled */
+  if (typeof lockInitWallpaper === 'function') lockInitWallpaper();
+
   if (lock) {
-    lock.style.display    = '';
-    lock.style.opacity    = '1';
-    lock.style.transform  = 'translateY(0)';
     lock.style.transition = 'none';
+    lock.style.opacity    = '1';
+    lock.style.display    = '';
+    lock.style.zIndex     = '9999';
     lock.classList.remove('unlock', 'touched', 'pass-mode');
   }
 
-  /* kick off the wallpaper slideshow */
-  lockInitWallpaper();
-
-  if (!boot) {
-    /* no boot screen — just show lock directly */
-    return;
-  }
-
-  /* re-trigger the boot animation in case it already fired while hidden */
-  boot.style.animation = 'none';
-  void boot.offsetWidth; /* force reflow */
-  boot.style.animation = '';
-
-  /* boot screen runs for 2.8s then fades out → reveals lock screen */
-  setTimeout(() => {
-    boot.style.transition = 'opacity .6s ease';
-    boot.style.opacity    = '0';
+  if (boot) {
     setTimeout(() => {
-      boot.remove();
-      /* make sure lock screen is on top now */
-      if (lock) {
-        lock.style.zIndex = '9999';
-        lock.style.display = '';
-      }
-    }, 650);
-  }, 2800);
+      boot.style.transition = 'opacity .5s ease';
+      boot.style.opacity    = '0';
+      setTimeout(() => { if (boot.parentNode) boot.remove(); }, 560);
+    }, 2800);
+  }
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -1821,4 +1809,3 @@ function taskbarCtxCloseAll() {
   closers.forEach(fn => { try { fn(); } catch(e) {} });
   notify('All windows closed', 'Taskbar');
 }
-  
