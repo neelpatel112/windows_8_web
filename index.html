@@ -1071,89 +1071,138 @@
 <script src="store.js"></script>
 
 <script>
-/* ── BIOS → Windows handoff ──────────────────────────────
-   Sequence:
-   1. bios:complete fires  (BIOS CRT-off done)
-   2. win8OS becomes visible — Windows boot screen shows instantly
-   3. Boot screen plays for 2.6s (logo + spinner animation)
-   4. Boot screen fades out → lock screen appears
-   ───────────────────────────────────────────────────────── */
-window.addEventListener('bios:complete', function onBiosComplete() {
-  const os = document.getElementById('win8OS');
-  if (!os) return;
+/* ════════════════════════════════════════════════════════════
+   BOOT SEQUENCE CONTROLLER
+   Strict one-at-a-time sequence:
+     1. BIOS runs fully (bios:complete fires from phaseHandoff)
+     2. BIOS phases hidden, win8OS revealed
+     3. Windows boot screen animates (logo + dots)
+     4. Boot screen fades out
+     5. Lock screen appears
+   No timers overlap. Each step waits for the previous.
+   ════════════════════════════════════════════════════════════ */
 
-  /* show win8OS instantly */
-  os.style.display    = 'block';
-  os.style.opacity    = '1';
-  os.style.transition = 'none';
+const BIOS_IDS = [
+  'phase-black','phase-post','phase-summary',
+  'phase-handoff','setup-overlay','bootmenu-overlay'
+];
 
-  /* hide all BIOS phases */
-  ['phase-black','phase-post','phase-summary','phase-handoff',
-   'setup-overlay','bootmenu-overlay'].forEach(id => {
+function hideAllBiosPhases() {
+  BIOS_IDS.forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.style.display = 'none';
+    if (!el) return;
+    el.style.transition   = 'none';
+    el.style.opacity      = '0';
+    el.style.display      = 'none';
+    el.style.zIndex       = '-1';
+    el.style.pointerEvents = 'none';
+    el.classList.remove('active');
   });
-
-  /* re-trigger boot screen animation — it may have already
-     played while win8OS was display:none */
-  const boot = document.getElementById('bootScreen');
-  if (boot) {
-    boot.style.opacity   = '1';
-    boot.style.animation = 'none';
-    void boot.offsetWidth; /* force reflow */
-    boot.style.animation = '';
-    /* re-trigger child animations */
-    const logo    = boot.querySelector('.boot-logo-img');
-    const spinner = boot.querySelector('.boot-spinner');
-    if (logo)    { logo.style.animation    = 'none'; void logo.offsetWidth;    logo.style.animation    = ''; }
-    if (spinner) { spinner.style.animation = 'none'; void spinner.offsetWidth; spinner.style.animation = ''; }
-  }
-
-  /* run Windows boot sequence */
-  if (typeof runWindowsBoot === 'function') runWindowsBoot();
-});
-
-/* ── FALLBACK: if BIOS never fires (no internet / script error) ──
-   Show Windows directly after 8 seconds */
-setTimeout(() => {
+  /* Raise win8OS above any stale BIOS stacking contexts */
   const os = document.getElementById('win8OS');
-  if (os && os.style.display === 'none') {
-    console.warn('[Win8Web] BIOS did not fire — showing Windows directly');
-    os.style.display    = 'block';
-    os.style.opacity    = '1';
-    os.style.transition = 'none';
-    ['phase-black','phase-post','phase-summary','phase-handoff',
-     'setup-overlay','bootmenu-overlay'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.style.display = 'none';
-    });
-    if (typeof runWindowsBoot === 'function') runWindowsBoot();
-  }
-}, 8000);
+  if (os) os.style.zIndex = '20';
+}
 
-/* ── EMERGENCY FALLBACK: if boot screen never removes itself ──
-   After 15s total, force lock screen to show no matter what */
-setTimeout(() => {
-  const boot = document.getElementById('bootScreen');
-  const lock = document.getElementById('lockScreen');
-  const os   = document.getElementById('win8OS');
-  /* show win8OS if still hidden */
-  if (os && os.style.display === 'none') {
-    os.style.display = 'block';
-    os.style.opacity = '1';
+/* Called once, exactly, when bios:complete fires */
+window.addEventListener('bios:complete', function onBiosComplete() {
+  /* Remove this listener immediately — can only run once */
+  window.removeEventListener('bios:complete', onBiosComplete);
+  clearTimeout(_biosFailsafe);
+
+  /* Step 1 — hide every BIOS element */
+  hideAllBiosPhases();
+
+  /* Step 2 — reveal win8OS with no transition so it's instant */
+  const os = document.getElementById('win8OS');
+  if (os) {
+    os.style.transition = 'none';
+    os.style.opacity    = '1';
+    os.style.display    = 'block';
+    /* Force a full style recalculation so child animations
+       get fresh computed styles before we re-trigger them */
+    void os.getBoundingClientRect();
   }
-  /* remove boot screen if still present */
-  if (boot) boot.remove();
-  /* ensure lock screen is visible */
+
+  /* Step 3 — hard reset the boot screen animation NOW that
+     win8OS is visible and the browser has recalculated layout */
+  const boot    = document.getElementById('bootScreen');
+  const lock    = document.getElementById('lockScreen');
+  const logo    = boot  && boot.querySelector('.boot-logo-img');
+  const spinner = boot  && boot.querySelector('.boot-spinner');
+
+  if (boot) {
+    /* Make sure it's fully opaque before we start */
+    boot.style.transition = 'none';
+    boot.style.opacity    = '1';
+    boot.style.display    = 'flex';
+
+    /* Triple-flush: remove animation, reflow, re-add */
+    [boot, logo, spinner].forEach(el => {
+      if (!el) return;
+      el.style.animation = 'none';
+    });
+    /* One single reflow after ALL animations are cleared */
+    void boot.getBoundingClientRect();
+    [boot, logo, spinner].forEach(el => {
+      if (!el) return;
+      el.style.animation = '';
+    });
+    /* Another reflow to commit the reset */
+    void boot.getBoundingClientRect();
+  }
+
+  /* Step 4 — prepare lock screen (hidden behind boot) */
   if (lock) {
-    lock.style.display   = '';
-    lock.style.opacity   = '1';
-    lock.style.transform = 'translateY(0)';
-    lock.classList.remove('unlock');
+    lock.style.transition = 'none';
+    lock.style.opacity    = '0';
+    lock.style.display    = '';
+    lock.classList.remove('unlock', 'touched', 'pass-mode');
   }
+
+  /* Kick off wallpaper slideshow in background */
   if (typeof lockInitWallpaper === 'function') lockInitWallpaper();
-}, 15000);
+
+  /* Step 5 — wait for boot animation to finish, then fade out */
+  /* Boot logo fades in ~0.5s, spinner runs, total feel ~3.2s */
+  const BOOT_DURATION = 3200;   /* ms to show the boot screen */
+  const FADE_DURATION =  600;   /* ms for boot→lock crossfade */
+
+  setTimeout(() => {
+    if (!boot) {
+      /* No boot screen — show lock directly */
+      if (lock) { lock.style.opacity = '1'; lock.style.zIndex = '9999'; }
+      return;
+    }
+
+    /* Fade boot screen OUT */
+    boot.style.transition = `opacity ${FADE_DURATION}ms ease`;
+    boot.style.opacity    = '0';
+
+    /* Fade lock screen IN simultaneously */
+    if (lock) {
+      lock.style.transition = `opacity ${FADE_DURATION}ms ease`;
+      lock.style.opacity    = '1';
+      lock.style.zIndex     = '9999';
+    }
+
+    /* Remove boot screen from DOM after fade completes */
+    setTimeout(() => {
+      if (boot.parentNode) boot.remove();
+    }, FADE_DURATION + 50);
+
+  }, BOOT_DURATION);
+
+}, { once: true }); /* { once:true } is belt-and-suspenders */
+
+/* ── FAILSAFE: if bios:complete never fires after 20s,
+   skip straight to Windows ── */
+const _biosFailsafe = setTimeout(() => {
+  console.warn('[Win8Web] BIOS failsafe triggered — forcing Windows boot');
+  hideAllBiosPhases();
+  const os = document.getElementById('win8OS');
+  if (os) { os.style.display = 'block'; os.style.opacity = '1'; }
+  if (typeof runWindowsBoot === 'function') runWindowsBoot();
+}, 20000);
 </script>
 </body>
 </html>
-  
