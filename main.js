@@ -768,6 +768,181 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+
+/* ════════════════════════════════════════════════════════════
+   DESKTOP FILE DROP — drag files from OS into desktop
+   ════════════════════════════════════════════════════════════ */
+
+(function() {
+  function getDesktop() { return document.getElementById('desktop'); }
+
+  function setupDesktopDrop() {
+    const d = getDesktop();
+    if (!d || d._dropSetup) return;
+    d._dropSetup = true;
+
+    /* Show drop overlay on dragenter */
+    d.addEventListener('dragenter', e => {
+      if (!e.dataTransfer.types.includes('Files')) return;
+      e.preventDefault();
+      _showDropZone(true);
+    });
+
+    d.addEventListener('dragover', e => {
+      if (!e.dataTransfer.types.includes('Files')) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'copy';
+    });
+
+    d.addEventListener('dragleave', e => {
+      /* only hide if leaving the desktop entirely */
+      if (e.currentTarget.contains(e.relatedTarget)) return;
+      _showDropZone(false);
+    });
+
+    d.addEventListener('drop', e => {
+      e.preventDefault();
+      _showDropZone(false);
+      const files = Array.from(e.dataTransfer.files);
+      if (files.length === 0) return;
+      files.forEach(file => _ingestFile(file, 'Desktop'));
+      if (typeof notify === 'function')
+        notify(`${files.length} file${files.length!==1?'s':''} added to Desktop`, 'Desktop');
+    });
+  }
+
+  function _showDropZone(show) {
+    let overlay = document.getElementById('desktopDropOverlay');
+    if (show) {
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'desktopDropOverlay';
+        overlay.innerHTML = `
+          <div class="ddo-inner">
+            <i class="fas fa-file-import" style="font-size:48px;margin-bottom:16px;opacity:.7"></i>
+            <div>Drop files here</div>
+            <div style="font-size:12px;opacity:.5;margin-top:6px">Files will be added to Desktop</div>
+          </div>`;
+        document.getElementById('desktop').appendChild(overlay);
+      }
+      overlay.style.display = 'flex';
+    } else {
+      if (overlay) overlay.style.display = 'none';
+    }
+  }
+
+  /* ── Ingest a real OS File object into VFS ── */
+  function _ingestFile(file, location) {
+    if (!window.VFS) return;
+
+    const ext  = file.name.split('.').pop().toLowerCase();
+    const icon = VFS.iconForExt(ext);
+    const name = VFS.uniqueName(location, file.name);
+
+    /* For images and PDFs, create a blob URL so they can be previewed */
+    const isImage = /^image\//.test(file.type);
+    const isPDF   = file.type === 'application/pdf';
+    const isText  = /^text\//.test(file.type) || ['txt','js','css','html','json','md','xml','py','java','ts','c','cpp','h','log'].includes(ext);
+
+    if (isText) {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        VFS.addFile(location, {
+          type: 'file', name, icon,
+          content: ev.target.result,
+        });
+      };
+      reader.readAsText(file);
+    } else if (isImage || isPDF) {
+      const blobUrl = URL.createObjectURL(file);
+      VFS.addFile(location, {
+        type: 'file', name, icon,
+        blobUrl,
+        mimeType: file.type,
+        path: isPDF ? blobUrl : undefined,
+      });
+    } else {
+      VFS.addFile(location, { type: 'file', name, icon });
+    }
+  }
+
+  /* Expose for This PC and other drop targets */
+  window._ingestFile = _ingestFile;
+
+  document.addEventListener('DOMContentLoaded', setupDesktopDrop);
+  /* Also setup after win8OS becomes visible */
+  window.addEventListener('bios:complete', () => setTimeout(setupDesktopDrop, 1200));
+})();
+
+/* ════════════════════════════════════════════════════════════
+   DESKTOP DROP OVERLAY CSS — injected inline
+   ════════════════════════════════════════════════════════════ */
+(function injectDropCSS() {
+  const style = document.createElement('style');
+  style.textContent = `
+    #desktopDropOverlay {
+      position: absolute; inset: 0;
+      background: rgba(0,120,215,.18);
+      border: 3px dashed rgba(0,120,215,.7);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 50; pointer-events: none;
+      backdrop-filter: blur(2px);
+    }
+    .ddo-inner {
+      display: flex; flex-direction: column; align-items: center;
+      color: #fff; font-size: 18px; font-weight: 300;
+      text-shadow: 0 2px 8px rgba(0,0,0,.5);
+    }
+  `;
+  document.head.appendChild(style);
+})();
+
+
+/* ════════════════════════════════════════════════════════════
+   DOCUMENTS FOLDER — opens This PC navigated to Documents
+   ════════════════════════════════════════════════════════════ */
+function openDocuments() {
+  /* Open This PC if not already open, then navigate to Documents */
+  const existing = document.getElementById('thispcWindow');
+  if (existing) {
+    if (typeof isMinimised !== 'undefined' && isMinimised) {
+      if (typeof toggleFromTaskbar === 'function') toggleFromTaskbar();
+    }
+    if (typeof navTo === 'function') navTo(['Documents']);
+  } else {
+    if (typeof openThisPC === 'function') {
+      openThisPC();
+      /* navTo after window is built */
+      setTimeout(() => {
+        if (typeof navTo === 'function') navTo(['Documents']);
+      }, 80);
+    }
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   RECYCLE BIN DESKTOP ICON — sync appearance with bin state
+   ════════════════════════════════════════════════════════════ */
+function _syncRecycleBinIcon() {
+  if (!window.VFS) return;
+  const count = VFS.listRecycle().length;
+  const el    = document.querySelector('#dicon-recycle img');
+  if (!el) return;
+  el.src = count > 0 ? 'icons/recycle-full.png' : 'icons/recycle.png';
+  el.onerror = () => { el.src = 'icons/recycle.png'; };
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  /* Sync recycle icon on load */
+  setTimeout(_syncRecycleBinIcon, 500);
+  /* Subscribe to bin changes */
+  if (window.VFS) {
+    VFS.subscribe(loc => {
+      if (loc === '__recycle__') _syncRecycleBinIcon();
+    });
+  }
+});
+
 /* ── CHARMS ── */
 document.addEventListener('mousemove', e => {
   const ch = q('#charms');
