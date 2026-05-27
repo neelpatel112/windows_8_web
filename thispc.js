@@ -13,60 +13,15 @@ const DRIVES = [
   { id:'F', label:'DVD Drive (F:)',total:0,   used:0,   icon:'icons/drive-dvd.png'    },
 ];
 
-/* virtual folders per location */
-const FS = {
-  'This PC': [],
-  'Desktop': [
-    { type:'folder', name:'New Folder' },
-    { type:'file',   name:'wallpaper.jpg', icon:'icons/file-image.png' },
-    { type:'file',   name:'readme.txt',    icon:'icons/file-text.png'  },
-  ],
-  'Documents': [
-    { type:'folder', name:'Work' },
-    { type:'folder', name:'Personal' },
-    { type:'file',   name:'resume.pdf',   icon:'icons/file-pdf.png', path:'resume.pdf' },
-    { type:'file',   name:'resume.docx',  icon:'icons/file-word.png'  },
-    { type:'file',   name:'budget.xlsx',  icon:'icons/file-excel.png' },
-    { type:'file',   name:'notes.txt',    icon:'icons/file-text.png'  },
-  ],
-  'Downloads': [
-    { type:'file', name:'setup.exe',       icon:'icons/file-exe.png'   },
-    { type:'file', name:'photo.jpg',       icon:'icons/file-image.png' },
-    { type:'file', name:'song.mp3',        icon:'icons/file-audio.png' },
-    { type:'file', name:'video.mp4',       icon:'icons/file-video.png' },
-  ],
-  'Pictures': [
-    { type:'folder', name:'Vacation' },
-    { type:'folder', name:'Screenshots' },
-    { type:'file',   name:'IMG_001.jpg',   icon:'icons/file-image.png' },
-    { type:'file',   name:'IMG_002.jpg',   icon:'icons/file-image.png' },
-    { type:'file',   name:'wallpaper.png', icon:'icons/file-image.png' },
-  ],
-  'Music': [
-    { type:'folder', name:'Albums' },
-    { type:'file',   name:'track01.mp3',   icon:'icons/file-audio.png' },
-    { type:'file',   name:'track02.mp3',   icon:'icons/file-audio.png' },
-  ],
-  'Videos': [
-    { type:'folder', name:'Movies' },
-    { type:'file',   name:'clip.mp4',      icon:'icons/file-video.png' },
-  ],
-  'C:': [
-    { type:'folder', name:'Program Files'  },
-    { type:'folder', name:'Users'          },
-    { type:'folder', name:'Windows'        },
-    { type:'file',   name:'pagefile.sys',  icon:'icons/file-sys.png'   },
-  ],
-  'D:': [
-    { type:'folder', name:'Backup'  },
-    { type:'folder', name:'Projects'},
-    { type:'folder', name:'Media'   },
-  ],
-  'E:': [
-    { type:'folder', name:'Files'   },
-    { type:'file',   name:'data.zip', icon:'icons/file-zip.png' },
-  ],
-};
+/* ── VFS BRIDGE — reads/writes through the central VFS singleton ── */
+function _fsGet(loc) { return window.VFS ? VFS.list(loc) : []; }
+function _fsAddFile(loc, item) { if (window.VFS) VFS.addFile(loc, item); }
+function _fsDelete(loc, id) { if (window.VFS) VFS.delete(loc, id); }
+function _fsRename(loc, id, newName) { if (window.VFS) VFS.rename(loc, id, newName); }
+function _fsCreateFolder(loc, name) {
+  return window.VFS ? VFS.createFolder(loc, name) : { id: 'tmp-' + Date.now(), type:'folder', name, icon:'icons/folder.png' };
+}
+function _fsUniqueName(loc, base) { return window.VFS ? VFS.uniqueName(loc, base) : base; }
 
 /* ════════════════════════════════════════════════════════════
    STATE
@@ -100,6 +55,13 @@ function initThisPC() {
   setupResize();
   setupContextMenu();
   updateNavButtons();
+  /* Subscribe to VFS changes — refresh content when current folder changes */
+  if (window.VFS) {
+    VFS.subscribe(loc => {
+      const cur = currentPath[currentPath.length - 1];
+      if (loc === cur) renderContent();
+    });
+  }
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -190,7 +152,10 @@ function injectWindow() {
   <!-- Content -->
   <div class="win-content" id="pcContent"
        oncontextmenu="showCtx(event)"
-       onclick="deselectAll(event)">
+       onclick="deselectAll(event)"
+       ondragover="_pcDragOver(event)"
+       ondragleave="_pcDragLeave(event)"
+       ondrop="_pcDrop(event)">
   </div>
 </div>
 
@@ -489,7 +454,7 @@ function focusSearch() {
 function doSearch(q) {
   if (!q.trim()) { renderContent(); return; }
   const loc   = currentPath[currentPath.length - 1];
-  const items = FS[loc] || [];
+  const items = _fsGet(loc);
   const found = items.filter(i => i.name.toLowerCase().includes(q.toLowerCase()));
   renderItems(found, true);
   updateStatus(found.length);
@@ -510,7 +475,7 @@ function renderContent() {
   if (loc === 'This PC') {
     renderThisPC(content);
   } else {
-    const items = FS[loc] || [];
+    const items = _fsGet(loc);
     renderItems(items, false);
     updateStatus(items.length);
   }
@@ -609,6 +574,7 @@ function renderItems(items, isSearch) {
       el.ondblclick = () => openFile(item);
     }
 
+    el.dataset.id = item.id || '';
     el.onclick = (e) => { e.stopPropagation(); selectFile(el, item, idx); };
     grid.appendChild(el);
   });
@@ -647,7 +613,7 @@ function updateStatus(count) {
     el.textContent = '1 item selected';
   } else {
     const loc = currentPath[currentPath.length - 1];
-    const n   = (FS[loc] || []).length;
+    const n   = _fsGet(loc).length;
     el.textContent = n + ' item' + (n !== 1 ? 's' : '');
   }
 }
@@ -657,28 +623,18 @@ function updateStatus(count) {
    ════════════════════════════════════════════════════════════ */
 function newFolder() {
   const loc = currentPath[currentPath.length - 1];
-  if (!FS[loc]) FS[loc] = [];
-
-  newFolderCount++;
-  const baseName = 'New Folder';
-  let name = baseName;
-  let n = 1;
-  while (FS[loc].some(i => i.name === name)) {
-    name = `${baseName} (${n++})`;
-  }
-
-  const item = { type: 'folder', name };
-  FS[loc].push(item);
+  const name = _fsUniqueName(loc, 'New Folder');
+  const item = _fsCreateFolder(loc, name);
   renderContent();
 
-  // find the new element and start rename immediately
+  // immediately start rename on the new folder
   const grid = document.getElementById('filesGrid');
   if (!grid) return;
   const newEl = Array.from(grid.querySelectorAll('.file-item'))
-    .find(el => el.dataset.name === name);
+    .find(el => el.dataset.id === item.id || el.dataset.name === name);
   if (newEl) {
     newEl.classList.add('new-item');
-    selectFile(newEl, item, FS[loc].length - 1);
+    selectFile(newEl, item, 0);
     startRename(newEl, item);
   }
 }
@@ -727,12 +683,11 @@ function openFile(item) {
 function deleteSelected() {
   if (!selectedItem) return;
   const loc  = currentPath[currentPath.length - 1];
-  const name = selectedItem.item.name;
-  if (!FS[loc]) return;
-  const idx = FS[loc].findIndex(i => i.name === name);
-  if (idx > -1) FS[loc].splice(idx, 1);
+  const item = selectedItem.item;
+  _fsDelete(loc, item.id);
   selectedItem = null;
   renderContent();
+  if (typeof notify === 'function') notify('"' + item.name + '" moved to Recycle Bin', 'This PC');
 }
 
 function startRename(el, item) {
@@ -749,9 +704,8 @@ function startRename(el, item) {
   function commit() {
     const newName = input.value.trim() || oldName;
     const loc = currentPath[currentPath.length - 1];
-    if (FS[loc]) {
-      const entry = FS[loc].find(i => i.name === oldName);
-      if (entry) entry.name = newName;
+    if (item.id) {
+      _fsRename(loc, item.id, newName);
     }
     renderContent();
   }
@@ -792,15 +746,7 @@ function ribbonProperties() {
 }
 
 function sortItems(by) {
-  const loc = currentPath[currentPath.length - 1];
-  if (!FS[loc]) return;
-  FS[loc].sort((a, b) => {
-    if (by === 'type') {
-      if (a.type !== b.type) return a.type === 'folder' ? -1 : 1;
-    }
-    return a.name.localeCompare(b.name);
-  });
-  renderContent();
+  renderContent(); // VFS always returns fresh list; sort happens in renderItems
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -886,4 +832,45 @@ function openThisPC() {
   isMinimised  = false;
   isMaximised  = false;
   initThisPC();
+}
+
+
+/* ════════════════════════════════════════════════════════════
+   THIS PC — FILE DROP (drag files from OS into any folder)
+   ════════════════════════════════════════════════════════════ */
+function _pcDragOver(e) {
+  if (!e.dataTransfer.types.includes('Files')) return;
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'copy';
+  const content = document.getElementById('pcContent');
+  if (content) content.style.outline = '3px dashed rgba(0,120,215,.5)';
+}
+
+function _pcDragLeave(e) {
+  const content = document.getElementById('pcContent');
+  if (content) content.style.outline = '';
+}
+
+function _pcDrop(e) {
+  e.preventDefault();
+  const content = document.getElementById('pcContent');
+  if (content) content.style.outline = '';
+
+  const files = Array.from(e.dataTransfer.files);
+  if (files.length === 0) return;
+
+  const loc = currentPath[currentPath.length - 1];
+  /* Don't allow dropping into the This PC root */
+  if (loc === 'This PC') {
+    if (typeof notify === 'function') notify('Drop files into a specific folder', 'This PC');
+    return;
+  }
+
+  files.forEach(file => {
+    if (typeof window._ingestFile === 'function') {
+      window._ingestFile(file, loc);
+    }
+  });
+  if (typeof notify === 'function')
+    notify(`${files.length} file${files.length!==1?'s':''} added to ${loc}`, 'This PC');
 }
