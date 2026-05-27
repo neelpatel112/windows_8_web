@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="thispc.css">
+<link rel="stylesheet" href="recycle.css">
 <link rel="stylesheet" href="settings.css">
 <link rel="stylesheet" href="notepad.css">
 <link rel="stylesheet" href="terminal.css">
@@ -174,15 +175,15 @@
     <div class="d-icon" id="dicon-documents"
          data-col="0" data-row="1"
          data-ctx="generic"
-         ondblclick="notify('Opening Documents…','File Explorer')">
+         ondblclick="openDocuments()">
       <img src="icons/folder.png" alt="Documents"><span>Documents</span>
     </div>
 
     <div class="d-icon" id="dicon-recycle"
          data-col="0" data-row="2"
          data-ctx="generic"
-         ondblclick="notify('Recycle Bin is empty.','Recycle Bin')">
-      <img src="icons/recycle.png" alt="Recycle Bin"><span>Recycle Bin</span>
+         ondblclick="openRecycleBin()">
+      <img src="icons/recycle.png" alt="Recycle Bin" onerror="this.src='icons/recycle.png'"><span>Recycle Bin</span>
     </div>
 
     <div class="d-icon" id="dicon-ie"
@@ -1059,7 +1060,9 @@
 </div><!-- /win8OS -->
 
 <script src="main.js"></script>
+<script src="vfs.js"></script>
 <script src="thispc.js"></script>
+<script src="recycle.js"></script>
 <script src="settings.js"></script>
 <script src="notepad.js"></script>
 <script src="terminal.js"></script>
