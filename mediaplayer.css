@@ -1,0 +1,313 @@
+/* ════════════════════════════════════════════════════════════
+   Windows Media Player 12  ·  mediaplayer.css
+   Classic dark desktop skin — exact WMP12 proportions
+   ════════════════════════════════════════════════════════════ */
+
+#wmpWindow {
+  position: fixed;
+  top: 60px; left: 100px;
+  width: 900px; height: 580px;
+  min-width: 640px; min-height: 420px;
+  z-index: 415;
+  display: flex; flex-direction: column;
+  background: #1a1a1a;
+  border: 1px solid #111;
+  box-shadow: 0 12px 50px rgba(0,0,0,.7), 0 2px 8px rgba(0,0,0,.5);
+  animation: wmpOpen .22s cubic-bezier(.16,1,.3,1) both;
+  transition: transform .2s ease, opacity .2s ease;
+  overflow: hidden;
+}
+@keyframes wmpOpen  { from { opacity:0; transform:scale(.94) translateY(16px); } to { opacity:1; transform:none; } }
+@keyframes wmpClose { from { opacity:1; } to { opacity:0; transform:scale(.92); } }
+
+#wmpWindow.wmp-maximised {
+  top: 0 !important; left: 0 !important;
+  width: 100vw !important; height: calc(100vh - 44px) !important;
+  border: none; box-shadow: none;
+}
+
+/* ── TITLE BAR ── */
+.wmp-titlebar {
+  height: 30px; flex-shrink: 0;
+  background: linear-gradient(to bottom, #2d2d2d, #1e1e1e);
+  border-bottom: 1px solid #111;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 0 0 8px; cursor: default; user-select: none;
+}
+.wmp-tb-left { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; }
+.wmp-tb-icon { width: 14px; height: 14px; object-fit: contain; flex-shrink: 0; }
+.wmp-tb-title {
+  font-size: 11px; color: rgba(255,255,255,.65);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.wmp-tb-right { display: flex; align-items: center; flex-shrink: 0; }
+.wmp-tb-menus { display: flex; }
+.wmp-tb-menu {
+  padding: 0 8px; height: 30px; display: flex; align-items: center;
+  font-size: 11px; color: rgba(255,255,255,.55); cursor: pointer;
+  transition: background .12s, color .12s;
+}
+.wmp-tb-menu:hover { background: rgba(255,255,255,.08); color: rgba(255,255,255,.9); }
+.wmp-win-controls { display: flex; height: 30px; }
+.wmp-win-btn {
+  width: 38px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  background: transparent; border: none;
+  color: rgba(255,255,255,.6); font-size: 13px; cursor: pointer;
+  transition: background .12s, color .12s;
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+.wmp-win-btn:hover { background: rgba(255,255,255,.1); color: #fff; }
+.wmp-close:hover { background: #e81123; color: #fff; }
+
+/* ── NAV TABS ── */
+.wmp-nav {
+  height: 32px; flex-shrink: 0;
+  background: #252525;
+  border-bottom: 1px solid #111;
+  display: flex; align-items: center;
+}
+.wmp-nav-tab {
+  height: 100%; padding: 0 16px;
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: rgba(255,255,255,.45);
+  cursor: pointer; transition: color .12s, background .12s;
+  border-bottom: 2px solid transparent;
+}
+.wmp-nav-tab:hover { color: rgba(255,255,255,.8); background: rgba(255,255,255,.04); }
+.wmp-nav-tab.active { color: #fff; border-bottom-color: #0078d7; }
+.wmp-nav-tab i { font-size: 12px; }
+.wmp-nav-search {
+  margin-left: auto; display: flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1);
+  padding: 3px 10px; margin-right: 10px;
+  transition: background .15s;
+}
+.wmp-nav-search:focus-within { background: rgba(255,255,255,.1); }
+.wmp-nav-search i { color: rgba(255,255,255,.3); font-size: 11px; }
+.wmp-nav-search input {
+  background: none; border: none; outline: none;
+  color: rgba(255,255,255,.8); font-size: 12px; width: 140px;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+}
+.wmp-nav-search input::placeholder { color: rgba(255,255,255,.25); }
+
+/* ── BODY ── */
+.wmp-body {
+  flex: 1; display: flex; overflow: hidden;
+}
+
+/* ── SIDEBAR ── */
+.wmp-sidebar {
+  width: 170px; flex-shrink: 0;
+  background: #1f1f1f; border-right: 1px solid #111;
+  overflow-y: auto; padding: 4px 0;
+}
+.wmp-sidebar::-webkit-scrollbar { width: 4px; }
+.wmp-sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); }
+.wmp-sb-section {
+  font-size: 10px; font-weight: 700; color: rgba(255,255,255,.3);
+  letter-spacing: 1.2px; text-transform: uppercase;
+  padding: 10px 12px 4px;
+}
+.wmp-sb-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 14px; font-size: 12px; color: rgba(255,255,255,.55);
+  cursor: pointer; transition: background .12s, color .12s;
+}
+.wmp-sb-item i { font-size: 12px; width: 14px; text-align: center; flex-shrink: 0; color: #0078d7; }
+.wmp-sb-item:hover { background: rgba(255,255,255,.06); color: rgba(255,255,255,.85); }
+.wmp-sb-item.active { background: rgba(0,120,215,.2); color: #fff; }
+.wmp-sb-sep { height: 1px; background: rgba(255,255,255,.06); margin: 6px 0; }
+
+/* ── MAIN CONTENT ── */
+.wmp-main {
+  flex: 1; display: flex; flex-direction: column; overflow: hidden;
+  background: #1a1a1a;
+}
+
+/* Library pane */
+#wmpLibPane { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+.wmp-lib-header {
+  padding: 12px 16px 8px;
+  font-size: 18px; font-weight: 300; color: rgba(255,255,255,.8);
+  letter-spacing: .3px; flex-shrink: 0;
+  border-bottom: 1px solid rgba(255,255,255,.05);
+}
+.wmp-lib-cols {
+  display: flex; padding: 5px 16px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  flex-shrink: 0;
+}
+.wmp-lib-col-hdr {
+  font-size: 10.5px; font-weight: 600; color: rgba(255,255,255,.3);
+  text-transform: uppercase; letter-spacing: .8px;
+}
+.wmp-lib-list {
+  flex: 1; overflow-y: auto;
+  scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.1) transparent;
+}
+.wmp-lib-list::-webkit-scrollbar { width: 4px; }
+.wmp-lib-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); }
+.wmp-lib-row {
+  display: flex; align-items: center; padding: 7px 16px;
+  border-bottom: 1px solid rgba(255,255,255,.03);
+  cursor: pointer; transition: background .1s;
+}
+.wmp-lib-row:hover   { background: rgba(255,255,255,.05); }
+.wmp-lib-row.selected { background: rgba(0,120,215,.18); }
+.wmp-lib-row.playing  { background: rgba(0,120,215,.12); }
+.wmp-lib-row.playing::before {
+  content: '▶';
+  color: #0078d7; font-size: 10px; margin-right: 6px; flex-shrink: 0;
+}
+.wmp-empty {
+  padding: 40px 24px; color: rgba(255,255,255,.28); font-size: 13px;
+  text-align: center; line-height: 1.8;
+}
+.wmp-empty small { font-size: 11px; }
+
+/* Now Playing pane */
+#wmpNowPane {
+  flex: 1; display: flex; overflow: hidden;
+}
+.wmp-video-wrap {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  background: #000; position: relative;
+}
+#wmpVideo {
+  max-width: 100%; max-height: 100%;
+  width: 100%; height: 100%;
+  object-fit: contain;
+}
+.wmp-video-overlay {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+  background: rgba(0,0,0,.4);
+}
+
+/* Album art for audio */
+.wmp-album-art {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #0d1117 0%, #1a1f2e 100%);
+  gap: 16px; padding: 40px;
+}
+.wmp-album-art img {
+  width: 160px; height: 160px; object-fit: contain;
+  opacity: .6; filter: drop-shadow(0 8px 24px rgba(0,0,0,.8));
+}
+.wmp-album-title  { font-size: 20px; font-weight: 300; color: #fff; text-align: center; }
+.wmp-album-artist { font-size: 13px; color: rgba(255,255,255,.4); text-align: center; }
+
+/* ── QUEUE ── */
+.wmp-queue {
+  width: 220px; flex-shrink: 0;
+  background: #161616; border-left: 1px solid #111;
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.wmp-queue-header {
+  padding: 10px 14px 8px;
+  font-size: 11px; font-weight: 700; color: rgba(255,255,255,.3);
+  text-transform: uppercase; letter-spacing: 1px; flex-shrink: 0;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.wmp-queue-list {
+  flex: 1; overflow-y: auto;
+  scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.08) transparent;
+}
+.wmp-queue-list::-webkit-scrollbar { width: 3px; }
+.wmp-queue-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,.08); }
+.wmp-queue-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 12px; font-size: 11.5px;
+  color: rgba(255,255,255,.45); cursor: pointer;
+  border-bottom: 1px solid rgba(255,255,255,.03);
+  transition: background .1s;
+}
+.wmp-queue-row:hover  { background: rgba(255,255,255,.06); color: rgba(255,255,255,.75); }
+.wmp-queue-row.active { background: rgba(0,120,215,.18); color: #fff; }
+.wmp-queue-name {
+  flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* ── CONTROLS BAR ── */
+.wmp-controls-bar {
+  flex-shrink: 0;
+  background: linear-gradient(to bottom, #232323, #1a1a1a);
+  border-top: 1px solid #111;
+  padding: 6px 12px 8px;
+}
+
+/* Seek bar */
+.wmp-seek-wrap {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+}
+.wmp-time { font-size: 10.5px; color: rgba(255,255,255,.4); flex-shrink: 0; min-width: 32px; }
+#wmpTimeDur { text-align: right; }
+.wmp-seek-track {
+  flex: 1; height: 4px; background: rgba(255,255,255,.12);
+  position: relative; cursor: pointer;
+  transition: height .1s;
+}
+.wmp-seek-track:hover { height: 6px; }
+.wmp-seek-fill {
+  position: absolute; left: 0; top: 0; height: 100%;
+  background: #0078d7; pointer-events: none;
+  transition: width .1s linear;
+}
+.wmp-seek-thumb {
+  position: absolute; top: 50%; transform: translate(-50%, -50%);
+  width: 10px; height: 10px; background: #fff; border-radius: 50%;
+  pointer-events: none; opacity: 0; transition: opacity .15s;
+}
+.wmp-seek-track:hover .wmp-seek-thumb { opacity: 1; }
+
+/* Controls row */
+.wmp-ctrl-row {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.wmp-ctrl-left, .wmp-ctrl-center, .wmp-ctrl-right {
+  display: flex; align-items: center; gap: 2px;
+}
+.wmp-ctrl-btn {
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  background: transparent; border: none;
+  color: rgba(255,255,255,.55); font-size: 14px; cursor: pointer;
+  border-radius: 2px;
+  transition: background .12s, color .12s;
+}
+.wmp-ctrl-btn:hover { background: rgba(255,255,255,.1); color: #fff; }
+.wmp-ctrl-active { color: #0078d7 !important; }
+.wmp-ctrl-prev { width: 36px; font-size: 16px; }
+.wmp-ctrl-playpause {
+  width: 42px; height: 42px; font-size: 18px;
+  background: rgba(0,120,215,.25);
+  border: 1px solid rgba(0,120,215,.5) !important;
+}
+.wmp-ctrl-playpause:hover { background: rgba(0,120,215,.5); color: #fff; }
+
+/* Volume */
+.wmp-vol-track {
+  width: 70px; height: 4px; background: rgba(255,255,255,.12);
+  position: relative; cursor: pointer;
+}
+.wmp-vol-fill {
+  position: absolute; left: 0; top: 0; height: 100%; background: rgba(255,255,255,.4);
+  pointer-events: none;
+}
+
+/* Resize handle */
+.wmp-resize {
+  position: absolute; bottom: 0; right: 0;
+  width: 14px; height: 14px; cursor: se-resize; z-index: 10;
+}
+.wmp-resize::after {
+  content: ''; position: absolute; bottom: 3px; right: 3px;
+  width: 7px; height: 7px;
+  border-right: 2px solid rgba(255,255,255,.2);
+  border-bottom: 2px solid rgba(255,255,255,.2);
+}
+ 
