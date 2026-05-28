@@ -645,35 +645,27 @@ function openFile(item) {
 
   /* ── PDF ── */
   if (ext === 'pdf') {
-    if (typeof openPDFViewer === 'function') {
-      /* use item.path if set (points to real file), else use filename */
-      openPDFViewer(name, item.path || name, null);
-      return;
-    }
+    if (typeof openPDFViewer === 'function') { openPDFViewer(name, item.path || item.blobUrl || name, null); return; }
   }
 
-  /* ── Text / code files → Notepad ── */
-  if (['txt','java','js','py','html','css','xml','json','md','log','ts','c','cpp','h'].includes(ext)) {
-    if (typeof openNotepad === 'function') {
-      openNotepad(name, item.content || '');
-      return;
-    }
-  }
-
-  /* ── Images → notify for now (Photos app future) ── */
+  /* ── Images → Photos app ── */
   if (['jpg','jpeg','png','gif','webp','bmp','svg'].includes(ext)) {
-    if (typeof notify === 'function') notify('Photos app coming soon — ' + name, 'Photos');
-    return;
+    if (typeof openPhotos === 'function') { openPhotos(item); return; }
   }
 
-  /* ── Audio / Video → notify ── */
-  if (['mp3','wav','ogg','flac'].includes(ext)) {
-    if (typeof notify === 'function') notify('Opening ' + name + ' in Media Player…', 'Media Player');
-    return;
+  /* ── Video → Media Player ── */
+  if (['mp4','webm','mkv','avi','mov','ogv'].includes(ext)) {
+    if (typeof openMediaPlayer === 'function') { openMediaPlayer(item); return; }
   }
-  if (['mp4','mkv','avi','mov','webm'].includes(ext)) {
-    if (typeof notify === 'function') notify('Opening ' + name + ' in Media Player…', 'Media Player');
-    return;
+
+  /* ── Audio → Media Player ── */
+  if (['mp3','wav','ogg','flac','aac','wma','opus'].includes(ext)) {
+    if (typeof openMediaPlayer === 'function') { openMediaPlayer(item); return; }
+  }
+
+  /* ── Text / code → Notepad ── */
+  if (['txt','java','js','py','html','css','xml','json','md','log','ts','c','cpp','h'].includes(ext)) {
+    if (typeof openNotepad === 'function') { openNotepad(name, item.content || ''); return; }
   }
 
   /* fallback */
@@ -874,3 +866,4 @@ function _pcDrop(e) {
   if (typeof notify === 'function')
     notify(`${files.length} file${files.length!==1?'s':''} added to ${loc}`, 'This PC');
 }
+ 
