@@ -10,6 +10,8 @@
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="thispc.css">
 <link rel="stylesheet" href="recycle.css">
+<link rel="stylesheet" href="photos.css">
+<link rel="stylesheet" href="mediaplayer.css">
 <link rel="stylesheet" href="settings.css">
 <link rel="stylesheet" href="notepad.css">
 <link rel="stylesheet" href="terminal.css">
@@ -435,12 +437,12 @@
           <span class="tile-label">Camera</span>
         </div>
 
-        <div class="tile tc-orange" onclick="tileOpen(this,'Photos')" style="grid-column:2;grid-row:1">
+        <div class="tile tc-orange" onclick="openPhotos();if(startOpen)setTimeout(toggleStart,200);" style="grid-column:2;grid-row:1">
           <div class="tile-icon"><img src="icons/photos.png" alt="Photos"></div>
           <span class="tile-label">Photos</span>
         </div>
 
-        <div class="tile tc-red" onclick="tileOpen(this,'Music')" style="grid-column:1/3;grid-row:2">
+        <div class="tile tc-red" onclick="openMediaPlayer();if(startOpen)setTimeout(toggleStart,200);" style="grid-column:1/3;grid-row:2">
           <div class="tile-flip-wrap" id="musicFlip">
             <div class="tf-front">
               <div class="tile-icon"><img src="icons/music.png" alt="Music"></div>
@@ -453,7 +455,7 @@
           </div>
         </div>
 
-        <div class="tile tc-red" onclick="tileOpen(this,'Video')" style="grid-column:1;grid-row:3;filter:brightness(.82)">
+        <div class="tile tc-red" onclick="openMediaPlayer();if(startOpen)setTimeout(toggleStart,200);" style="grid-column:1;grid-row:3;filter:brightness(.82)">
           <div class="tile-icon"><img src="icons/video.png" alt="Video"></div>
           <span class="tile-label">Video</span>
         </div>
@@ -1063,6 +1065,8 @@
 <script src="vfs.js"></script>
 <script src="thispc.js"></script>
 <script src="recycle.js"></script>
+<script src="photos.js"></script>
+<script src="mediaplayer.js"></script>
 <script src="settings.js"></script>
 <script src="notepad.js"></script>
 <script src="terminal.js"></script>
@@ -1209,3 +1213,4 @@ const _biosFailsafe = setTimeout(() => {
 </script>
 </body>
 </html>
+  
