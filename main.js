@@ -943,6 +943,106 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+
+/* ════════════════════════════════════════════════════════════
+   OPEN MEDIA FROM DESKTOP DOUBLE-CLICK
+   Called by desktop icons for dropped media files
+   ════════════════════════════════════════════════════════════ */
+function openDesktopFile(item) {
+  if (!item) return;
+  const ext = (item.name||'').split('.').pop().toLowerCase();
+
+  /* images */
+  if (['jpg','jpeg','png','gif','webp','bmp','svg'].includes(ext)) {
+    if (typeof openPhotos === 'function') { openPhotos(item); return; }
+  }
+  /* video */
+  if (['mp4','webm','mkv','avi','mov','ogv'].includes(ext)) {
+    if (typeof openMediaPlayer === 'function') { openMediaPlayer(item); return; }
+  }
+  /* audio */
+  if (['mp3','wav','ogg','flac','aac','wma','opus'].includes(ext)) {
+    if (typeof openMediaPlayer === 'function') { openMediaPlayer(item); return; }
+  }
+  /* pdf */
+  if (ext === 'pdf') {
+    if (typeof openPDFViewer === 'function') { openPDFViewer(item.name, item.blobUrl||item.path||item.name, null); return; }
+  }
+  /* text */
+  if (['txt','js','ts','html','css','json','md','xml','py','java','c','cpp','h','log'].includes(ext)) {
+    if (typeof openNotepad === 'function') { openNotepad(item.name, item.content||''); return; }
+  }
+  if (typeof notify === 'function') notify('Opening ' + item.name + '…', item.name);
+}
+
+/* ── Hook: when VFS adds a file to Desktop, create/update its desktop icon ── */
+(function() {
+  let _prevDesktop = [];
+  if (window.VFS) {
+    VFS.subscribe(loc => {
+      if (loc !== 'Desktop') return;
+      const current = VFS.list('Desktop');
+      /* find newly added items */
+      const prevIds = new Set(_prevDesktop.map(i => i.id));
+      const newItems = current.filter(i => !prevIds.has(i.id));
+      newItems.forEach(item => _addDroppedDesktopIcon(item));
+      _prevDesktop = current;
+    });
+  }
+
+  function _addDroppedDesktopIcon(item) {
+    const container = document.getElementById('desktopIconsContainer');
+    if (!container) return;
+    /* Don't duplicate */
+    if (document.getElementById('dicon-vfs-' + item.id)) return;
+
+    const ext  = (item.name||'').split('.').pop().toLowerCase();
+    const IMG  = ['jpg','jpeg','png','gif','webp','bmp','svg'];
+    const VID  = ['mp4','webm','mkv','avi','mov','ogv'];
+    const AUD  = ['mp3','wav','ogg','flac','aac','wma','opus'];
+
+    let appIcon = item.icon || 'icons/file-text.png';
+    if (IMG.includes(ext) && item.blobUrl) {
+      appIcon = item.blobUrl;  /* use actual image as icon thumbnail */
+    }
+
+    const el = document.createElement('div');
+    el.className  = 'd-icon';
+    el.id         = 'dicon-vfs-' + item.id;
+    el.dataset.col = '2';
+    el.dataset.row = '0';
+
+    const safeOnDblclick = (() => {
+      const capturedId = item.id;
+      return `(function(){
+        const item = (window.VFS ? VFS.list('Desktop') : []).find(i => i.id === '${capturedId}');
+        if(item) openDesktopFile(item);
+      })()`;
+    })();
+
+    el.setAttribute('ondblclick', safeOnDblclick);
+    el.innerHTML = `
+      <img src="${appIcon}" alt="${item.name.replace(/"/g,'&quot;')}"
+           onerror="this.src='${item.icon||'icons/file-text.png'}'"
+           style="${IMG.includes(ext) && item.blobUrl ? 'object-fit:cover;width:48px;height:48px;' : ''}">
+      <span>${item.name}</span>`;
+
+    container.appendChild(el);
+    /* Let the DI system position it */
+    if (typeof diAttachIcon === 'function') diAttachIcon(el);
+    if (typeof diLayoutAll === 'function')  diLayoutAll();
+  }
+
+  /* Run once on load to sync any previously saved VFS Desktop items */
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+      if (!window.VFS) return;
+      _prevDesktop = VFS.list('Desktop');
+      _prevDesktop.forEach(item => _addDroppedDesktopIcon(item));
+    }, 800);
+  });
+})();
+
 /* ── CHARMS ── */
 document.addEventListener('mousemove', e => {
   const ch = q('#charms');
@@ -1984,3 +2084,4 @@ function taskbarCtxCloseAll() {
   closers.forEach(fn => { try { fn(); } catch(e) {} });
   notify('All windows closed', 'Taskbar');
 }
+  
