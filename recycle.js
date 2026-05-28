@@ -470,3 +470,4 @@ function _rbEsc(s) {
 function _rbNotify(msg, src) {
   if (typeof notify === 'function') notify(msg, src || 'Recycle Bin');
 }
+ 
