@@ -1,0 +1,287 @@
+/* ════════════════════════════════════════════════════════════
+   Windows 8 Photos App  ·  photos.css
+   Full-screen Metro immersive style — dark, image-first
+   ════════════════════════════════════════════════════════════ */
+
+.photos-app {
+  position: fixed;
+  inset: 0;
+  bottom: 44px;
+  z-index: 420;
+  background: #1a1a1a;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: paOpen .28s cubic-bezier(.22,1,.36,1) both;
+  transition: opacity .22s ease, transform .22s ease;
+}
+
+/* windowed (non-maximised) mode */
+.photos-app.photos-windowed {
+  top: 40px; left: 80px;
+  width: 900px; height: 600px;
+  bottom: auto; right: auto;
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow: 0 16px 60px rgba(0,0,0,.7);
+}
+
+@keyframes paOpen {
+  from { opacity:0; transform: scale(.96); }
+  to   { opacity:1; transform: scale(1); }
+}
+
+/* ── CHROME BAR ── */
+.pa-chrome {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 44px;
+  background: linear-gradient(to bottom, rgba(0,0,0,.8) 0%, transparent 100%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity .22s ease;
+  pointer-events: none;
+}
+.pa-chrome.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+.pa-chrome-left, .pa-chrome-right { display: flex; align-items: center; gap: 4px; }
+.pa-chrome-title {
+  color: rgba(255,255,255,.9);
+  font-size: 14px; font-weight: 300;
+  margin-left: 8px; letter-spacing: .4px;
+}
+.pa-chrome-btn {
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,.08);
+  border: none; color: rgba(255,255,255,.8);
+  font-size: 14px; cursor: pointer;
+  transition: background .15s, color .15s;
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+.pa-chrome-btn:hover { background: rgba(255,255,255,.18); color: #fff; }
+.pa-chrome-btn.pa-close:hover { background: #e81123; color: #fff; }
+#paBackBtn { display: none; }
+
+/* ── HUB ── */
+.pa-hub {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0;
+}
+
+.pa-hub-header {
+  padding: 52px 40px 20px;
+  flex-shrink: 0;
+}
+.pa-hub-title {
+  font-size: 42px; font-weight: 200;
+  color: #fff; letter-spacing: -1px;
+  margin-bottom: 16px;
+  font-family: 'Segoe UI Light', 'Segoe UI', Tahoma, sans-serif;
+}
+.pa-hub-tabs {
+  display: flex; gap: 0;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.pa-hub-tab {
+  padding: 8px 20px;
+  font-size: 13px; color: rgba(255,255,255,.45);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color .15s, border-color .15s;
+  letter-spacing: .3px;
+}
+.pa-hub-tab:hover { color: rgba(255,255,255,.8); }
+.pa-hub-tab.active {
+  color: #fff;
+  border-bottom-color: #fff;
+}
+
+/* ── PHOTO GRID ── */
+.pa-hub-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 3px;
+  padding: 16px 40px 40px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,.12) transparent;
+  align-content: start;
+}
+.pa-hub-grid::-webkit-scrollbar { width: 4px; }
+.pa-hub-grid::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); }
+
+/* ── PHOTO TILE ── */
+.pa-tile {
+  position: relative;
+  aspect-ratio: 1;
+  overflow: hidden;
+  cursor: pointer;
+  background: #2a2a2a;
+  opacity: 0;
+  animation: paTileIn .4s cubic-bezier(.22,1,.36,1) forwards;
+}
+@keyframes paTileIn {
+  from { opacity:0; transform: scale(.92); }
+  to   { opacity:1; transform: scale(1); }
+}
+.pa-tile img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform .3s cubic-bezier(.22,1,.36,1), filter .2s;
+}
+.pa-tile:hover img { transform: scale(1.06); filter: brightness(.75); }
+.pa-tile-overlay {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 24px 10px 8px;
+  background: linear-gradient(transparent, rgba(0,0,0,.7));
+  opacity: 0;
+  transition: opacity .2s;
+}
+.pa-tile:hover .pa-tile-overlay { opacity: 1; }
+.pa-tile-name {
+  color: #fff; font-size: 11px; font-weight: 400;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  display: block;
+}
+
+/* ── EMPTY STATE ── */
+.pa-empty {
+  grid-column: 1 / -1;
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; color: rgba(255,255,255,.3);
+  font-size: 16px; padding: 80px 20px;
+  font-weight: 300;
+}
+
+/* ── VIEWER ── */
+.pa-viewer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background: #000;
+  overflow: hidden;
+}
+
+/* Main image wrap */
+.pa-img-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  cursor: zoom-in;
+}
+.pa-img-wrap img {
+  max-width: 100%; max-height: 100%;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+  transition: opacity .18s ease, transform .25s cubic-bezier(.22,1,.36,1);
+}
+
+/* ── CONTROLS BAR ── */
+.pa-controls {
+  position: absolute;
+  bottom: 80px; left: 0; right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity .22s ease;
+  pointer-events: none;
+}
+.pa-controls.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+.pa-ctrl-left, .pa-ctrl-center, .pa-ctrl-right {
+  display: flex; align-items: center; gap: 4px;
+}
+.pa-ctrl-btn {
+  width: 44px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,.55);
+  border: none; color: rgba(255,255,255,.8);
+  font-size: 16px; cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: background .15s, color .15s, transform .12s;
+}
+.pa-ctrl-btn:hover { background: rgba(255,255,255,.15); color: #fff; }
+.pa-ctrl-btn:active { transform: scale(.92); }
+.pa-ctrl-nav { width: 52px; height: 52px; font-size: 20px; }
+.pa-ctrl-play {
+  width: 60px; height: 60px; font-size: 22px;
+  background: rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: 50%;
+}
+.pa-ctrl-play:hover { background: rgba(255,255,255,.22); }
+
+/* ── PHOTO COUNTER ── */
+.pa-counter {
+  position: absolute;
+  top: 52px; right: 20px;
+  color: rgba(255,255,255,.55);
+  font-size: 12px; font-weight: 300;
+  letter-spacing: .5px;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity .22s ease;
+}
+.pa-counter.visible { opacity: 1; }
+
+/* ── FILMSTRIP ── */
+.pa-filmstrip {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 8px;
+  background: rgba(0,0,0,.75);
+  backdrop-filter: blur(8px);
+  overflow-x: auto;
+  scrollbar-width: none;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity .22s ease;
+  pointer-events: none;
+}
+.pa-filmstrip.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+.pa-filmstrip::-webkit-scrollbar { display: none; }
+
+.pa-film-thumb {
+  flex-shrink: 0;
+  width: 60px; height: 60px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  overflow: hidden;
+  transition: border-color .15s, transform .12s;
+}
+.pa-film-thumb:hover { transform: scale(1.06); border-color: rgba(255,255,255,.5); }
+.pa-film-thumb.active { border-color: #fff; }
+.pa-film-thumb img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+ 
